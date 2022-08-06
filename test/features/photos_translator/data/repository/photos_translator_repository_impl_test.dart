@@ -236,7 +236,7 @@ void _testTranslatePhotoGroup() {
         tFirstUncompletedTranslation
       ));
       verifyNever(remoteDataSource.endTranslationFile(any));
-      verifyNever(localDataSource.addCompletedFile(any));
+      verifyNever(localDataSource.addPdfFile(any));
     });
     
     test('should emit the expected item on the uncompleted files stream', () async {
@@ -407,7 +407,7 @@ void _testTranslatePhotoGroup() {
       verify(localDataSource.translate(tSecondUncompletedTranslation, tUntranslatedFile2.id));
       verify(localDataSource.getUncompletedTranslationsFile(tUntranslatedFile2.id));
       verify(remoteDataSource.endTranslationFile(tUntranslatedFile2.id));
-      verify(localDataSource.addCompletedFile(tCompletedFile));
+      verify(localDataSource.addPdfFile(tCompletedFile));
       verify(localDataSource.removeUncompletedFile(tTranslatedFile2));
       verify(localDataSource.getCompletedTranslationsFiles()).called(1);
 
@@ -456,7 +456,7 @@ void _testGetCompletedTranslationsFilesGroup(){
   test('should call the specified method', ()async{
     await photosTranslatorRepository.getCompletedFiles();
     verify(remoteDataSource.getCompletedPdfFiles());
-    verify(localDataSource.updateCompletedFiles(tCompletedFiles));
+    verify(localDataSource.updatePdfFiles(tCompletedFiles));
   });
 
   test('should emit the expected ordered values', ()async{

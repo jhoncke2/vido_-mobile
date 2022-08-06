@@ -3,10 +3,10 @@ import 'package:vido/features/photos_translator/data/data_sources/photos_transla
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
-import 'package:vido/features/photos_translator/external/photos_translator_remote_adapter.dart';
+import '../../database_manager/external/database_manager_adapter.dart';
 
 class PhotosTranslatorLocalDataSourceImpl implements PhotosTranslatorLocalDataSource{
-  final PhotosTranslatorRemoteAdapter adapter;
+  final PhotosTranslatorLocalAdapter adapter;
   final PersistenceManager persistenceManager;
   const PhotosTranslatorLocalDataSourceImpl({
     required this.adapter,
@@ -14,9 +14,9 @@ class PhotosTranslatorLocalDataSourceImpl implements PhotosTranslatorLocalDataSo
   });
   
   @override
-  Future<void> addCompletedFile(PdfFile file) async {
-    // TODO: implement addCompletedFile
-    throw UnimplementedError();
+  Future<void> addPdfFile(PdfFile file) async {
+    final fileJson = adapter.getJsonFromPdfFile(file);
+    await persistenceManager.insert(pdfFilesTableName, fileJson);
   }
 
   @override
@@ -68,7 +68,7 @@ class PhotosTranslatorLocalDataSourceImpl implements PhotosTranslatorLocalDataSo
   }
 
   @override
-  Future<void> updateCompletedFiles(List<PdfFile> files) async {
+  Future<void> updatePdfFiles(List<PdfFile> files) async {
     // TODO: implement setCompletedFiles
     throw UnimplementedError();
   }

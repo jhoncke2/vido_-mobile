@@ -86,12 +86,12 @@ class PhotosTranslatorLocalDataSourceFake implements PhotosTranslatorLocalDataSo
   }
 
   @override
-  Future<void> addCompletedFile(PdfFile file)async{
+  Future<void> addPdfFile(PdfFile file)async{
     completedFiles.add(file);
   }
 
   @override
-  Future<void> updateCompletedFiles(List<PdfFile> files)async{
+  Future<void> updatePdfFiles(List<PdfFile> files)async{
     completedFiles = files;
   }
   

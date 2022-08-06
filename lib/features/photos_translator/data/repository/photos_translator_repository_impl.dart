@@ -45,7 +45,7 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
     inCompletingProcessFiles.removeWhere((f) => f.id == endedFile.id);
     inCompletingProcessFileReceiver.sink.add(List<TranslationsFile>.from(inCompletingProcessFiles));
     await localDataSource.removeUncompletedFile(endedFile);
-    await localDataSource.addCompletedFile(completedFile);
+    await localDataSource.addPdfFile(completedFile);
   }
 
   @override
@@ -96,7 +96,7 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
   Future<Either<PhotosTranslatorFailure, List<PdfFile>>> getCompletedFiles()async{
     try{
       final pdfFiles = await remoteDataSource.getCompletedPdfFiles();
-      await localDataSource.updateCompletedFiles(pdfFiles);
+      await localDataSource.updatePdfFiles(pdfFiles);
       completedFilesReceiver.sink.add(pdfFiles);
       return Right(pdfFiles);
     }on ServerException	 catch(err){

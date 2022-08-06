@@ -7,6 +7,7 @@ abstract class PhotosTranslatorLocalAdapter{
   List<PdfFile> getPdfFilesFromJson(List<Map<String, dynamic>> jsonList);
   List<Map<String, dynamic>> getJsonFromPdfFiles(List<PdfFile> files);
   Map<String, dynamic> getJsonFromPdfFile(PdfFile file);
+  Map<String, dynamic> getJsonFromTranslationsFile(TranslationsFile file);
 }
 
 class PhotosTranslatorLocalAdapterImpl implements PhotosTranslatorLocalAdapter{
@@ -37,4 +38,9 @@ class PhotosTranslatorLocalAdapterImpl implements PhotosTranslatorLocalAdapter{
     // TODO: implement getTranslationsFilesFromJson
     throw UnimplementedError();
   }
+  
+  @override
+  Map<String, dynamic> getJsonFromTranslationsFile(TranslationsFile file) => {
+    idKey: file.id
+  };
 }

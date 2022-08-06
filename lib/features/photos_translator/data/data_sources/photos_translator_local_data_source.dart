@@ -12,8 +12,8 @@ abstract class PhotosTranslatorLocalDataSource {
   Future<List<TranslationsFile>> getUncompletedTranslationsFiles();
   Future<TranslationsFile> getUncompletedTranslationsFile(int fileId);
   Future<List<PdfFile>> getCompletedTranslationsFiles();
-  Future<void> updateCompletedFiles(List<PdfFile> files);
-  Future<void> addCompletedFile(PdfFile file);
+  Future<void> updatePdfFiles(List<PdfFile> files);
+  Future<void> addPdfFile(PdfFile file);
   Future<TranslationsFile?> getCurrentCreatedFile();
   Future<void> removeUncompletedFile(TranslationsFile file);
 }
