@@ -11,14 +11,14 @@ import 'photos_translator_remote_data_source_test.mocks.dart';
 
 late PhotosTranslatorRemoteDataSourceImpl remoteDataSource;
 late MockClient client;
-late MockPhotosTranslatorAdapter adapter;
+late MockPhotosTranslatorRemoteAdapter adapter;
 late MockPathProvider pathProvider;
 late MockHttpResponsesManager httpResponsesManager;
 
 
 @GenerateMocks([http.Client, PhotosTranslatorRemoteAdapter, PathProvider, HttpResponsesManager])
 void main(){
-  adapter = MockPhotosTranslatorAdapter();
+  adapter = MockPhotosTranslatorRemoteAdapter();
   client = MockClient();
   remoteDataSource = PhotosTranslatorRemoteDataSourceImpl(
     client: client,

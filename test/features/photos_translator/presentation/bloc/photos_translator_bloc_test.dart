@@ -22,7 +22,7 @@ late MockCreateTranslationsFile createTranslationsFile;
 late MockTranslatePhoto translatePhoto;
 late MockEndPhotosTranslationsFile endPhotosTranslation;
 late MockGetUncompletedTranslationsFiles getUncompletedTranslationsFiles;
-late MockGetCompletedTranslationsFiles getCompletedTranslationsFiles;
+late MockGetCompletedFiles getCompletedFiles;
 late MockGeneratePdf generatePdf;
 late StreamController<List<TranslationsFile>> tUncompletedTranslFilesController;
 late StreamController<List<TranslationsFile>> tInCompletingProcessFileController;
@@ -58,7 +58,7 @@ void main() {
           lensDirection: CameraLensDirection.back,
           sensorOrientation: 1)
     ];
-    getCompletedTranslationsFiles = MockGetCompletedTranslationsFiles();
+    getCompletedFiles = MockGetCompletedFiles();
     getUncompletedTranslationsFiles = MockGetUncompletedTranslationsFiles();
     endPhotosTranslation = MockEndPhotosTranslationsFile();
     translatePhoto = MockTranslatePhoto();
@@ -68,7 +68,7 @@ void main() {
         translatePhoto: translatePhoto,
         endPhotosTranslation: endPhotosTranslation,
         getUncompletedTranslationsFiles: getUncompletedTranslationsFiles,
-        getCompletedTranslationsFiles: getCompletedTranslationsFiles,
+        getCompletedTranslationsFiles: getCompletedFiles,
         generatePdf: generatePdf,
         uncompletedFilesStream: tUncompletedTranslFilesController.stream.asBroadcastStream(),
         inCompletingProcessFilesStream: tInCompletingProcessFileController.stream.asBroadcastStream(),
@@ -158,19 +158,19 @@ void _testLoadTranslationsFilesGroup() {
   test('should call the specified methods when it is already listening the stream', () async {
     when(getUncompletedTranslationsFiles())
         .thenAnswer((_) async => Right(tUncompletedFiles));
-    when(getCompletedTranslationsFiles())
+    when(getCompletedFiles())
         .thenAnswer((_) async => Right(tCompletedFiles));
     photosTranslatorBloc.add(LoadTranslationsFilesEvent());
     await untilCalled(getUncompletedTranslationsFiles());
     verify(getUncompletedTranslationsFiles());
-    await untilCalled(getCompletedTranslationsFiles());
-    verify(getCompletedTranslationsFiles());
+    await untilCalled(getCompletedFiles());
+    verify(getCompletedFiles());
   });
 
   test('should emit the expected ordered states when it is already listening the stream', () async {
     when(getUncompletedTranslationsFiles())
         .thenAnswer((_) async => Right(tUncompletedFiles));
-    when(getCompletedTranslationsFiles())
+    when(getCompletedFiles())
         .thenAnswer((_) async => Right(tCompletedFiles));
     final expectedOrderedStates = [
       OnLoadingTranslations(),
@@ -523,13 +523,13 @@ void _testUpdateCompletedTranslationsGroup(){
       uncompletedFiles: tUncompletedFiles, 
       completedFiles: tCompletedFilesInit
     ));
-    when(getCompletedTranslationsFiles()).thenAnswer((_) async => Right(tCompletedFilesFin));
+    when(getCompletedFiles()).thenAnswer((_) async => Right(tCompletedFilesFin));
   });
 
   test('should call the specified methods', ()async{
     photosTranslatorBloc.add(UpdateCompletedTranslationsFilesEvent());
-    await untilCalled(getCompletedTranslationsFiles());
-    verify(getCompletedTranslationsFiles());
+    await untilCalled(getCompletedFiles());
+    verify(getCompletedFiles());
   });
 
   test('should yield the expected ordered states', ()async{

@@ -29,7 +29,7 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
   @override
   Future<Either<PhotosTranslatorFailure, int>> createTranslatorsFile(String name) async {
     final newFile = await remoteDataSource.createTranslationsFile(name);
-    await localDataSource.createTranslationFile(newFile);
+    await localDataSource.createTranslationsFile(newFile);
     return Right(newFile.id);
   }
 
@@ -44,7 +44,7 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
     final completedFile = await remoteDataSource.endTranslationFile(endedFile.id);
     inCompletingProcessFiles.removeWhere((f) => f.id == endedFile.id);
     inCompletingProcessFileReceiver.sink.add(List<TranslationsFile>.from(inCompletingProcessFiles));
-    await localDataSource.removeUncompletedFile(endedFile);
+    await localDataSource.removeTranslationsFile(endedFile);
     await localDataSource.addPdfFile(completedFile);
   }
 

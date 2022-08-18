@@ -18,7 +18,7 @@ class PhotosTranslatorLocalDataSourceFake implements PhotosTranslatorLocalDataSo
     required this.rotationFixer
   });
   @override
-  Future<void> createTranslationFile(TranslationsFile newFile) async {
+  Future<void> createTranslationsFile(TranslationsFile newFile) async {
     uncompletedFiles.add(newFile);
     createdFile = newFile;
   }
@@ -96,7 +96,7 @@ class PhotosTranslatorLocalDataSourceFake implements PhotosTranslatorLocalDataSo
   }
   
   @override
-  Future<void> removeUncompletedFile(TranslationsFile file)async{
+  Future<void> removeTranslationsFile(TranslationsFile file)async{
     uncompletedFiles.removeWhere((f) => f.id == file.id);
   }
   

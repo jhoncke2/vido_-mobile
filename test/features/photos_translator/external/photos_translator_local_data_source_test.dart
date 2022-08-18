@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:vido/core/external/persistence.dart';
-import 'package:vido/features/database_manager/external/database_manager_adapter.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
+import 'package:vido/features/photos_translator/external/photos_translator_local_adapter.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_local_data_source_impl.dart';
 import 'photos_translator_local_data_source_test.mocks.dart';
 
@@ -29,6 +29,7 @@ void main(){
 
   group('add pdf file', _testAddPdfFileGroup);
   group('create translations file', _testCreateTranslationsFileGroup);
+  group('end translations file creation', _testEndTranslationsFileCreationGroup);
 }
 
 void _testAddPdfFileGroup(){
@@ -56,17 +57,52 @@ void _testCreateTranslationsFileGroup(){
   late TranslationsFile tFile;
   late Map<String, dynamic> tFileJson;
   setUp((){
-    tFile = const TranslationsFile(id: 0, name: 't_f_1', translations: [], completed: false);
+    tFile = const TranslationsFile(id: 0, name: 't_f_1', status: TranslationsFileStatus.sending, translations: [], completed: false);
     tFileJson = {
       'id': 0,
       'name': 't_f_1',
       'translations': [],
       'completed': false
     };
+    when(adapter.getJsonFromTranslationsFile(any)).thenReturn(tFileJson);
+    when(persistenceManager.insert(any, any)).thenAnswer((_) async => 0);
   });
 
   test('should call the specified methods', ()async{
-    await localDataSource.createTranslationFile(tFile);
-    verify(adapter.getJsonFromPdfFile(file))
+    await localDataSource.createTranslationsFile(tFile);
+    verify(adapter.getJsonFromTranslationsFile(tFile));
+    verify(persistenceManager.insert(translFilesTableName, tFileJson));
+  });
+}
+
+void _testEndTranslationsFileCreationGroup(){
+  late TranslationsFile tOnCreationFile;
+  late Map<String, dynamic> tOnCreationFileJson;
+  late TranslationsFile tCreatedFile;
+  late Map<String, dynamic> tCreatedFileJson;
+  setUp((){
+    tOnCreationFile = const TranslationsFile(id: 0, name: 'f_1', status: TranslationsFileStatus.creating, translations: [], completed: false);
+    tOnCreationFileJson = {
+      idKey: 0,
+      translFilesNameKey: 'f_1',
+      translFilesStatusKey: translFileStatusOnCreationKey
+    };
+    tCreatedFile = const TranslationsFile(id: 0, name: 'f_1', status: TranslationsFileStatus.created, completed: true, translations: []);
+    tCreatedFileJson =  {
+      idKey: 0,
+      translFilesNameKey: 'f_1',
+      translFilesStatusKey: translFileStatusCreatedKey
+    };
+    when(persistenceManager.queryWhere(any, any, any)).thenAnswer((_) async => [tOnCreationFileJson]);
+    //when(adapter.getTranslationsFilesFromJson(jsonList))
+  });
+
+  test('should call the specified methods', ()async{
+    await localDataSource.endTranslationsFileCreation();
+    verify(persistenceManager.queryWhere(
+      translFilesTableName, 
+      '$translFilesStatusKey = ?', 
+      [translFileStatusOnCreationKey]
+    ));
   });
 }

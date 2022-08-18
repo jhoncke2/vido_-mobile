@@ -6,9 +6,6 @@ import 'package:vido/core/external/photos_translator.dart';
 import 'package:http/http.dart' as http;
 import 'package:vido/core/utils/http_responses_manager.dart';
 import 'package:vido/core/utils/image_rotation_fixer.dart';
-import 'package:vido/features/database_manager/external/database_manager_adapter.dart';
-import 'package:vido/features/database_manager/external/database_manager_local_data_source.dart';
-import 'package:vido/features/database_manager/presentation/bloc/database_manager_bloc.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_local_data_source.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_remote_data_source.dart';
 import 'package:vido/features/photos_translator/data/repository/photos_translator_repository_impl.dart';
@@ -45,15 +42,6 @@ Future<void> init() async {
   sl.registerLazySingleton<Database>(() => db);
   sl.registerLazySingleton<PersistenceManager>(() => DataBaseManagerImpl(db: sl()));
   
-
-  // ********* database manager
-  sl.registerLazySingleton<PhotosTranslatorLocalAdapter>(() => PhotosTranslatorLocalAdapterImpl());
-  sl.registerLazySingleton<DatabaseManagerLocalDataSource>(
-    () => DatabaseManagerLocalDataSourceImpl(adapter: sl<PhotosTranslatorLocalAdapter>(), persistenceManager: sl<PersistenceManager>())
-  );
-  sl.registerLazySingleton<DatabaseManagerBloc>(
-    () => DatabaseManagerBloc(localDataSource: sl<DatabaseManagerLocalDataSource>())
-  );
 
   // ********** photos translator
   final adapter = PhotosTranslatorRemoteAdapterImpl();

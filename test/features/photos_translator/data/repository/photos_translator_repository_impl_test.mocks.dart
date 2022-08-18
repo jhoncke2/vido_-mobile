@@ -143,7 +143,7 @@ class MockPhotosTranslatorLocalDataSource extends _i1.Mock
       (super.noSuchMethod(Invocation.getter(#translating),
           returnValue: _i7.Future<bool>.value(false)) as _i7.Future<bool>);
   @override
-  _i7.Future<void> createTranslationFile(_i2.TranslationsFile? newFile) =>
+  _i7.Future<void> createTranslationsFile(_i2.TranslationsFile? newFile) =>
       (super.noSuchMethod(Invocation.method(#createTranslationFile, [newFile]),
               returnValue: _i7.Future<void>.value(),
               returnValueForMissingStub: _i7.Future<void>.value())
@@ -204,13 +204,13 @@ class MockPhotosTranslatorLocalDataSource extends _i1.Mock
           as _i7.Future<List<_i3.PdfFile>>);
   @override
   _i7.Future<void> updatePdfFiles(List<_i3.PdfFile>? files) =>
-      (super.noSuchMethod(Invocation.method(#updateCompletedFiles, [files]),
+      (super.noSuchMethod(Invocation.method(#updatePdfFiles, [files]),
               returnValue: _i7.Future<void>.value(),
               returnValueForMissingStub: _i7.Future<void>.value())
           as _i7.Future<void>);
   @override
   _i7.Future<void> addPdfFile(_i3.PdfFile? file) => (super.noSuchMethod(
-      Invocation.method(#addCompletedFile, [file]),
+      Invocation.method(#addPdfFile, [file]),
       returnValue: _i7.Future<void>.value(),
       returnValueForMissingStub: _i7.Future<void>.value()) as _i7.Future<void>);
   @override
@@ -219,7 +219,7 @@ class MockPhotosTranslatorLocalDataSource extends _i1.Mock
               returnValue: _i7.Future<_i2.TranslationsFile?>.value())
           as _i7.Future<_i2.TranslationsFile?>);
   @override
-  _i7.Future<void> removeUncompletedFile(_i2.TranslationsFile? file) =>
+  _i7.Future<void> removeTranslationsFile(_i2.TranslationsFile? file) =>
       (super.noSuchMethod(Invocation.method(#removeUncompletedFile, [file]),
               returnValue: _i7.Future<void>.value(),
               returnValueForMissingStub: _i7.Future<void>.value())

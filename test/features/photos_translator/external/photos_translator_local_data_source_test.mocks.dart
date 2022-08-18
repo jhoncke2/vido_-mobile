@@ -7,12 +7,12 @@ import 'dart:async' as _i6;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:vido/core/external/persistence.dart' as _i5;
-import 'package:vido/features/database_manager/external/database_manager_adapter.dart'
-    as _i2;
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart'
     as _i4;
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart'
     as _i3;
+import 'package:vido/features/photos_translator/external/photos_translator_local_adapter.dart'
+    as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -51,6 +51,12 @@ class MockPhotosTranslatorLocalAdapter extends _i1.Mock
   @override
   Map<String, dynamic> getJsonFromPdfFile(_i4.PdfFile? file) =>
       (super.noSuchMethod(Invocation.method(#getJsonFromPdfFile, [file]),
+          returnValue: <String, dynamic>{}) as Map<String, dynamic>);
+  @override
+  Map<String, dynamic> getJsonFromTranslationsFile(
+          _i3.TranslationsFile? file) =>
+      (super.noSuchMethod(
+          Invocation.method(#getJsonFromTranslationsFile, [file]),
           returnValue: <String, dynamic>{}) as Map<String, dynamic>);
 }
 

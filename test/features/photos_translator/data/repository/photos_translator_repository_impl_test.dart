@@ -60,7 +60,7 @@ void _testCreatetranslatorsFileGroup() {
   test('should call the specified methods', () async {
     await photosTranslatorRepository.createTranslatorsFile(tName);
     verify(remoteDataSource.createTranslationsFile(tName));
-    verify(localDataSource.createTranslationFile(tNewFile));
+    verify(localDataSource.createTranslationsFile(tNewFile));
   });
 
   test('should return the expected result', () async {
@@ -408,7 +408,7 @@ void _testTranslatePhotoGroup() {
       verify(localDataSource.getUncompletedTranslationsFile(tUntranslatedFile2.id));
       verify(remoteDataSource.endTranslationFile(tUntranslatedFile2.id));
       verify(localDataSource.addPdfFile(tCompletedFile));
-      verify(localDataSource.removeUncompletedFile(tTranslatedFile2));
+      verify(localDataSource.removeTranslationsFile(tTranslatedFile2));
       verify(localDataSource.getCompletedTranslationsFiles()).called(1);
 
       verify(remoteDataSource.addTranslation(tUntranslatedFile1.id, tFirstTranslatedTranslation));

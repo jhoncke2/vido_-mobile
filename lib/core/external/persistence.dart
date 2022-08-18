@@ -15,7 +15,7 @@ const translFileStatusOnCreationKey = 'on_creation';
 const translFileStatusCreatedKey = 'created';
 const translFileStatusSendingKey = 'sending';
 
-const translationsTableName = 'TaskGroups';
+const translationsTableName = 'Translations';
 const translationsImgUrlKey = 'img_url';
 const translationsTextKey = 'text';
 const translationsFileIdKey = 'file_id';

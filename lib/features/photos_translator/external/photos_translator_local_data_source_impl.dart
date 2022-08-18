@@ -3,7 +3,7 @@ import 'package:vido/features/photos_translator/data/data_sources/photos_transla
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
-import '../../database_manager/external/database_manager_adapter.dart';
+import 'package:vido/features/photos_translator/external/photos_translator_local_adapter.dart';
 
 class PhotosTranslatorLocalDataSourceImpl implements PhotosTranslatorLocalDataSource{
   final PhotosTranslatorLocalAdapter adapter;
@@ -20,9 +20,9 @@ class PhotosTranslatorLocalDataSourceImpl implements PhotosTranslatorLocalDataSo
   }
 
   @override
-  Future<void> createTranslationFile(TranslationsFile newFile) async {
-    // TODO: implement createTranslationFile
-    throw UnimplementedError();
+  Future<void> createTranslationsFile(TranslationsFile newFile) async {
+    final fileJson = adapter.getJsonFromTranslationsFile(newFile);
+    await persistenceManager.insert(translFilesTableName, fileJson);
   }
 
   @override
@@ -56,7 +56,7 @@ class PhotosTranslatorLocalDataSourceImpl implements PhotosTranslatorLocalDataSo
   }
 
   @override
-  Future<void> removeUncompletedFile(TranslationsFile file) async {
+  Future<void> removeTranslationsFile(TranslationsFile file) async {
     // TODO: implement removeUncompletedFile
     throw UnimplementedError();
   }

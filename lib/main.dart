@@ -1,7 +1,7 @@
 // ignore_for_file: use_key_in_widget_constructors
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:vido/features/database_manager/presentation/page/database_manager_page.dart';
+import 'package:vido/features/photos_translator/presentation/pages/photos_translator_page.dart';
 import './injection_container.dart' as ic;
 
 Future<void> main()async{
@@ -19,10 +19,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'vido trial',
-      home: DatabaseManagerPage(),
+      home: PhotosTranslatorPage(),
     );
   }
 }
