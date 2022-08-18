@@ -18,6 +18,8 @@ late MockHttpResponsesManager httpResponsesManager;
 
 @GenerateMocks([http.Client, PhotosTranslatorRemoteAdapter, PathProvider, HttpResponsesManager])
 void main(){
+  httpResponsesManager = MockHttpResponsesManager();
+  pathProvider = MockPathProvider();
   adapter = MockPhotosTranslatorRemoteAdapter();
   client = MockClient();
   remoteDataSource = PhotosTranslatorRemoteDataSourceImpl(
@@ -38,14 +40,14 @@ void _testGetCompletedPdfFilesGruop(){
     tStringFiles = '''
       [
         {
-          'id': 0,
-          'name': 'f_1',
-          'route': 'route_1',
+          "id": 0,
+          "name": "f_1",
+          "route": "route_1"
         },
         {
-          'id': 1,
-          'name': 'f_2',
-          'route': 'route_2',
+          "id": 1,
+          "name": "f_2",
+          "route": "route_2"
         }
       ]
     ''';
@@ -53,12 +55,12 @@ void _testGetCompletedPdfFilesGruop(){
       {
         'id': 0,
         'name': 'f_1',
-        'route': 'route_1',
+        'route': 'route_1'
       },
       {
         'id': 1,
         'name': 'f_2',
-        'route': 'route_2',
+        'route': 'route_2'
       }
     ];
     tFiles = const [

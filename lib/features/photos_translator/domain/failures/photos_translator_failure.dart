@@ -1,10 +1,12 @@
-import 'package:equatable/equatable.dart';
+import 'package:vido/core/domain/exceptions.dart';
+import 'package:vido/core/domain/failures.dart';
 
-class PhotosTranslatorFailure extends Equatable{
-  final String message;
-  const PhotosTranslatorFailure(this.message);
-  @override
-  List<Object?> get props => [
-    message
-  ];
+class PhotosTranslatorFailure extends Failure{
+  const PhotosTranslatorFailure({
+    required String message,
+    required AppException exception
+  }):super(
+    message: message,
+    exception: exception
+  );
 }

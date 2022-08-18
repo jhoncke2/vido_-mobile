@@ -11,9 +11,9 @@ const translFilesTableName = 'TranslationFiles';
 const translFilesNameKey = 'name';
 const translFilesStatusKey = 'status';
 const tranlFilesStatusConstraintNameKey = 'chk_status';
-const translFileStatusOnCreationKey = 'on_creation';
-const translFileStatusCreatedKey = 'created';
-const translFileStatusSendingKey = 'sending';
+const translFileStatusOnCreationValue = 'on_creation';
+const translFileStatusCreatedValue = 'created';
+const translFileStatusSendingValue = 'sending';
 
 const translationsTableName = 'Translations';
 const translationsImgUrlKey = 'img_url';
@@ -25,16 +25,17 @@ const pdfFilesNameKey = 'name';
 const pdfFilesUrlKey = 'url';
 
 
-abstract class PersistenceManager{
-  Future<List<Map<String, dynamic>>> queryAll(String groupName);
-  Future<Map<String, dynamic>> querySingleOne(String groupName, int id);
-  Future<List<Map<String, dynamic>>> queryWhere(String groupName, String whereStatement, List<dynamic> whereVariables);
-  Future<int> insert(String groupName, Map<String, dynamic> data);
-  Future<void> update(String groupName, Map<String, dynamic> row, int id);
-  Future<void> remove(String groupName, int id);
+abstract class DatabaseManager{
+  Future<List<Map<String, dynamic>>> queryAll(String tableName);
+  Future<Map<String, dynamic>> querySingleOne(String tableName, int id);
+  Future<List<Map<String, dynamic>>> queryWhere(String tableName, String whereStatement, List<dynamic> whereVariables);
+  Future<int> insert(String tableName, Map<String, dynamic> data);
+  Future<void> update(String tableName, Map<String, dynamic> updatedData, int id);
+  Future<void> remove(String tableName, int id);
+  Future<void> removeAll(String tableName);
 }
 
-class DataBaseManagerImpl implements PersistenceManager{
+class DataBaseManagerImpl implements DatabaseManager{
   final Database db;
 
   DataBaseManagerImpl({
@@ -45,7 +46,7 @@ class DataBaseManagerImpl implements PersistenceManager{
   Future<List<Map<String, dynamic>>> queryAll(String tableName)async{
     return await _executeOperation(()async =>
       await db.query(tableName)
-    ); 
+    );
   }
 
   @override
@@ -70,9 +71,9 @@ class DataBaseManagerImpl implements PersistenceManager{
   }
 
   @override
-  Future<void> update(String tableName, Map<String, dynamic> row, int id)async{
+  Future<void> update(String tableName, Map<String, dynamic> updatedData, int id)async{
     await _executeOperation(()async =>
-      await db.update(tableName, row, where: '$idKey = ?', whereArgs: [id])
+      await db.update(tableName, updatedData, where: '$idKey = ?', whereArgs: [id])
     );
   }
 
@@ -80,6 +81,13 @@ class DataBaseManagerImpl implements PersistenceManager{
   Future<void> remove(String tableName, int id)async{
     await _executeOperation(()async =>
       await db.delete(tableName, where: '$idKey = ?', whereArgs: [id])
+    );
+  }
+
+  @override
+  Future<void> removeAll(String tableName)async{
+    await _executeOperation(()async => 
+      await db.delete(tableName)
     );
   }
 
@@ -112,7 +120,7 @@ class CustomDataBaseFactory{
           $idKey INTEGER PRIMARY KEY,
           $translFilesNameKey TEXT NOT NULL,
           $translFilesStatusKey FLOAT NOT NULL,
-          CONSTRAINT $tranlFilesStatusConstraintNameKey check ($translFilesStatusKey in ('$translFileStatusOnCreationKey', '$translFileStatusCreatedKey', '$translFileStatusSendingKey'))
+          CONSTRAINT $tranlFilesStatusConstraintNameKey check ($translFilesStatusKey in ('$translFileStatusOnCreationValue', '$translFileStatusCreatedValue', '$translFileStatusSendingValue'))
         )
       '''
     );

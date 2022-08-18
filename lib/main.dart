@@ -1,8 +1,9 @@
-// ignore_for_file: use_key_in_widget_constructors
+// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:vido/features/photos_translator/presentation/pages/photos_translator_page.dart';
+import 'package:vido/features/init/presentation/page/init_page.dart';
 import './injection_container.dart' as ic;
+import './globals.dart' as globals;
 
 Future<void> main()async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,10 +20,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'vido trial',
-      home: PhotosTranslatorPage(),
+      home: InitPage(),
+      routes: globals.routes,
     );
   }
 }

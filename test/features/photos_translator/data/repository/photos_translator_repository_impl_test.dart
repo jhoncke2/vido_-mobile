@@ -35,7 +35,7 @@ void main() {
         localDataSource: localDataSource,
         uncompletedFilesReceiver: uncompletedFilesReceiver,
         inCompletingProcessFileReceiver: inCompletingProcessFileReceiver,
-        completedFilesReceiver: completedFilesReceiver
+        pdfFilesReceiver: completedFilesReceiver
     );
   });
 
@@ -43,8 +43,9 @@ void main() {
   group('end photos translation file', _testEndPhotosTranslationFileGroup);
   group('get uncompleted translations files', _testGetUncompletedTranslationsFilesGruop);
   group('translate photo', _testTranslatePhotoGroup);
-  group('get completed translations files', _testGetCompletedTranslationsFilesGroup);
+  group('get pdf files', _testGetPdfFilesGroup);
   group('generate pdf', _testGeneratePdfGroup);
+  group('init pending translations', _testInitPendingTranslations);
 }
 
 void _testCreatetranslatorsFileGroup() {
@@ -98,13 +99,13 @@ void _testGetUncompletedTranslationsFilesGruop() {
             Translation(id: 100, text: 't_1', imgUrl: 't_url_1')
           ]),
     ];
-    when(localDataSource.getUncompletedTranslationsFiles())
+    when(localDataSource.getTranslationsFiles())
         .thenAnswer((_) async => tTranslationsFiles);
   });
 
   test('should call the specified methods', () async {
     await photosTranslatorRepository.getUncompletedTranslationsFiles();
-    verify(localDataSource.getUncompletedTranslationsFiles());
+    verify(localDataSource.getTranslationsFiles());
   });
 
   test('should return the expected result', () async {
@@ -127,20 +128,20 @@ void _testTranslatePhotoGroup() {
         TranslationsFile(id: 0, name: 'f0', completed: false, translations: []),
         TranslationsFile(id: 1, name: 'f1', completed: false, translations: [])
       ];
-      when(localDataSource.translating).thenAnswer((_) async => true);
+      when(localDataSource.translating).thenReturn(true);
       when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => const TranslationsFile(id: 0, name: 'file_0', completed: false, translations: []));
-      when(localDataSource.getUncompletedTranslationsFiles()).thenAnswer((_) async => tUncompletedtranslationsFilesInit);
+      when(localDataSource.getTranslationsFiles()).thenAnswer((_) async => tUncompletedtranslationsFilesInit);
     });
 
     test('should call the specified methods', () async {
       await photosTranslatorRepository.translatePhoto(tPhotoUrl);
       verify(localDataSource.saveUncompletedTranslation(tPhotoUrl));
       verify(localDataSource.translating);
-      verifyNever(localDataSource.getCompletedTranslationsFiles());
+      verifyNever(localDataSource.getPdfFiles());
       verifyNever(localDataSource.getCurrentCreatedFile());
       verifyNever(localDataSource.translate(any, any));
       verifyNever(remoteDataSource.addTranslation(any, any));
-      verifyNever(localDataSource.updateTranslation(any, any, any));
+      verifyNever(localDataSource.updateTranslation(any, any));
     });
 
     test('should emit the expected item on the streams', () async {
@@ -164,7 +165,7 @@ void _testTranslatePhotoGroup() {
     late TranslationsFile tUntranslatedFile;
     late TranslationsFile tTranslatedFile;
     late PdfFile tPdfFile;
-    late Translation tTranslationUpdated;
+    late Translation tTranslationWithRemoteId;
     late List<TranslationsFile> tUncompletedTranslationsFilesFin;
     setUp(() {
       const translationText = 'translation_text';
@@ -174,7 +175,7 @@ void _testTranslatePhotoGroup() {
           text: translationText, 
           imgUrl: 'url_1'
       );
-      tTranslationUpdated = const Translation(
+      tTranslationWithRemoteId = const Translation(
           id: 3052, 
           text: translationText, 
           imgUrl: 'url_1'
@@ -191,7 +192,7 @@ void _testTranslatePhotoGroup() {
         id: fileId,
         name: fileName,
         completed: true,
-        translations: [tTranslationUpdated]
+        translations: [tTranslationWithRemoteId]
       );
       tPdfFile = const PdfFile(id: fileId, name: fileName, url: 'pdf_url');
       when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => tUntranslatedFile);
@@ -199,41 +200,40 @@ void _testTranslatePhotoGroup() {
         tUntranslatedFile
       ];
       tUncompletedTranslationsFilesFin = [];
-      when(localDataSource.translating).thenAnswer((_) async => false);
+      when(localDataSource.translating).thenReturn(false);
       final uncompletedTranslsFilesResponses = [
         tUncompletedtranslationsFilesInit,
         tUncompletedTranslationsFilesFin
       ];
-      when(localDataSource.getUncompletedTranslationsFiles())
+      when(localDataSource.getTranslationsFiles())
         .thenAnswer( (_) async => uncompletedTranslsFilesResponses.removeAt(0));
       when(localDataSource.translate(any, any))
           .thenAnswer((_) async => tTranslatedTranslation);
       when(remoteDataSource.addTranslation(any, any))
-          .thenAnswer((_) async => tTranslationUpdated.id!);
+          .thenAnswer((_) async => tTranslationWithRemoteId.id!);
       when(remoteDataSource.endTranslationFile(any))
           .thenAnswer((_) async =>  tPdfFile);
       when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => tTranslatedFile);
-      when(localDataSource.getUncompletedTranslationsFile(fileId)).thenAnswer((_) async => tTranslatedFile);
+      when(localDataSource.getTranslationsFile(fileId)).thenAnswer((_) async => tTranslatedFile);
     });
 
     test('should call the specified methods', () async {
       await photosTranslatorRepository.translatePhoto(tPhotoUrl);
       verify(localDataSource.saveUncompletedTranslation(tPhotoUrl));
       verify(localDataSource.translating);
-      verify(localDataSource.getUncompletedTranslationsFiles()).called(2);
-      verifyNever(localDataSource.getCompletedTranslationsFiles());
+      verify(localDataSource.getTranslationsFiles()).called(2);
+      verifyNever(localDataSource.getPdfFiles());
       verify(localDataSource.translate(
         tUntranslatedFile.translations.first,
         tUntranslatedFile.id
       ));
-      verify(remoteDataSource.addTranslation(
+      verify(localDataSource.updateTranslation(
         tUntranslatedFile.id, 
         tTranslatedTranslation
       ));
-      verify(localDataSource.updateTranslation(
-        tUntranslatedFile.id,
-        tTranslationUpdated, 
-        tFirstUncompletedTranslation
+      verify(remoteDataSource.addTranslation(
+        tUntranslatedFile.id, 
+        tTranslatedTranslation
       ));
       verifyNever(remoteDataSource.endTranslationFile(any));
       verifyNever(localDataSource.addPdfFile(any));
@@ -265,8 +265,8 @@ void _testTranslatePhotoGroup() {
     late TranslationsFile tTranslatedFile1;
     late TranslationsFile tUntranslatedFile2;
     late TranslationsFile tTranslatedFile2;
-    late Translation tFirstTranslationUpdated;
-    late Translation tSecondTranslationUpdated;
+    late Translation tFirstTranslationWithRemoteId;
+    late Translation tSecondTranslationWithRemoteId;
     late List<TranslationsFile> tUncompletedtranslationsFiles2;
     late List<TranslationsFile> tUncompletedtranslationsFilesFin;
     late PdfFile tCompletedFile;
@@ -357,17 +357,17 @@ void _testTranslatePhotoGroup() {
       tCompletedFiles = [
         tCompletedFile
       ];
-      tFirstTranslationUpdated = const Translation(
+      tFirstTranslationWithRemoteId = const Translation(
           id: 3052, text: tTranslationText1, imgUrl: 'url_1');
-      tSecondTranslationUpdated = const Translation(
+      tSecondTranslationWithRemoteId = const Translation(
           id: 3053, text: tTranslationText2, imgUrl: 'url_2');
-      when(localDataSource.translating).thenAnswer((_) async => false);
+      when(localDataSource.translating).thenReturn(false);
       final uncompletedTranslFilesResponses = [
         tUncompletedtranslationsFilesInit,
         tUncompletedtranslationsFiles2,
         tUncompletedtranslationsFilesFin
       ];
-      when(localDataSource.getUncompletedTranslationsFiles())
+      when(localDataSource.getTranslationsFiles())
           .thenAnswer((_) async => uncompletedTranslFilesResponses.removeAt(0));
       final currentCreatedFileResponses = [
         tTranslatedFile1,
@@ -381,14 +381,14 @@ void _testTranslatePhotoGroup() {
       when(localDataSource.translate(any, any))
           .thenAnswer((_) async => translateResponses.removeAt(0));
       final addTranslationResponses = [
-        tFirstTranslationUpdated.id!,
-        tSecondTranslationUpdated.id!
+        tFirstTranslationWithRemoteId.id!,
+        tSecondTranslationWithRemoteId.id!
       ];
       when(remoteDataSource.addTranslation(any, any))
           .thenAnswer((_) async => addTranslationResponses.removeAt(0));
-      when(localDataSource.getUncompletedTranslationsFile(tUntranslatedFile1.id)).thenAnswer((_) async => tTranslatedFile1);
-      when(localDataSource.getUncompletedTranslationsFile(tUntranslatedFile2.id)).thenAnswer((_) async => tTranslatedFile2);
-      when(localDataSource.getCompletedTranslationsFiles()).thenAnswer((_)async => tCompletedFiles);
+      when(localDataSource.getTranslationsFile(tUntranslatedFile1.id)).thenAnswer((_) async => tTranslatedFile1);
+      when(localDataSource.getTranslationsFile(tUntranslatedFile2.id)).thenAnswer((_) async => tTranslatedFile2);
+      when(localDataSource.getPdfFiles()).thenAnswer((_)async => tCompletedFiles);
       when(remoteDataSource.endTranslationFile(any)).thenAnswer((_) async => tCompletedFile);
       photosTranslatorRepository.inCompletingProcessFiles.add(const TranslationsFile(id: 34000, name: 'tf_34000', completed: true, translations: []));
     });
@@ -397,25 +397,24 @@ void _testTranslatePhotoGroup() {
       await photosTranslatorRepository.translatePhoto(tPhotoUrl);
       verify(localDataSource.saveUncompletedTranslation(tPhotoUrl));
       verify(localDataSource.translating).called(3);
-      verify(localDataSource.getUncompletedTranslationsFiles()).called(3);
+      verify(localDataSource.getTranslationsFiles()).called(3);
 
       verify(localDataSource.translate(tFirstUncompletedTranslation, tUntranslatedFile1.id));
+      verify(localDataSource.updateTranslation(tUntranslatedFile1.id, tFirstTranslatedTranslation));
       verify(localDataSource.getCurrentCreatedFile()).called(2);
-      verify(localDataSource.getUncompletedTranslationsFile(tUntranslatedFile1.id));
+      verify(localDataSource.getTranslationsFile(tUntranslatedFile1.id));
       verifyNever(remoteDataSource.endTranslationFile(tUntranslatedFile1.id));
 
       verify(localDataSource.translate(tSecondUncompletedTranslation, tUntranslatedFile2.id));
-      verify(localDataSource.getUncompletedTranslationsFile(tUntranslatedFile2.id));
+      verify(localDataSource.updateTranslation(tUntranslatedFile2.id, tSecondTranslatedTranslation));
+      verify(localDataSource.getTranslationsFile(tUntranslatedFile2.id));
       verify(remoteDataSource.endTranslationFile(tUntranslatedFile2.id));
       verify(localDataSource.addPdfFile(tCompletedFile));
       verify(localDataSource.removeTranslationsFile(tTranslatedFile2));
-      verify(localDataSource.getCompletedTranslationsFiles()).called(1);
+      verify(localDataSource.getPdfFiles()).called(1);
 
       verify(remoteDataSource.addTranslation(tUntranslatedFile1.id, tFirstTranslatedTranslation));
       verify(remoteDataSource.addTranslation(tUntranslatedFile2.id, tSecondTranslatedTranslation));
-
-      verify(localDataSource.updateTranslation(tUntranslatedFile1.id, tFirstTranslationUpdated, tFirstUncompletedTranslation));
-      verify(localDataSource.updateTranslation(tUntranslatedFile2.id, tSecondTranslationUpdated, tSecondUncompletedTranslation));
     });
 
     test('should emit the expected items on the uncompleted files stream', () async {
@@ -442,34 +441,76 @@ void _testTranslatePhotoGroup() {
 
 }
 
-void _testGetCompletedTranslationsFilesGroup(){
-  late List<PdfFile> tCompletedFiles;
-
+void _testGetPdfFilesGroup(){
+  late List<PdfFile> tPdfFiles;
+  late List<TranslationsFile> tTranslationsFiles;
   setUp((){
-    tCompletedFiles = const [
+    tPdfFiles = const [
       PdfFile(id: 0, name: 'f_1', url: 'url_1'),
       PdfFile(id: 1, name: 'f_2', url: 'url_2')
     ];
-    when(remoteDataSource.getCompletedPdfFiles()).thenAnswer((_) async => tCompletedFiles);
+    when(remoteDataSource.getCompletedPdfFiles()).thenAnswer((_) async => tPdfFiles);
   });
 
-  test('should call the specified method', ()async{
-    await photosTranslatorRepository.getCompletedFiles();
-    verify(remoteDataSource.getCompletedPdfFiles());
-    verify(localDataSource.updatePdfFiles(tCompletedFiles));
+  group('when no translations files has any of the pdf files ids', (){
+    setUp((){
+      tTranslationsFiles = const [
+        TranslationsFile(id: 100, name: 'f_100', completed: false, translations: [])
+      ];
+      when(localDataSource.getTranslationsFiles()).thenAnswer((_) async => tTranslationsFiles);
+    });
+
+    test('should call the specified method', ()async{
+      await photosTranslatorRepository.getCompletedFiles();
+      verify(remoteDataSource.getCompletedPdfFiles());
+      verify(localDataSource.getTranslationsFiles());
+      verify(localDataSource.updatePdfFiles(tPdfFiles));
+    });
+
+    test('should emit the expected ordered values', ()async{
+      final expectedOrderedValues = [
+        tPdfFiles
+      ];
+      expectLater(completedFilesReceiver.stream, emitsInOrder(expectedOrderedValues));
+      await photosTranslatorRepository.getCompletedFiles();
+    });
+
+    //test('should return the expected ordered states', ()async{
+    //  final result = await photosTranslatorRepository.getCompletedFiles();
+    //  expect(result, Right(tPdfFiles));
+    //});
   });
 
-  test('should emit the expected ordered values', ()async{
-    final expectedOrderedValues = [
-      tCompletedFiles
-    ];
-    expectLater(completedFilesReceiver.stream, emitsInOrder(expectedOrderedValues));
-    await photosTranslatorRepository.getCompletedFiles();
-  });
+  group('when the translations files has one of the pdf files ids', (){
+    late List<PdfFile> tPdfFilesUpdated;
+    setUp((){
+      tTranslationsFiles = [
+        const TranslationsFile(id: 1000, name: 'f_1000', completed: false, translations: [], status: TranslationsFileStatus.created),
+        TranslationsFile(id: tPdfFiles.first.id, name: tPdfFiles.first.name, completed: false, translations: const [])
+      ];
+      tPdfFilesUpdated = tPdfFiles.sublist(1, tPdfFiles.length);
+      when(localDataSource.getTranslationsFiles()).thenAnswer((_) async => tTranslationsFiles);
+    });
 
-  test('should return the expected ordered states', ()async{
-    final result = await photosTranslatorRepository.getCompletedFiles();
-    expect(result, Right(tCompletedFiles));
+    test('shold call the specified methods', ()async{
+      await photosTranslatorRepository.getCompletedFiles();
+      verify(remoteDataSource.getCompletedPdfFiles());
+      verify(localDataSource.getTranslationsFiles());
+      verify(localDataSource.updatePdfFiles(tPdfFilesUpdated));
+    });
+
+    test('should emit the expected ordered values', ()async{
+      final expectedOrderedValues = [
+        tPdfFilesUpdated
+      ];
+      expectLater(completedFilesReceiver.stream, emitsInOrder(expectedOrderedValues));
+      await photosTranslatorRepository.getCompletedFiles();
+    });
+
+    //test('should return the expected ordered states', ()async{
+    //  final result = await photosTranslatorRepository.getCompletedFiles();
+    //  expect(result, Right(tPdfFilesUpdated));
+    //});
   });
 }
 
@@ -491,5 +532,145 @@ void _testGeneratePdfGroup(){
   test('should return the expected ordered states', ()async{
     final result = await photosTranslatorRepository.generatePdf(tFile);
     expect(result, Right(tPdf));
+  });
+}
+
+void _testInitPendingTranslations(){
+  late String tPhotoUrl;
+  late List<TranslationsFile> tUncompletedtranslationsFilesInit;
+  setUp(() {
+    tPhotoUrl = 'url_x';
+  });
+
+  group('when localDataSource is translating', () {
+    setUp(() {
+      tUncompletedtranslationsFilesInit = const [
+        TranslationsFile(id: 0, name: 'f0', completed: false, translations: []),
+        TranslationsFile(id: 1, name: 'f1', completed: false, translations: [])
+      ];
+      when(localDataSource.translating).thenReturn(true);
+      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => const TranslationsFile(id: 0, name: 'file_0', completed: false, translations: []));
+      when(localDataSource.getTranslationsFiles()).thenAnswer((_) async => tUncompletedtranslationsFilesInit);
+    });
+
+    test('should call the specified methods', () async {
+      await photosTranslatorRepository.initPendingTranslations();
+      verify(localDataSource.translating);
+      verifyNever(localDataSource.getPdfFiles());
+      verifyNever(localDataSource.getCurrentCreatedFile());
+      verifyNever(localDataSource.translate(any, any));
+      verifyNever(remoteDataSource.addTranslation(any, any));
+      verifyNever(localDataSource.updateTranslation(any, any));
+    });
+
+    test('should emit the expected item on the streams', () async {
+      final expectedItems = [];
+      expectLater(uncompletedFilesReceiver.stream, emitsInOrder([tUncompletedtranslationsFilesInit]));
+      expectLater(inCompletingProcessFileReceiver.stream, emitsInOrder(expectedItems));
+      expectLater(completedFilesReceiver.stream, emitsInOrder(expectedItems));
+      await photosTranslatorRepository.initPendingTranslations();
+
+    });
+
+    test('should return the expected result', () async {
+      final result = await photosTranslatorRepository.initPendingTranslations();
+      expect(result, const Right(null));
+    });
+  });
+
+  group('when localDataSource is not translating, and there is an uncompleted file with one uncompleted translation', () {
+    late Translation tFirstUncompletedTranslation;
+    late Translation tTranslatedTranslation;
+    late TranslationsFile tUntranslatedFile;
+    late TranslationsFile tTranslatedFile;
+    late PdfFile tPdfFile;
+    late Translation tTranslationWithRemoteId;
+    late List<TranslationsFile> tUncompletedTranslationsFilesFin;
+    setUp(() {
+      const translationText = 'translation_text';
+      tFirstUncompletedTranslation = const Translation(id: 2052, text: null, imgUrl: 'url_1');
+      tTranslatedTranslation = const Translation(
+          id: 2052, 
+          text: translationText, 
+          imgUrl: 'url_1'
+      );
+      tTranslationWithRemoteId = const Translation(
+          id: 3052, 
+          text: translationText, 
+          imgUrl: 'url_1'
+      );
+      const fileId = 1051;
+      const fileName = 'tf_1052';
+      tUntranslatedFile = TranslationsFile(
+        id: fileId,
+        name: fileName,
+        completed: true,
+        translations: [tFirstUncompletedTranslation]
+      );
+      tTranslatedFile = TranslationsFile(
+        id: fileId,
+        name: fileName,
+        completed: true,
+        translations: [tTranslationWithRemoteId]
+      );
+      tPdfFile = const PdfFile(id: fileId, name: fileName, url: 'pdf_url');
+      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => tUntranslatedFile);
+      tUncompletedtranslationsFilesInit = [
+        tUntranslatedFile
+      ];
+      tUncompletedTranslationsFilesFin = [];
+      when(localDataSource.translating).thenReturn(false);
+      final uncompletedTranslsFilesResponses = [
+        tUncompletedtranslationsFilesInit,
+        tUncompletedTranslationsFilesFin
+      ];
+      when(localDataSource.getTranslationsFiles())
+        .thenAnswer( (_) async => uncompletedTranslsFilesResponses.removeAt(0));
+      when(localDataSource.translate(any, any))
+          .thenAnswer((_) async => tTranslatedTranslation);
+      when(remoteDataSource.addTranslation(any, any))
+          .thenAnswer((_) async => tTranslationWithRemoteId.id!);
+      when(remoteDataSource.endTranslationFile(any))
+          .thenAnswer((_) async =>  tPdfFile);
+      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => tTranslatedFile);
+      when(localDataSource.getTranslationsFile(fileId)).thenAnswer((_) async => tTranslatedFile);
+    });
+
+    test('should call the specified methods', () async {
+      await photosTranslatorRepository.initPendingTranslations();
+      verify(localDataSource.translating);
+      verify(localDataSource.getTranslationsFiles()).called(2);
+      verifyNever(localDataSource.getPdfFiles());
+      verify(localDataSource.translate(
+        tUntranslatedFile.translations.first,
+        tUntranslatedFile.id
+      ));
+      verify(localDataSource.updateTranslation(
+        tUntranslatedFile.id, 
+        tTranslatedTranslation
+      ));
+      verify(remoteDataSource.addTranslation(
+        tUntranslatedFile.id, 
+        tTranslatedTranslation
+      ));
+      verifyNever(remoteDataSource.endTranslationFile(any));
+      verifyNever(localDataSource.addPdfFile(any));
+    });
+    
+    test('should emit the expected item on the uncompleted files stream', () async {
+      final uncompletedExpectedItems = [
+        tUncompletedtranslationsFilesInit,
+        tUncompletedTranslationsFilesFin
+      ];
+      expectLater(uncompletedFilesReceiver.stream, emitsInOrder(uncompletedExpectedItems));
+      expectLater(inCompletingProcessFileReceiver.stream, emitsInOrder([]));
+      expectLater(completedFilesReceiver.stream, emitsInOrder([]));
+      await photosTranslatorRepository.initPendingTranslations();
+    });
+
+    test('should return the expected result', () async {
+      final result = await photosTranslatorRepository.initPendingTranslations();
+      expect(result, const Right(null));
+    });
   });
 }

@@ -34,16 +34,16 @@ class PhotosTranslatorLocalDataSourceFake implements PhotosTranslatorLocalDataSo
   }
 
   @override
-  Future<List<TranslationsFile>> getUncompletedTranslationsFiles() async {
+  Future<List<TranslationsFile>> getTranslationsFiles() async {
     return uncompletedFiles;
   }
 
   @override
-  Future<void> updateTranslation(int fileId, Translation translation, Translation lastTranslation) async {
-    final translationsFile = uncompletedFiles.firstWhere((tF) => tF.id == fileId);
-    final translationIndex = translationsFile.translations
-        .indexWhere((t) => t.id == lastTranslation.id);
-    translationsFile.translations[translationIndex] = translation;
+  Future<void> updateTranslation(int fileId, Translation translation) async {
+    //final translationsFile = uncompletedFiles.firstWhere((tF) => tF.id == fileId);
+    //final translationIndex = translationsFile.translations
+    //    .indexWhere((t) => t.id == lastTranslation.id);
+    //translationsFile.translations[translationIndex] = translation;
   }
 
   @override
@@ -76,12 +76,12 @@ class PhotosTranslatorLocalDataSourceFake implements PhotosTranslatorLocalDataSo
   }
 
   @override
-  Future<bool> get translating async {
+  bool get translating {
     return _translating;
   }
 
   @override
-  Future<List<PdfFile>> getCompletedTranslationsFiles() async {
+  Future<List<PdfFile>> getPdfFiles() async {
     return completedFiles;
   }
 
@@ -101,7 +101,7 @@ class PhotosTranslatorLocalDataSourceFake implements PhotosTranslatorLocalDataSo
   }
   
   @override
-  Future<TranslationsFile> getUncompletedTranslationsFile(int fileId)async{
+  Future<TranslationsFile> getTranslationsFile(int fileId)async{
     return uncompletedFiles.firstWhere((f) => f.id == fileId);
   }
 }

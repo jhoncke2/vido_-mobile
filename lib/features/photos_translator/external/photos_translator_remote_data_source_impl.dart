@@ -13,6 +13,7 @@ import '../domain/entities/translation.dart';
 import '../domain/entities/translations_file.dart';
 
 class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPartRequests implements PhotosTranslatorRemoteDataSource{
+  static const basePhotosTranslatorApi = 'ocr_app/';
   static const getCompletedPdfFilesUrl = 'list-files';
   static const createTranslationsFileUrl = 'add-file';
   static const addTranslationUrl = 'add-pagine/';
@@ -34,7 +35,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   Future<List<PdfFile>> getCompletedPdfFiles()async{
     final http.Response response = await super.executeGeneralService(()async{
       return await client.get(
-        getUri('${RemoteDataSource.baseApiUncodedPath}$getCompletedPdfFilesUrl')
+        getUri('${RemoteDataSource.baseApiUncodedPath}$basePhotosTranslatorApi$getCompletedPdfFilesUrl')
       );
     });
     return await super.getResponseData(()async{
@@ -47,7 +48,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   Future<TranslationsFile> createTranslationsFile(String name)async{
     final http.Response response = await super.executeGeneralService(()async{
       return await client.post(
-        getUri('${RemoteDataSource.baseApiUncodedPath}$createTranslationsFileUrl'),
+        getUri('${RemoteDataSource.baseApiUncodedPath}$basePhotosTranslatorApi$createTranslationsFileUrl'),
         body: jsonEncode({
           'name': name,
           'directory_id': 1
@@ -73,7 +74,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
       'field_name': 'image',
       'file': File(translation.imgUrl)
     };
-    final response = await executeMultiPartRequestWithOneFile('${RemoteDataSource.baseApiUncodedPath}$addTranslationUrl$fileId', headers, fields, fileInfo);
+    final response = await executeMultiPartRequestWithOneFile('${RemoteDataSource.baseApiUncodedPath}$basePhotosTranslatorApi$addTranslationUrl$fileId', headers, fields, fileInfo);
     return await super.getResponseData(
       () async => adapter.getTranslationFromJson( jsonDecode(response.body) ).id!
     );
@@ -83,7 +84,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   Future<PdfFile> endTranslationFile(int id)async{
     final http.Response response = await super.executeGeneralService(()async{
       return await client.get(
-        getUri('${RemoteDataSource.baseApiUncodedPath}$endTranslationsFileUrl$id')
+        getUri('${RemoteDataSource.baseApiUncodedPath}$basePhotosTranslatorApi$endTranslationsFileUrl$id')
       );
     });
     return await super.getResponseData(
@@ -98,7 +99,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
     try{
       Completer<File> completer = Completer();
       var request = await HttpClient().getUrl(
-        getUri('${RemoteDataSource.baseApiUncodedPath}$getGeneratedPdfUrl${file.id}')
+        getUri('${RemoteDataSource.baseApiUncodedPath}$basePhotosTranslatorApi$getGeneratedPdfUrl${file.id}')
       );
       final dirPath = await pathProvider.generatePath();
       final response = await request.close();
@@ -111,7 +112,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
       print('********************** error ***************************');
       print(err);
       print(stackTrace);
-      throw ServerException(type: ServerExceptionType.NORMAL);
+      throw const ServerException(type: ServerExceptionType.NORMAL);
     }
   }
 }

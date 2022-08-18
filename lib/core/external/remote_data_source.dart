@@ -5,7 +5,7 @@ import '../domain/exceptions.dart';
 abstract class RemoteDataSource{
   static const baseHost = 'https://';
   static const baseUrl = 'vido.com.co';
-  static const baseApiUncodedPath = 'api/ocr_app/';
+  static const baseApiUncodedPath = 'api/';
 
   //Uri getUri(String uncodedPath)=>Uri.http(BASE_URL, uncodedPath);
   Uri getUri(String uncodedPath)=>Uri.https(baseUrl, uncodedPath);
@@ -38,7 +38,7 @@ abstract class RemoteDataSource{
       if([200, 201].contains( statusCode ) ) {
         return response;
       } else if(statusCode == 401) {
-        throw ServerException(type: ServerExceptionType.UNHAUTORAIZED);
+        throw const ServerException(type: ServerExceptionType.UNHAUTORAIZED);
       } else {
         throw Exception();
       }
@@ -46,7 +46,7 @@ abstract class RemoteDataSource{
       rethrow; 
     }
     catch(exception){
-      throw ServerException(type: ServerExceptionType.NORMAL);
+      throw const ServerException(type: ServerExceptionType.NORMAL);
     }
   }
 

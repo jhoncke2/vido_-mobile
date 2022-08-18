@@ -11,4 +11,5 @@ abstract class PhotosTranslatorRepository{
   Future<Either<PhotosTranslatorFailure, List<TranslationsFile>>> getUncompletedTranslationsFiles();
   Future<Either<PhotosTranslatorFailure, List<PdfFile>>> getCompletedFiles();
   Future<Either<PhotosTranslatorFailure, File>> generatePdf(PdfFile file);
+  Future<Either<PhotosTranslatorFailure, void>> initPendingTranslations();
 }

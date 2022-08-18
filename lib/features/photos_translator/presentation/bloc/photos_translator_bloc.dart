@@ -48,9 +48,10 @@ class PhotosTranslatorBloc extends Bloc<PhotosTranslatorEvent, PhotosTranslatorS
     cameraController = null;
     _lastUncompletedFiles = [];
     _lastInCompletingProcessFiles = [];
-    _lastCompletedFiles = [];    
+    _lastCompletedFiles = [];
+    //TODO: Verificar que la app funcione al quitarle estos .listen
     uncompletedFilesStream.listen((files) {
-      _lastUncompletedFiles = _lastUncompletedFiles;
+      _lastUncompletedFiles = files;
     });
     inCompletingProcessFilesStream.listen((files){
       _lastInCompletingProcessFiles = files;
