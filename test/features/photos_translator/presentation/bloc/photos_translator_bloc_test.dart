@@ -1,19 +1,15 @@
-import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/presentation/bloc/photos_translator_bloc.dart';
+import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_translations_file.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/end_photos_translations_file.dart';
-import 'package:vido/features/photos_translator/presentation/use_cases/generate_pdf.dart';
-import 'package:vido/features/photos_translator/presentation/use_cases/get_completed_files.dart';
-import 'package:vido/features/photos_translator/presentation/use_cases/get_uncompleted_translations_files.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/translate_photo.dart';
 import 'photos_translator_bloc_test.mocks.dart';
 
@@ -21,12 +17,7 @@ late PhotosTranslatorBloc photosTranslatorBloc;
 late MockCreateTranslationsFile createTranslationsFile;
 late MockTranslatePhoto translatePhoto;
 late MockEndPhotosTranslationsFile endPhotosTranslation;
-late MockGetUncompletedTranslationsFiles getUncompletedTranslationsFiles;
-late MockGetCompletedFiles getCompletedFiles;
-late MockGeneratePdf generatePdf;
-late StreamController<List<TranslationsFile>> tUncompletedTranslFilesController;
-late StreamController<List<TranslationsFile>> tInCompletingProcessFileController;
-late StreamController<List<PdfFile>> tCompletedTranslFilesController;
+late MockCreateFolder createFolder;
 
 late List<CameraDescription> tCameras;
 late MockCameraController tCameraController;
@@ -35,18 +26,12 @@ late MockCameraController tCameraController;
   CreateTranslationsFile,
   TranslatePhoto,
   EndPhotosTranslationsFile,
-  GetUncompletedTranslationsFiles,
+  CreateFolder,
   CameraController,
-  GetCompletedFiles,
-  GeneratePdf,
   File
 ])
 void main() {
   setUp(() {
-    generatePdf = MockGeneratePdf();
-    tCompletedTranslFilesController = StreamController<List<PdfFile>>();
-    tInCompletingProcessFileController = StreamController<List<TranslationsFile>>();
-    tUncompletedTranslFilesController = StreamController<List<TranslationsFile>>();
     tCameraController = MockCameraController();
     tCameras = const [
       CameraDescription(
@@ -58,8 +43,7 @@ void main() {
           lensDirection: CameraLensDirection.back,
           sensorOrientation: 1)
     ];
-    getCompletedFiles = MockGetCompletedFiles();
-    getUncompletedTranslationsFiles = MockGetUncompletedTranslationsFiles();
+    createFolder = MockCreateFolder();
     endPhotosTranslation = MockEndPhotosTranslationsFile();
     translatePhoto = MockTranslatePhoto();
     createTranslationsFile = MockCreateTranslationsFile();
@@ -67,125 +51,39 @@ void main() {
         createTranslationsFile: createTranslationsFile,
         translatePhoto: translatePhoto,
         endPhotosTranslation: endPhotosTranslation,
-        getUncompletedTranslationsFiles: getUncompletedTranslationsFiles,
-        getCompletedTranslationsFiles: getCompletedFiles,
-        generatePdf: generatePdf,
-        uncompletedFilesStream: tUncompletedTranslFilesController.stream.asBroadcastStream(),
-        inCompletingProcessFilesStream: tInCompletingProcessFileController.stream.asBroadcastStream(),
-        completedFilesStream: tCompletedTranslFilesController.stream.asBroadcastStream(),
+        createFolder: createFolder,
         cameras: tCameras,
         getNewCameraController: (CameraDescription camera) =>
             tCameraController);
   });
 
-  tearDown((){
-    tUncompletedTranslFilesController.close();
-  });
-
   test('should have the expected initialized elements', ()async{
     expect(photosTranslatorBloc.cameraController, null);
   });
-  group('stream listening', _testStreamListeningGroup);
-  group('load uncompleted translations files', _testLoadTranslationsFilesGroup);
+  group('init file type selection', _testInitFileTypeSelectionGroup);
   group('init translations file creation', _testInitTranslationsFileCreationGroup);
+  group('init folder creation', _testInitFolderCreationGroup);
   group('choose camera', _testChooseCameraGroup);
   group('change file name', _testChangeFileNameGroup);
   group('save file name', _testSaveFileNameGroup);
   group('add photo translation', _testAddPhotoTranslationGroup);
   group('end translations file creation', _testEndTranslationsFileCreationGroup);
-  group('update completed translations files', _testUpdateCompletedTranslationsGroup);
-  group('select pdf file', _testSelectPdfFileGroup);
-}
-
-void _testStreamListeningGroup() {
-  late List<TranslationsFile> tFirstYieldedFiles;
-  setUp(() {
-    tFirstYieldedFiles = const [
-      TranslationsFile(
-        id: 0, name: 't_f_1', completed: false, translations: []
-      ),
-      TranslationsFile(
-        id: 1,
-        name: 't_f_2',
-        completed: true,
-        translations: [Translation(id: 100, imgUrl: 'url_1', text: null)]
-      )
-    ];
-  });
-  test('should emit the expected ordered states when current state is OnUncompleted', ()async{
-    photosTranslatorBloc.emit(const OnTranslationsFilesLoaded(uncompletedFiles: [], completedFiles: []));
-    expectLater(photosTranslatorBloc.uncompletedFilesStream, emitsInOrder([tFirstYieldedFiles]));
-    //expectLater(photosTranslatorBloc.stream, emitsInOrder([
-    //  OnTranslationsFilesLoaded(uncompletedFiles: tFirstYieldedFiles, completedFiles: [])
-    //]));
-    tUncompletedTranslFilesController.sink.add(tFirstYieldedFiles);
-  });
-
-  test('should emit the expected ordered states when current state is OnCreating', ()async{
-    photosTranslatorBloc.emit(OnInitializingTranslations(
-      id: 1021,
-      name: 't_f_21', 
-      canTranslate: false, 
-      canEnd: false, 
-      cameraController: tCameraController
-    ));
-    expectLater(photosTranslatorBloc.uncompletedFilesStream, emitsInOrder([tFirstYieldedFiles]));
-    expectLater(photosTranslatorBloc.stream, emitsInOrder([]));
-    tUncompletedTranslFilesController.sink.add(tFirstYieldedFiles);
-  });
-}
-
-void _testLoadTranslationsFilesGroup() {
-  late List<TranslationsFile> tUncompletedFiles;
-  late List<PdfFile> tCompletedFiles;
-  setUp(() {
-    tUncompletedFiles = const [
-      TranslationsFile(id: 0, name: 'file_1', completed: false, translations: [
-        Translation(id: 100, imgUrl: 'url_1', text: null),
-        Translation(id: 101, imgUrl: 'url_2', text: 'texto_2'),
-      ]),
-      TranslationsFile(id: 1, name: 'file_2', completed: false, translations: [
-        Translation(id: 102, imgUrl: 'url_3', text: null),
-        Translation(id: 103, imgUrl: 'url_4', text: 'texto_2'),
-      ]),
-    ];
-    tCompletedFiles = const [
-      PdfFile(id: 2, name: 'file_3', url: 'pdf_1'),
-    ];
-  });
   
+}
 
-  test('should call the specified methods when it is already listening the stream', () async {
-    when(getUncompletedTranslationsFiles())
-        .thenAnswer((_) async => Right(tUncompletedFiles));
-    when(getCompletedFiles())
-        .thenAnswer((_) async => Right(tCompletedFiles));
-    photosTranslatorBloc.add(LoadTranslationsFilesEvent());
-    await untilCalled(getUncompletedTranslationsFiles());
-    verify(getUncompletedTranslationsFiles());
-    await untilCalled(getCompletedFiles());
-    verify(getCompletedFiles());
-  });
-
-  test('should emit the expected ordered states when it is already listening the stream', () async {
-    when(getUncompletedTranslationsFiles())
-        .thenAnswer((_) async => Right(tUncompletedFiles));
-    when(getCompletedFiles())
-        .thenAnswer((_) async => Right(tCompletedFiles));
+void _testInitFileTypeSelectionGroup(){
+  test('should emit the expected ordered states', ( )async{
     final expectedOrderedStates = [
-      OnLoadingTranslations(),
-      OnTranslationsFilesLoaded(uncompletedFiles: tUncompletedFiles, completedFiles: tCompletedFiles)
+      OnSelectingFileType()
     ];
     expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
-    photosTranslatorBloc.add(LoadTranslationsFilesEvent());
+    photosTranslatorBloc.add(InitFileTypeSelectionEvent());
   });
 }
 
 void _testInitTranslationsFileCreationGroup() {
-  late int tFileId;
   setUp(() {
-    tFileId = 1001;
-    photosTranslatorBloc.emit(const OnTranslationsFilesLoaded(uncompletedFiles: [], completedFiles: []));
+    photosTranslatorBloc.emit(OnPhotosTranslatorInitial());
   });
 
   test('should emit the specified methods when camera controller is null', () async {
@@ -196,7 +94,7 @@ void _testInitTranslationsFileCreationGroup() {
     ];
     expectLater(
         photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
-    photosTranslatorBloc.add(InitTranslationsFileEvent());
+    photosTranslatorBloc.add(InitTranslationsFileCreationEvent());
   });
   
   test('shold emit the specified methods qwhen camedra controller already exists', ()async{
@@ -206,7 +104,17 @@ void _testInitTranslationsFileCreationGroup() {
       const OnNamingTranslationsFile(name: '', canEnd: false),
     ];
     expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
-    photosTranslatorBloc.add(InitTranslationsFileEvent());
+    photosTranslatorBloc.add(InitTranslationsFileCreationEvent());
+  });
+}
+
+void _testInitFolderCreationGroup(){
+  test('should emit the expected ordered states', ()async{
+    final expectedOrdedStates = [
+      const OnCreatingFolder(name: '', canEnd: false)
+    ];
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrdedStates));
+    photosTranslatorBloc.add(InitFolderCreationEvent());
   });
 }
 
@@ -292,8 +200,6 @@ void _testAddPhotoTranslationGroup() {
       ]),
     ];
     tPicture = XFile('any_path');
-    when(getUncompletedTranslationsFiles())
-        .thenAnswer((_) async => Right(tUncompletedFiles));
     when(translatePhoto(any)).thenAnswer((_) async => const Right(null));
     when(tCameraController.takePicture()).thenAnswer((_) async => tPicture);
   });
@@ -370,77 +276,134 @@ void _testAddPhotoTranslationGroup() {
 }
 
 void _testChangeFileNameGroup() {
-  late MockCameraController tCameraController;
   late String tNewName;
-  setUp(() {
-    tCameraController = MockCameraController();
-    when(tCameraController.cameraId).thenReturn(0);
-    when(tCameraController.resolutionPreset).thenReturn(ResolutionPreset.max);
-    when(tCameraController.enableAudio).thenReturn(false);
-    when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
+
+  group('when the state is OnCreatingTranslationsFile', (){
+    late MockCameraController tCameraController;
+    setUp(() {
+      tCameraController = MockCameraController();
+      when(tCameraController.cameraId).thenReturn(0);
+      when(tCameraController.resolutionPreset).thenReturn(ResolutionPreset.max);
+      when(tCameraController.enableAudio).thenReturn(false);
+      when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
+    });
+
+    test('should yield the expected ordered states when file could end and now it cant', () {
+      photosTranslatorBloc.emit(const OnNamingTranslationsFile(name: 'n', canEnd: true));
+      tNewName = '';
+      final expectedOrderedStates = [
+        OnNamingTranslationsFile(name: tNewName, canEnd: false)
+      ];
+      expectLater(
+          photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
+    });
+
+    test('should yield the expected ordered states when file could Not end and now it can', () {
+      photosTranslatorBloc.emit(const OnNamingTranslationsFile(name: '', canEnd: false));
+      tNewName = 'new_name_x';
+      final expectedOrderedStates = [
+        OnNamingTranslationsFile(name: tNewName, canEnd: true)
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
+    });
   });
 
-  test(
-      'should yield the expected ordered states when file could end and now it cant',
-      () {
-    photosTranslatorBloc.emit(const OnNamingTranslationsFile(name: 'n', canEnd: true));
-    tNewName = '';
-    final expectedOrderedStates = [
-      OnNamingTranslationsFile(name: tNewName, canEnd: false)
-    ];
-    expectLater(
-        photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
-    photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
-  });
+  group('when the state is OnCreatingTranslationsFile', (){
+    setUp(() {
+      when(tCameraController.cameraId).thenReturn(0);
+      when(tCameraController.resolutionPreset).thenReturn(ResolutionPreset.max);
+      when(tCameraController.enableAudio).thenReturn(false);
+      when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
+    });
 
-  test(
-      'should yield the expected ordered states when file could Not end and now it can',
-      () {
-    photosTranslatorBloc.emit(const OnNamingTranslationsFile(name: '', canEnd: false));
-    tNewName = 'new_name_x';
-    final expectedOrderedStates = [
-      OnNamingTranslationsFile(name: tNewName, canEnd: true)
-    ];
-    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
-    photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
+    test('should yield the expected ordered states when file could end and now it cant', () {
+      photosTranslatorBloc.emit(const OnCreatingFolder(name: 'n', canEnd: true));
+      tNewName = '';
+      final expectedOrderedStates = [
+        OnCreatingFolder(name: tNewName, canEnd: false)
+      ];
+      expectLater(
+          photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
+    });
+
+    test('should yield the expected ordered states when file could Not end and now it can', () {
+      photosTranslatorBloc.emit(const OnCreatingFolder(name: '', canEnd: false));
+      tNewName = 'new_name_x';
+      final expectedOrderedStates = [
+        OnCreatingFolder(name: tNewName, canEnd: true)
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
+    });
   });
 }
 
 void _testSaveFileNameGroup(){
   late String tName;
-  late int tId;
   setUp((){
     tName = 't_name';
-    tId = 1001;
-    photosTranslatorBloc.cameraController = tCameraController;
-    when(tCameraController.cameraId).thenReturn(0);
-    when(tCameraController.resolutionPreset).thenReturn(ResolutionPreset.max);
-    when(tCameraController.enableAudio).thenReturn(false);
-    when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
-    when(tCameraController.description).thenReturn(tCameras.first);
-    photosTranslatorBloc.emit(OnNamingTranslationsFile(name: tName, canEnd: true));
-    when(createTranslationsFile(any)).thenAnswer((_) async => Right(tId));
   });
+  group('when state is OnCreatingTranslationsFile', (){
+    late int tId;
+    setUp((){
+      tId = 1001;
+      photosTranslatorBloc.cameraController = tCameraController;
+      when(tCameraController.cameraId).thenReturn(0);
+      when(tCameraController.resolutionPreset).thenReturn(ResolutionPreset.max);
+      when(tCameraController.enableAudio).thenReturn(false);
+      when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
+      when(tCameraController.description).thenReturn(tCameras.first);
+      photosTranslatorBloc.emit(OnNamingTranslationsFile(name: tName, canEnd: true));
+      when(createTranslationsFile(any)).thenAnswer((_) async => Right(tId));
+    });
 
-  test('shold call the specified methods', ()async{
-    photosTranslatorBloc.add(SaveCurrentFileNameEvent());
-    await untilCalled(createTranslationsFile(any));
-    verify(createTranslationsFile(tName));
+    test('shold call the specified methods', ()async{
+      photosTranslatorBloc.add(SaveCurrentFileNameEvent());
+      await untilCalled(createTranslationsFile(any));
+      verify(createTranslationsFile(tName));
+      verifyNever(createFolder(any));
+    });
+    
+    test('should yield the expected ordered states', ()async{
+      final expectedOrderedStates = [
+        OnLoadingTranslations(),
+        OnInitializingTranslations(
+          id: tId,
+          name: tName,
+          canTranslate: true,
+          canEnd: false,
+          cameraController: tCameraController
+        )
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(SaveCurrentFileNameEvent());
+    });
   });
-  
-  test('should yield the expected ordered states', ()async{
-    final expectedOrderedStates = [
-      OnLoadingTranslations(),
-      OnInitializingTranslations(
-        id: tId,
-        name: tName,
-        canTranslate: true,
-        canEnd: false,
-        cameraController: tCameraController
-      )
-    ];
-    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
-    photosTranslatorBloc.add(SaveCurrentFileNameEvent());
+  group('when state is OnCreatingFolder', (){
+    setUp((){
+      photosTranslatorBloc.emit(OnCreatingFolder(name: tName, canEnd: true));
+      when(createFolder(any))
+          .thenAnswer((_) async => const Right(null));
+    });
+
+    test('shold call the specified methods', ()async{
+      photosTranslatorBloc.add(SaveCurrentFileNameEvent());
+      await untilCalled(createFolder(any));
+      verify(createFolder(tName));
+      verifyNever(createTranslationsFile(any));
+    });
+
+    test('should yield the expected ordered states', ()async{
+      final expectedOrderedStates = [
+        OnLoadingTranslations(),
+        OnAppFileCreationEnded()
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(SaveCurrentFileNameEvent());
+    });
   });
 }
 
@@ -475,102 +438,20 @@ void _testEndTranslationsFileCreationGroup() {
         cameraController: tCameraController));
     when(endPhotosTranslation())
         .thenAnswer((_) async => const Right(null));
-    when(getUncompletedTranslationsFiles())
-        .thenAnswer((_) async => Right(tUncompletedFiles));
   });
 
   test('should call the specified methods', () async {
     photosTranslatorBloc.add(EndTranslationsFileEvent());
     await untilCalled(endPhotosTranslation());
     verify(endPhotosTranslation());
-    await untilCalled(getUncompletedTranslationsFiles());
-    verify(getUncompletedTranslationsFiles());
   });
   
   test('should yield the expected ordered states', () async {
     final expectedOrderedStates = [
       OnLoadingTranslations(),
-      OnTranslationsFilesLoaded(uncompletedFiles: tUncompletedFiles, completedFiles: const [])
+      OnAppFileCreationEnded()
     ];
     expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
     photosTranslatorBloc.add(EndTranslationsFileEvent());
-  });
-}
-
-void _testUpdateCompletedTranslationsGroup(){
-  late List<TranslationsFile> tUncompletedFiles;
-  late List<PdfFile> tCompletedFilesInit;
-  late List<PdfFile> tCompletedFilesFin;
-  setUp(() {
-    tUncompletedFiles = const [
-      TranslationsFile(id: 0, name: 'file_1', completed: false, translations: [
-        Translation(id: 100, imgUrl: 'url_1', text: null),
-        Translation(id: 101, imgUrl: 'url_2', text: 'texto_1'),
-      ]),
-      TranslationsFile(id: 1, name: 'file_2', completed: false, translations: [
-        Translation(id: 102, imgUrl: 'url_3', text: null),
-        Translation(id: 103, imgUrl: 'url_4', text: 'texto_2'),
-      ]),
-    ];
-    tCompletedFilesInit = const [
-      PdfFile(id: 3, name: 'file_3', url: 'pdf_1'),
-    ];
-    tCompletedFilesFin = const [
-      PdfFile(id: 3, name: 'file_3', url: 'pdf_1'),
-      PdfFile(id: 1, name: 'file_2', url: 'pdf_2'),
-    ];
-    photosTranslatorBloc.emit(OnTranslationsFilesLoaded(
-      uncompletedFiles: tUncompletedFiles, 
-      completedFiles: tCompletedFilesInit
-    ));
-    when(getCompletedFiles()).thenAnswer((_) async => Right(tCompletedFilesFin));
-  });
-
-  test('should call the specified methods', ()async{
-    photosTranslatorBloc.add(UpdateCompletedTranslationsFilesEvent());
-    await untilCalled(getCompletedFiles());
-    verify(getCompletedFiles());
-  });
-
-  test('should yield the expected ordered states', ()async{
-    photosTranslatorBloc.emit(OnTranslationsFilesLoaded(
-      uncompletedFiles: tUncompletedFiles, 
-      completedFiles: tCompletedFilesInit
-    ));
-    final expectedOrderedStates = [
-      OnLoadingTranslations(),
-      OnTranslationsFilesLoaded(
-        uncompletedFiles: tUncompletedFiles,
-        completedFiles: tCompletedFilesFin
-      )
-    ];
-    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
-    photosTranslatorBloc.add(UpdateCompletedTranslationsFilesEvent());
-  });
-}
-
-void _testSelectPdfFileGroup(){
-  late PdfFile tFile;
-  late MockFile tPdf;
-  setUp((){
-    tFile = const PdfFile(id: 1001, name: 'pdf_file_1', url: 'pdf_file_url_1');
-    tPdf = MockFile();
-    when(generatePdf(any)).thenAnswer((_) async => Right(tPdf));
-    when(tPdf.path).thenReturn('pdf_1');
-  });
-
-  test('should call the specified methods', ()async{
-    photosTranslatorBloc.add(SelectPdfFileEvent(tFile));
-    await untilCalled(generatePdf(any));
-    verify(generatePdf(tFile));
-  });
-
-  test('should yield the expected ordered states', ()async{
-    final expectedOrderedStates = [
-      OnLoadingTranslations(),
-      OnPdfFileLoaded(file: tFile, pdf: tPdf)
-    ];
-    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
-    photosTranslatorBloc.add(SelectPdfFileEvent(tFile));
   });
 }

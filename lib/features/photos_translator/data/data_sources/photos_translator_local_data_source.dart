@@ -1,4 +1,3 @@
-import '../../domain/entities/pdf_file.dart';
 import '../../domain/entities/translation.dart';
 import '../../domain/entities/translations_file.dart';
 
@@ -11,9 +10,6 @@ abstract class PhotosTranslatorLocalDataSource {
   Future<void> endTranslationsFileCreation();
   Future<List<TranslationsFile>> getTranslationsFiles();
   Future<TranslationsFile> getTranslationsFile(int fileId);
-  Future<List<PdfFile>> getPdfFiles();
-  Future<void> updatePdfFiles(List<PdfFile> files);
-  Future<void> addPdfFile(PdfFile file);
   Future<TranslationsFile?> getCurrentCreatedFile();
   Future<void> removeTranslationsFile(TranslationsFile file);
 }

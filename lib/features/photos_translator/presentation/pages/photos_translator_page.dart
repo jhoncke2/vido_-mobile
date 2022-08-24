@@ -4,13 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vido/app_theme.dart';
 import 'package:vido/features/authentication/presentation/bloc/authentication_bloc.dart';
 import 'package:vido/features/photos_translator/presentation/bloc/photos_translator_bloc.dart';
-import 'package:vido/features/photos_translator/presentation/widgets/photos_translator_app_bar.dart';
 import 'package:vido/features/photos_translator/presentation/widgets/file_namer.dart';
-import 'package:vido/features/photos_translator/presentation/widgets/pdf_file_view.dart';
 import 'package:vido/features/photos_translator/presentation/widgets/translations_file_camera_chooser.dart';
 import 'package:vido/features/photos_translator/presentation/widgets/translations_file_creator.dart';
-import 'package:vido/features/photos_translator/presentation/widgets/files_view/files_view.dart';
 import 'package:vido/injection_container.dart';
+
+import '../../../../globals.dart';
+import '../widgets/file_type_selector.dart';
 
 class PhotosTranslatorPage extends StatelessWidget {
   const PhotosTranslatorPage({Key? key}) : super(key: key);
@@ -27,15 +27,15 @@ class PhotosTranslatorPage extends StatelessWidget {
           ],
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              PhotosTranslatorAppBar(),
               SizedBox(
                 height: dimens.getHeightPercentage(0.85),
                 child: BlocBuilder<PhotosTranslatorBloc, PhotosTranslatorState>(
                   builder: (context, state){
                     _managePostFrameCallBacks(context, state);
-                    if(state is OnTranslationsFilesLoaded){
-                      return FilesView();
+                    if(state is OnSelectingFileType){
+                      return FileTypeSelector();
                     }else if(state is OnSelectingCamera){
                         return TranslationsFileCameraChooser();
                     }else if(state is OnCreatingTranslationsFile){
@@ -44,8 +44,8 @@ class PhotosTranslatorPage extends StatelessWidget {
                       }else{
                         return TranslationsFileCreator();
                       }
-                    }else if(state is OnPdfFileLoaded){
-                      return PdfFileView(file: state.file, pdf: state.pdf);
+                    }else if(state is OnCreatingFolder){
+                      return FileNamer(canEnd: state.canEnd);
                     }else if(state is OnLoadingTranslationsError){
                       return Center(
                         child: Padding(
@@ -76,8 +76,10 @@ class PhotosTranslatorPage extends StatelessWidget {
 
   void _managePostFrameCallBacks(BuildContext context, PhotosTranslatorState state){
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if(state is PhotosTranslatorInitial){
-        BlocProvider.of<PhotosTranslatorBloc>(context).add(LoadTranslationsFilesEvent());
+      if(state is OnPhotosTranslatorInitial){
+        BlocProvider.of<PhotosTranslatorBloc>(context).add(InitFileTypeSelectionEvent());
+      }else if(state is OnAppFileCreationEnded){
+        Navigator.of(context).pushNamed(NavigationRoutes.filesNavigator);
       }
     });
   }

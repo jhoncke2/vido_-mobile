@@ -8,7 +8,6 @@ class Failure extends Equatable{
     required this.message, 
     required this.exception
   });
-  
   @override
   List<Object?> get props => [message, exception];
 }

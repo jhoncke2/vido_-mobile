@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/domain/failures.dart';
-import 'package:vido/core/external/access_token_getter.dart';
+import 'package:vido/core/external/user_extra_info_getter.dart';
 import 'package:vido/features/init/presentation/use_cases/there_is_authentication.dart';
 
 class ThereIsAuthenticationImpl implements ThereIsAuthentication{
-  final AccessTokenGetter accessTokenGetter;
+  final UserExtraInfoGetter accessTokenGetter;
   const ThereIsAuthenticationImpl({
     required this.accessTokenGetter
   });

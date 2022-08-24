@@ -7,7 +7,11 @@ abstract class PhotosTranslatorState extends Equatable{
   List<Object> get props => [runtimeType];
 }
 
-class PhotosTranslatorInitial extends PhotosTranslatorState {}
+class OnPhotosTranslatorInitial extends PhotosTranslatorState {}
+
+class OnSelectingFileType extends PhotosTranslatorState{
+  
+}
 
 class OnLoadingTranslations extends PhotosTranslatorState {}
 
@@ -20,28 +24,29 @@ class OnLoadingTranslationsError extends PhotosTranslatorState {
   List<Object> get props => [...super.props, error];
 }
 
-class OnTranslationsFilesLoaded extends PhotosTranslatorState{
-  final List<TranslationsFile> uncompletedFiles;
-  final List<PdfFile> completedFiles;
-  const OnTranslationsFilesLoaded({
-    required this.uncompletedFiles,
-    required this.completedFiles
-  });
-  @override
-  List<Object> get props => [...super.props, uncompletedFiles, completedFiles];
-}
-
 class OnSelectingCamera extends PhotosTranslatorState{
 
 }
 
-class OnCreatingTranslationsFile extends PhotosTranslatorState{
+abstract class OnCreatingAppFile extends PhotosTranslatorState{
   final String name;
   final bool canEnd;
-  const OnCreatingTranslationsFile({
+  const OnCreatingAppFile({
     required this.name, 
     required this.canEnd
   });
+  @override
+  List<Object> get props => [...super.props, name, canEnd];
+}
+
+class OnCreatingTranslationsFile extends OnCreatingAppFile{
+  const OnCreatingTranslationsFile({
+    required String name, 
+    required bool canEnd
+  }) : super(
+    name: name,
+    canEnd: canEnd
+  );
   @override
   List<Object> get props => [...super.props, name, canEnd];
 }
@@ -55,7 +60,6 @@ class OnNamingTranslationsFile extends OnCreatingTranslationsFile{
     canEnd: canEnd
   );
 }
-
 
 class OnInitializingTranslations extends OnCreatingTranslationsFile{
   final int id;
@@ -83,13 +87,13 @@ class OnInitializingTranslations extends OnCreatingTranslationsFile{
   ];
 }
 
-class OnPdfFileLoaded extends PhotosTranslatorState{
-  final PdfFile file;
-  final File pdf;
-  const OnPdfFileLoaded({
-    required this.file,
-    required this.pdf
-  });
-  @override
-  List<Object> get props => [file, pdf.path];
+class OnAppFileCreationEnded extends PhotosTranslatorState{
+  
+}
+
+class OnCreatingFolder extends OnCreatingAppFile{
+  const OnCreatingFolder({
+    required String name, 
+    required bool canEnd
+  }) : super(name: name, canEnd: canEnd);
 }

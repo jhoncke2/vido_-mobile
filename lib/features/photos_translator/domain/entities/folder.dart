@@ -5,10 +5,12 @@ class Folder extends AppFile{
   const Folder({
     required int id,
     required String name,
+    required int parentId,
     required this.children
   }):super(
     id: id,
-    name: name
+    name: name,
+    parentId: parentId
   );
   @override
   List<Object?> get props => [...super.props, children];

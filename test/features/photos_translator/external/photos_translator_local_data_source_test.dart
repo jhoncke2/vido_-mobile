@@ -1,12 +1,10 @@
 import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:vido/core/external/persistence.dart';
 import 'package:vido/core/external/photos_translator.dart';
 import 'package:vido/core/utils/image_rotation_fixer.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_local_adapter.dart';
@@ -34,45 +32,21 @@ void main(){
     adapter = MockPhotosTranslatorLocalAdapter();
     localDataSource = PhotosTranslatorLocalDataSourceImpl(
       adapter: adapter,
-      persistenceManager: persistenceManager,
+      databaseManager: persistenceManager,
       translator: translator,
       rotationFixer: rotationFixer
     );
   });
 
-  group('add pdf file', _testAddPdfFileGroup);
   group('create translations file', _testCreateTranslationsFileGroup);
   group('end translations file creation', _testEndTranslationsFileCreationGroup);
   group('get current created file', _testGetCurrentCreatedFileGroup);
-  group('get pdf files', _testGetPdfFilesGroup);
   group('get translations files', _testGetTranslationsFilesGroup);
   group('get translations file', _testGetTranslationsFileGroup);
   group('remove translations file', _testRemoveTranslationsFileGroup);
   group('save uncompleted translation', _testSaveUncompletedTranslationGroup);
-  group('update pdf files', _testUpdatePdfFilesGroup);
   group('translate', _testTranslateGroup);
   group('update translation', _testUpdateTranslationGroup);
-}
-
-void _testAddPdfFileGroup(){
-  late PdfFile tPdfFile;
-  late Map<String, dynamic> tFileJson;
-  setUp((){
-    tPdfFile = const PdfFile(id: 0, name: 'f1', url: 'url_1');
-    tFileJson = {
-      'id': 0,
-      'name': 'f1',
-      'url': 'url_1'
-    };
-    when(adapter.getJsonFromPdfFile(any)).thenReturn(tFileJson);
-    when(persistenceManager.insert(any, any)).thenAnswer((_) async => 1);
-  });
-
-  test('should call the specified methods', ()async{
-    await localDataSource.addPdfFile(tPdfFile);
-    verify(adapter.getJsonFromPdfFile(tPdfFile));
-    verify(persistenceManager.insert(pdfFilesTableName, tFileJson));
-  });
 }
 
 void _testCreateTranslationsFileGroup(){
@@ -198,42 +172,6 @@ void _testGetCurrentCreatedFileGroup(){
       final result = await localDataSource.getCurrentCreatedFile();
       expect(result, tFile);
     });
-  });
-}
-
-void _testGetPdfFilesGroup(){
-  late List<Map<String, dynamic>> tFilesJson;
-  late List<PdfFile> tFiles;
-  setUp((){
-    tFilesJson = [
-      {
-        idKey: 0,
-        pdfFilesNameKey: 'f_1',
-        pdfFilesUrlKey: 'url_1'
-      },
-      {
-        idKey: 1,
-        pdfFilesNameKey: 'f_2',
-        pdfFilesUrlKey: 'url_2'
-      }
-    ];
-    tFiles = const [
-      PdfFile(id: 0, name: 'f_1', url: 'url_1'),
-      PdfFile(id: 1, name: 'f_2', url: 'url_2')
-    ];
-    when(persistenceManager.queryAll(any)).thenAnswer((_) async => tFilesJson);
-    when(adapter.getPdfFilesFromJson(any)).thenReturn(tFiles);
-  });
-
-  test('should call the specified methods', ()async{
-    await localDataSource.getPdfFiles();
-    verify(persistenceManager.queryAll(pdfFilesTableName));
-    verify(adapter.getPdfFilesFromJson(tFilesJson));
-  });
-
-  test('should return the expected result', ()async{
-    final result = await localDataSource.getPdfFiles();
-    expect(result, tFiles);
   });
 }
 
@@ -397,82 +335,6 @@ void _testSaveUncompletedTranslationGroup(){
     verify(adapter.getTranslationsFileFromJson(tCreatedFileJson, []));
     verify(adapter.getJsonFromTranslation(tTranslation, tCreatedFileId));
     verify(persistenceManager.insert(translationsTableName, tTranslationJson));
-  });
-}
-
-void _testUpdatePdfFilesGroup(){
-  late List<PdfFile> tNewFiles;
-  late List<Map<String, dynamic>> tNewFilesJson;
-
-  group('when there are 2 new files', (){
-    setUp((){
-      tNewFiles = const [
-        PdfFile(id: 0, name: 'f_1', url: 'url_1'),
-        PdfFile(id: 1, name: 'f_2', url: 'url_2')
-      ];
-      tNewFilesJson = [
-        {
-          idKey: 0,
-          pdfFilesNameKey: 'f_1',
-          pdfFilesUrlKey: 'url_1'
-        },
-        {
-          idKey: 1,
-          pdfFilesNameKey: 'f_2',
-          pdfFilesUrlKey: 'url_2'
-        }
-      ];
-      when(adapter.getJsonFromPdfFiles(any)).thenReturn(tNewFilesJson);
-      final insertValues = [0, 1];
-      when(persistenceManager.insert(any, any)).thenAnswer((_) async => insertValues.removeAt(0));
-    });
-    
-    test('shold call the specified methods', ()async{
-      await localDataSource.updatePdfFiles(tNewFiles);
-      verify(adapter.getJsonFromPdfFiles(tNewFiles));
-      verify(persistenceManager.removeAll(pdfFilesTableName));
-      verify(persistenceManager.insert(pdfFilesTableName, tNewFilesJson[0]));
-      verify(persistenceManager.insert(pdfFilesTableName, tNewFilesJson[1]));
-    });
-  });
-
-  group('when there are 3 new files', (){
-    setUp((){
-      tNewFiles = const [
-        PdfFile(id: 0, name: 'f_1', url: 'url_1'),
-        PdfFile(id: 1, name: 'f_2', url: 'url_2'),
-        PdfFile(id: 1, name: 'f_3', url: 'url_3')
-      ];
-      tNewFilesJson = [
-        {
-          idKey: 0,
-          pdfFilesNameKey: 'f_1',
-          pdfFilesUrlKey: 'url_1'
-        },
-        {
-          idKey: 1,
-          pdfFilesNameKey: 'f_2',
-          pdfFilesUrlKey: 'url_2'
-        },
-        {
-          idKey: 2,
-          pdfFilesNameKey: 'f_3',
-          pdfFilesUrlKey: 'url_3'
-        }
-      ];
-      when(adapter.getJsonFromPdfFiles(any)).thenReturn(tNewFilesJson);
-      final insertValues = [0, 1, 2];
-      when(persistenceManager.insert(any, any)).thenAnswer((_) async => insertValues.removeAt(0));
-    });
-
-    test('shold call the specified methods', ()async{
-      await localDataSource.updatePdfFiles(tNewFiles);
-      verify(adapter.getJsonFromPdfFiles(tNewFiles));
-      verify(persistenceManager.removeAll(pdfFilesTableName));
-      verify(persistenceManager.insert(pdfFilesTableName, tNewFilesJson[0]));
-      verify(persistenceManager.insert(pdfFilesTableName, tNewFilesJson[1]));
-      verify(persistenceManager.insert(pdfFilesTableName, tNewFilesJson[2]));
-    });
   });
 }
 

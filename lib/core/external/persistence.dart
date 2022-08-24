@@ -14,6 +14,7 @@ const tranlFilesStatusConstraintNameKey = 'chk_status';
 const translFileStatusOnCreationValue = 'on_creation';
 const translFileStatusCreatedValue = 'created';
 const translFileStatusSendingValue = 'sending';
+const translFilesParentIdKey = 'parent_id';
 
 const translationsTableName = 'Translations';
 const translationsImgUrlKey = 'img_url';
@@ -120,6 +121,7 @@ class CustomDataBaseFactory{
           $idKey INTEGER PRIMARY KEY,
           $translFilesNameKey TEXT NOT NULL,
           $translFilesStatusKey FLOAT NOT NULL,
+          $translFilesParentIdKey INTEGER,
           CONSTRAINT $tranlFilesStatusConstraintNameKey check ($translFilesStatusKey in ('$translFileStatusOnCreationValue', '$translFileStatusCreatedValue', '$translFileStatusSendingValue'))
         )
       '''

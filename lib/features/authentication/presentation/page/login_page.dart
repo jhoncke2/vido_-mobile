@@ -4,7 +4,7 @@ import 'package:vido/app_theme.dart';
 import '../../../../injection_container.dart';
 import '../bloc/authentication_bloc.dart';
 import '../../../../globals.dart' as globals;
-import '../widgets/login_error_widget.dart';
+import '../../../../core/presentation/widgets/error_panel.dart';
 import '../widgets/sign_in_form_field.dart';
 
 // ignore: must_be_immutable
@@ -42,9 +42,10 @@ class LoginPage extends StatelessWidget {
                       SizedBox(
                         height: dimens.normalVerticalSpace,
                       ),
-                      LoginErrorWidget(
+                      ErrorPanel(
                         visible: authState is OnAuthenticationError,
-                        message: (authState is OnAuthenticationError)? authState.message : '',
+                        errorTitle: 'Error de inicio',
+                        errorContent: (authState is OnAuthenticationError)? authState.message : '',
                       ),
                       SignInFormField(
                         title: 'Correo',
@@ -94,7 +95,7 @@ class LoginPage extends StatelessWidget {
   void _managePostFrameCallbacks(BuildContext context, AuthenticationState state){
     if(state is OnAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushReplacementNamed(globals.NavigationRoutes.photosTranslator);
+        Navigator.of(context).pushReplacementNamed(globals.NavigationRoutes.filesNavigator);
       });
     }
   }

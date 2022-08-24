@@ -6,6 +6,7 @@ abstract class RemoteDataSource{
   static const baseHost = 'https://';
   static const baseUrl = 'vido.com.co';
   static const baseApiUncodedPath = 'api/';
+  static const baseAuthorizedAppPath = 'ocr_app/';
 
   //Uri getUri(String uncodedPath)=>Uri.http(BASE_URL, uncodedPath);
   Uri getUri(String uncodedPath)=>Uri.https(baseUrl, uncodedPath);

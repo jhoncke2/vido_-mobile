@@ -3,11 +3,15 @@ part of 'photos_translator_bloc.dart';
 @immutable
 abstract class PhotosTranslatorEvent {}
 
-class LoadTranslationsFilesEvent extends PhotosTranslatorEvent{
+class InitFileTypeSelectionEvent extends PhotosTranslatorEvent{
+
+}
+
+class InitTranslationsFileCreationEvent extends PhotosTranslatorEvent{
   
 }
 
-class InitTranslationsFileEvent extends PhotosTranslatorEvent{
+class InitFolderCreationEvent extends PhotosTranslatorEvent{
   
 }
 
@@ -37,14 +41,4 @@ class EndTranslationsFileEvent extends PhotosTranslatorEvent{
 
 class UpdateCompletedTranslationsFilesEvent extends PhotosTranslatorEvent{
   
-}
-
-class SelectPdfFileEvent extends PhotosTranslatorEvent{
-  final PdfFile file;
-  SelectPdfFileEvent(this.file);
-}
-
-class _UpdateUncompletedTranslationsFilesEvent extends PhotosTranslatorEvent{
-  final List<TranslationsFile> files;
-  _UpdateUncompletedTranslationsFilesEvent(this.files);
 }

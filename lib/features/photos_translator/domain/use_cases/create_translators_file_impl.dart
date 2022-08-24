@@ -10,7 +10,7 @@ class CreateTranslationsFileImpl implements CreateTranslationsFile{
   });
   @override
   Future<Either<PhotosTranslatorFailure, int>> call(String name)async{
-    return await repository.createTranslatorsFile(name);
+    return await repository.createTranslationsFile(name);
   }
 
 }

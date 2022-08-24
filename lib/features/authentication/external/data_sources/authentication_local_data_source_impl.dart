@@ -46,4 +46,9 @@ class AuthenticationLocalDataSourceImpl implements AuthenticationLocalDataSource
     dbManager.removeAll(translationsTableName);
     dbManager.removeAll(translFilesTableName);
   }
+  
+  @override
+  Future<int> getId()async{
+    return 10000;
+  }
 }

@@ -1,9 +1,16 @@
 import 'dart:async';
+import 'package:vido/core/external/app_files_remote_adapter.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/search.dart';
+import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
+
+import 'core/external/persistence.dart';
+import 'core/utils/path_provider.dart';
 import 'package:camera/camera.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
+import 'package:vido/core/domain/translations_transmitter.dart';
 import 'package:vido/core/domain/use_case_error_handler.dart';
 import 'package:vido/core/external/photos_translator.dart';
 import 'package:vido/core/external/shared_preferences_manager.dart';
@@ -17,46 +24,59 @@ import 'package:vido/features/authentication/domain/use_cases/login.dart';
 import 'package:vido/features/authentication/external/data_sources/authentication_local_data_source_impl.dart';
 import 'package:vido/features/authentication/external/data_sources/authentication_remote_adapter.dart';
 import 'package:vido/features/authentication/external/data_sources/authentication_remote_data_source_impl.dart';
+import 'package:vido/features/authentication/external/data_sources/fake/authentication_remote_data_source_fake.dart';
 import 'package:vido/features/authentication/presentation/bloc/authentication_bloc.dart';
 import 'package:vido/features/authentication/presentation/use_cases/login.dart';
 import 'package:vido/features/authentication/presentation/use_cases/logout.dart';
+import 'package:vido/features/files_navigator/data/data_sources/files_navigator_local_data_source.dart';
+import 'package:vido/features/files_navigator/data/data_sources/files_navigator_remote_data_source.dart';
+import 'package:vido/features/files_navigator/data/repository/files_navigator_repository_impl.dart';
+import 'package:vido/features/files_navigator/domain/app_files_transmitter_impl.dart';
+import 'package:vido/features/files_navigator/domain/repository/files_navigator_repository.dart';
+import 'package:vido/features/files_navigator/external/data_sources/fake/files_navigator_remote_data_source_fake.dart';
+import 'package:vido/features/files_navigator/external/data_sources/files_navigator_local_data_source_impl.dart';
+import 'package:vido/features/files_navigator/external/data_sources/files_navigator_remote_data_source_impl.dart';
+import 'package:vido/features/files_navigator/presentation/bloc/files_navigator_bloc.dart';
+import 'package:vido/features/files_navigator/presentation/files_transmitter/files_transmitter.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/load_folder_brothers.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/load_folder_children.dart';
 import 'package:vido/features/init/domain/use_cases/there_is_authentication_impl.dart';
 import 'package:vido/features/init/presentation/bloc/init_bloc.dart';
 import 'package:vido/features/init/presentation/use_cases/there_is_authentication.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_local_data_source.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_remote_data_source.dart';
 import 'package:vido/features/photos_translator/data/repository/photos_translator_repository_impl.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
+import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/domain/repository/photos_translator_repository.dart';
 import 'package:vido/features/photos_translator/domain/use_cases/create_translators_file_impl.dart';
 import 'package:vido/features/photos_translator/domain/use_cases/end_photos_translation_file_impl.dart';
-import 'package:vido/features/photos_translator/domain/use_cases/get_completed_files_impl.dart';
-import 'package:vido/features/photos_translator/domain/use_cases/get_uncompleted_translations_files_impl.dart';
 import 'package:vido/features/photos_translator/domain/use_cases/translate_photo_impl.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_local_data_source_impl.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_remote_adapter.dart';
-import 'package:vido/features/photos_translator/external/photos_translator_remote_data_source_impl.dart';
 import 'package:vido/features/photos_translator/presentation/bloc/photos_translator_bloc.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_translations_file.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/end_photos_translations_file.dart';
-import 'package:vido/features/photos_translator/presentation/use_cases/generate_pdf.dart';
-import 'package:vido/features/photos_translator/presentation/use_cases/get_completed_files.dart';
-import 'package:vido/features/photos_translator/presentation/use_cases/get_uncompleted_translations_files.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/load_pdf.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/translate_photo.dart';
-import 'core/external/persistence.dart';
-import 'core/utils/path_provider.dart';
 import 'features/authentication/domain/use_cases/logout.dart';
-import 'features/photos_translator/domain/use_cases/generate_pdf_impl.dart';
+import 'features/files_navigator/domain/user_cases/load_pdf_impl.dart';
+import 'features/files_navigator/domain/user_cases/load_folder_brothers_impl.dart';
+import 'features/files_navigator/domain/user_cases/load_folder_children_impl.dart';
+import 'features/files_navigator/domain/user_cases/search_impl.dart';
+import 'features/photos_translator/domain/use_cases/create_folder_impl.dart';
 import 'features/photos_translator/external/fake/photos_translator_remote_data_source_fake.dart';
 import 'features/photos_translator/external/photos_translator_local_adapter.dart';
+import 'features/photos_translator/external/photos_translator_remote_data_source_impl.dart';
+import 'features/files_navigator/external/data_sources/fake/files_tree.dart' as filesTree;
 
 final sl = GetIt.instance;
+bool useRealData = false;
 
 Future<void> init() async {
   sl.registerLazySingleton<PhotosTranslator>(() => PhotosTranslatorImpl());
   final cameras = await availableCameras();
-  // ********** core
+  // ********************************************** Core
   sl.registerLazySingleton<http.Client>(() => http.Client());
   final db = await CustomDataBaseFactory.dataBase;
   sl.registerLazySingleton<Database>(() => db);
@@ -66,9 +86,14 @@ Future<void> init() async {
   sl.registerLazySingleton<SharedPreferencesManager>(
     () => SharedPreferencesManagerImpl(preferences: sl<SharedPreferences>())
   );
-  sl.registerLazySingleton<UseCaseErrorHandler>(() => UseCaseErrorHandlerImpl(authenticationFixer: sl<AuthenticationRepository>()));
+  sl.registerLazySingleton<UseCaseErrorHandler>(
+    () => UseCaseErrorHandlerImpl(authenticationFixer: sl<AuthenticationRepository>())
+  );
+  sl.registerLazySingleton<AppFilesRemoteAdapter>(
+    () => AppFilesRemoteAdapterImpl()
+  );
 
-  // ********** photos translator
+  // *************************************** Photos translator
   sl.registerLazySingleton<PhotosTranslatorRemoteAdapter>(() => PhotosTranslatorRemoteAdapterImpl());
   sl.registerLazySingleton<PhotosTranslatorLocalAdapter>(() => PhotosTranslatorLocalAdapterImpl());
   
@@ -76,40 +101,28 @@ Future<void> init() async {
   sl.registerLazySingleton<HttpResponsesManager>(() => HttpResponsesManagerImpl());
   ///*
   sl.registerLazySingleton<PhotosTranslatorRemoteDataSource>(
-      () => PhotosTranslatorRemoteDataSourceFake(
+    () => _implementRealOrFake<PhotosTranslatorRemoteDataSource>(
+      realImpl: PhotosTranslatorRemoteDataSourceImpl(
+        client: sl<http.Client>(),
+        adapter: sl<PhotosTranslatorRemoteAdapter>(),
+        pathProvider: sl<PathProvider>(),
+        httpResponsesManager: sl<HttpResponsesManager>()
+      ),
+      fakeImpl: PhotosTranslatorRemoteDataSourceFake(
         persistenceManager: sl<DatabaseManager>(), 
         adapter: sl<PhotosTranslatorLocalAdapter>(), 
         pathProvider: sl<PathProvider>(), 
-        httpResponsesManager: sl<HttpResponsesManager>()
-      ));
-  //*/
-  /*
-  sl.registerLazySingleton<PhotosTranslatorRemoteDataSource>(
-    () => PhotosTranslatorRemoteDataSourceImpl(
-      client: sl<http.Client>(),
-      adapter: sl<PhotosTranslatorRemoteAdapter>(),
-      pathProvider: sl<PathProvider>(),
-      httpResponsesManager: sl<HttpResponsesManager>()
+        httpResponsesManager: sl<HttpResponsesManager>(),
+        filesTree: filesTree.appFiles
+      )
     )
   );
-  */
+
   sl.registerLazySingleton<ImageRotationFixer>(() => ImageRotationFixerImpl());
-  final uncompletedTranslFilesStreamController =
-      StreamController<List<TranslationsFile>>();
-  final inCompletingProcessFileStreamController = 
-      StreamController<List<TranslationsFile>>();
-  final completedTranslFilesStreamController =
-      StreamController<List<PdfFile>>();
-  //sl.registerLazySingleton<PhotosTranslatorLocalDataSource>(() =>
-  //  PhotosTranslatorLocalDataSourceFake(
-  //    translator: sl<PhotosTranslator>(),
-  //    rotationFixer: sl<ImageRotationFixer>()
-  //  )
-  //);
   sl.registerLazySingleton<PhotosTranslatorLocalDataSource>(
     () => PhotosTranslatorLocalDataSourceImpl(
       adapter: sl<PhotosTranslatorLocalAdapter>(), 
-      persistenceManager: sl<DatabaseManager>(), 
+      databaseManager: sl<DatabaseManager>(), 
       translator: sl<PhotosTranslator>(),
       rotationFixer: sl<ImageRotationFixer>()
     )
@@ -117,38 +130,31 @@ Future<void> init() async {
   sl.registerLazySingleton<PhotosTranslatorRepository>(() => PhotosTranslatorRepositoryImpl(
     remoteDataSource: sl<PhotosTranslatorRemoteDataSource>(),
     localDataSource: sl<PhotosTranslatorLocalDataSource>(),
-    uncompletedFilesReceiver: uncompletedTranslFilesStreamController,
-    inCompletingProcessFileReceiver: inCompletingProcessFileStreamController,
-    pdfFilesReceiver: completedTranslFilesStreamController
+    translationsFilesReceiver: sl<TranslationsFilesTransmitter>(),
+    translFileParentFolderGetter: sl<FilesNavigatorLocalDataSource>(),
+    userExtraInfoGetter: sl<AuthenticationLocalDataSource>()
   )..initPendingTranslations());
+  final translationsFilesController = StreamController<List<TranslationsFile>>();
+  sl.registerLazySingleton<TranslationsFilesTransmitter>(
+    () => TranslationsFilesTransmitterImpl(translationsFilesController: translationsFilesController)
+  );
   sl.registerLazySingleton<CreateTranslationsFile>(
     () => CreateTranslationsFileImpl(repository: sl<PhotosTranslatorRepository>())
-);
+  );
   sl.registerLazySingleton<EndPhotosTranslationsFile>(
     () => EndPhotosTranslationsFileImpl(repository: sl<PhotosTranslatorRepository>())
-  );
-  sl.registerLazySingleton<GetUncompletedTranslationsFiles>(
-    () => GetUncompletedTranslationsFilesImpl(repository: sl<PhotosTranslatorRepository>())
   );
   sl.registerLazySingleton<TranslatePhoto>(
     () => TranslatePhotoImpl(repository: sl<PhotosTranslatorRepository>())
   );
-  sl.registerLazySingleton<GetCompletedFiles>(
-    () => GetCompletedFilesImpl(repository: sl<PhotosTranslatorRepository>())
+  sl.registerLazySingleton<CreateFolder>(
+    () => CreateFolderImpl(repository: sl<PhotosTranslatorRepository>())
   );
-  sl.registerLazySingleton<GeneratePdf>(
-    () => GeneratePdfImpl(repository: sl<PhotosTranslatorRepository>())
-  );
-  sl.registerFactory( () => PhotosTranslatorBloc(
+  sl.registerFactory<PhotosTranslatorBloc>( () => PhotosTranslatorBloc(
     createTranslationsFile: sl<CreateTranslationsFile>(),
     translatePhoto: sl<TranslatePhoto>(),
     endPhotosTranslation: sl<EndPhotosTranslationsFile>(),
-    getUncompletedTranslationsFiles: sl<GetUncompletedTranslationsFiles>(),
-    getCompletedTranslationsFiles: sl<GetCompletedFiles>(),
-    generatePdf: sl<GeneratePdf>(),
-    uncompletedFilesStream: uncompletedTranslFilesStreamController.stream.asBroadcastStream(),
-    inCompletingProcessFilesStream: inCompletingProcessFileStreamController.stream.asBroadcastStream(),
-    completedFilesStream: completedTranslFilesStreamController.stream.asBroadcastStream(),
+    createFolder: sl<CreateFolder>(),
     cameras: cameras,
     getNewCameraController: (CameraDescription cam) => CameraController(
       cam,
@@ -158,14 +164,79 @@ Future<void> init() async {
     )
   ));
 
-  // ********** Authentication
+  // ******************************************************** Files Navigator
+  sl.registerLazySingleton<AppFilesTransmitter>(
+    () => AppFilesTransmitterImpl(
+      streamController: StreamController<List<AppFile>>()
+    )
+  );
+  sl.registerLazySingleton<FilesNavigatorLocalDataSource>(
+    () => FilesNavigatorLocalDataSourceImpl(sharedPreferencesManager: sl<SharedPreferencesManager>())
+  );
+  sl.registerLazySingleton<FilesNavigatorRemoteDataSource>(
+    () => _implementRealOrFake(
+      realImpl: FilesNavigatorRemoteDataSourceImpl(
+        pathProvider: sl<PathProvider>(),
+        httpResponsesManager: sl<HttpResponsesManager>(),
+        client: sl<http.Client>(),
+        adapter: sl<AppFilesRemoteAdapter>()
+      ), 
+      fakeImpl: FilesNavigatorRemoteDataSourceFake(
+        pathProvider: sl<PathProvider>(),
+        httpResponsesManager: sl<HttpResponsesManager>(),
+        filesTree: filesTree.appFiles
+      )
+    )
+  );
+  sl.registerLazySingleton<FilesNavigatorRepository>(
+    () => FilesNavigatorRepositoryImpl(
+      localDataSource: sl<FilesNavigatorLocalDataSource>(),
+      remoteDataSource: sl<FilesNavigatorRemoteDataSource>(),
+      appFilesReceiver: sl<AppFilesTransmitter>(),
+      userExtraInfoGetter: sl<AuthenticationLocalDataSource>()
+    ),
+  );
+  sl.registerLazySingleton<LoadPdf>(
+    () => LoadPdfImpl(
+      repository: sl<FilesNavigatorRepository>()
+    ),
+  );
+  sl.registerLazySingleton<LoadFolderChildren>(
+    () => LoadFolderChildrenImpl(
+      repository: sl<FilesNavigatorRepository>()
+    ),
+  );
+  sl.registerLazySingleton<LoadFolderBrothers>(
+    () => LoadFolderBrothersImpl(
+      repository: sl<FilesNavigatorRepository>()
+    ),
+  );
+   sl.registerLazySingleton<Search>(
+    () => SearchImpl(
+      repository: sl<FilesNavigatorRepository>()
+    ),
+  );
+  sl.registerFactory<FilesNavigatorBloc>(
+    () => FilesNavigatorBloc(
+      loadFolderChildren: sl<LoadFolderChildren>(), 
+      loadFolderBrothers: sl<LoadFolderBrothers>(), 
+      loadPdf: sl<LoadPdf>(),
+      search: sl<Search>(),
+      appFilesTransmitter: sl<AppFilesTransmitter>(), 
+      translationsFilesTransmitter: sl<TranslationsFilesTransmitter>()
+    )
+  );
+  // ********************************************************* Authentication
   sl.registerLazySingleton<AuthenticationRemoteAdapter>(
     () => AuthenticationRemoteAdapterImpl()
   );
   sl.registerLazySingleton<AuthenticationRemoteDataSource>(
-    () => AuthenticationRemoteDataSourceImpl(
-      client: sl<http.Client>(), 
-      adapter: sl<AuthenticationRemoteAdapter>()
+    () => _implementRealOrFake(
+      realImpl: AuthenticationRemoteDataSourceImpl(
+        client: sl<http.Client>(), 
+        adapter: sl<AuthenticationRemoteAdapter>()
+      ), 
+      fakeImpl: AuthenticationRemoteDataSourceFake()
     )
   );
   sl.registerLazySingleton<AuthenticationLocalDataSource>(
@@ -207,3 +278,9 @@ Future<void> init() async {
     () => InitBloc(thereIsAuthentication: sl<ThereIsAuthentication>())
   );
 }
+
+T _implementRealOrFake<T>({
+  required T realImpl, 
+  required T fakeImpl
+}) => useRealData? realImpl
+                 : fakeImpl;

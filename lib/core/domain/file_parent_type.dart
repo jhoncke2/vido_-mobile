@@ -1,0 +1,4 @@
+enum FileParentType{
+  user,
+  folder
+}

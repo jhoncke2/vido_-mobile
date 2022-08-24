@@ -32,7 +32,7 @@ class InitPage extends StatelessWidget{
           BlocProvider.of<InitBloc>(context).add(DoInitializingCheckingEvent());
           break;
         case OnAuthenticated:
-          Navigator.of(context).pushReplacementNamed(NavigationRoutes.photosTranslator);
+          Navigator.of(context).pushReplacementNamed(NavigationRoutes.filesNavigator);
           break;
         case OnUnAuthenticated:
           Navigator.of(context).pushReplacementNamed(NavigationRoutes.authentication);

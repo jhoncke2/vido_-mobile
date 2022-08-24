@@ -1,8 +1,11 @@
+import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
+import 'package:vido/features/photos_translator/domain/entities/folder.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 
 abstract class PhotosTranslatorRemoteAdapter{
+  List<AppFile>  getAppFilesFromJson(List<Map<String, dynamic>> jsonList);
   List<PdfFile> getPdfFilesFromJson(List<Map<String, dynamic>> jsonList);
   List<Map<String, dynamic>> getJsonListFromPdfFiles(List<PdfFile> files);
   PdfFile getPdfFileFromJson(Map<String, dynamic> json);
@@ -25,7 +28,8 @@ class PhotosTranslatorRemoteAdapterImpl implements PhotosTranslatorRemoteAdapter
       (f) => {
         'id': f.id,
         'name': f.name,
-        'route': f.url
+        'route': f.url,
+        'parent_id': f.parentId
       }
     ).toList();
   
@@ -34,7 +38,8 @@ class PhotosTranslatorRemoteAdapterImpl implements PhotosTranslatorRemoteAdapter
     PdfFile(
       id: json['id'], 
       name: json['name'], 
-      url: json['route']
+      url: json['route'],
+      parentId: json['parent_id']
     );
   
   @override
@@ -88,4 +93,22 @@ class PhotosTranslatorRemoteAdapterImpl implements PhotosTranslatorRemoteAdapter
         imgUrl: json['route'], 
         text: json['text']
       );
+      
+    @override
+    List<AppFile> getAppFilesFromJson(List<Map<String, dynamic>> jsonList) =>
+      jsonList.map<AppFile>(
+        (json) => (json['type'] == 'directory')? 
+            Folder(
+              id: json['id'], 
+              name: json['name'], 
+              parentId: json['parent_id'], 
+              children: getAppFilesFromJson(json['children'].cast<Map<String, dynamic>>())
+            ) :
+            PdfFile(
+              id: json['id'], 
+              name: json['name'], 
+              parentId: json['parent_id'], 
+              url: json['route']
+            )
+      ).toList();
 }

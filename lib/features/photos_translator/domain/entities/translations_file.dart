@@ -1,4 +1,4 @@
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
+import 'package:equatable/equatable.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 
 enum TranslationsFileStatus{
@@ -7,23 +7,23 @@ enum TranslationsFileStatus{
   sending
 }
 
-class TranslationsFile extends AppFile{
+class TranslationsFile extends Equatable{
+  final int id; 
+  final String name;
   final bool completed;
   final TranslationsFileStatus? status;
   final List<Translation> translations;
   const TranslationsFile({
-    required int id, 
-    required String name,
+    required this.id, 
+    required this.name,
     required this.completed,
     this.status = TranslationsFileStatus.creating,
     required this.translations
-  }):super(
-    id: id,
-    name: name
-  );
+  });
   @override
   List<Object?> get props => [
-    ...super.props,
+    id,
+    name,
     completed,
     status,
     translations

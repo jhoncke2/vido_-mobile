@@ -22,7 +22,7 @@ class FileNamer extends StatelessWidget{
               width: screenWidth * 0.6,
               child: TextField(
                 decoration: const InputDecoration(
-                  hintText: 'Nombre del archivo'
+                  hintText: 'Nombre'
                 ),
                 onChanged: (newText){
                   BlocProvider.of<PhotosTranslatorBloc>(context).add(ChangeFileNameEvent(newText));
