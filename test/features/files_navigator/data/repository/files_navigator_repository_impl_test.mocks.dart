@@ -120,8 +120,8 @@ class MockFilesNavigatorRemoteDataSource extends _i1.Mock
   @override
   _i5.Future<List<_i8.SearchAppearance>> search(String? text) =>
       (super.noSuchMethod(Invocation.method(#search, [text]),
-              returnValue:
-                  _i5.Future<List<_i8.SearchAppearance>>.value(<_i8.SearchAppearance>[]))
+              returnValue: _i5.Future<List<_i8.SearchAppearance>>.value(
+                  <_i8.SearchAppearance>[]))
           as _i5.Future<List<_i8.SearchAppearance>>);
 }
 
@@ -145,12 +145,21 @@ class MockFilesNavigatorLocalDataSource extends _i1.Mock
       returnValue: _i5.Future<void>.value(),
       returnValueForMissingStub: _i5.Future<void>.value()) as _i5.Future<void>);
   @override
+  _i5.Future<void> setParentId(int? id) => (super.noSuchMethod(
+      Invocation.method(#setParentId, [id]),
+      returnValue: _i5.Future<void>.value(),
+      returnValueForMissingStub: _i5.Future<void>.value()) as _i5.Future<void>);
+  @override
   _i5.Future<int> getCurrentFileId() =>
       (super.noSuchMethod(Invocation.method(#getCurrentFileId, []),
           returnValue: _i5.Future<int>.value(0)) as _i5.Future<int>);
   @override
-  _i5.Future<int> getFilesTreeLevel() =>
+  _i5.Future<int?> getFilesTreeLevel() =>
       (super.noSuchMethod(Invocation.method(#getFilesTreeLevel, []),
+          returnValue: _i5.Future<int?>.value()) as _i5.Future<int?>);
+  @override
+  _i5.Future<int> getParentId() =>
+      (super.noSuchMethod(Invocation.method(#getParentId, []),
           returnValue: _i5.Future<int>.value(0)) as _i5.Future<int>);
 }
 

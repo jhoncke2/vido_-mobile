@@ -156,14 +156,14 @@ class MockSearch extends _i1.Mock implements _i10.Search {
   }
 
   @override
-  _i5.Future<_i2.Either<_i6.FilesNavigationFailure, List<_i11.SearchAppearance>>> call(
-          String? text) =>
-      (super.noSuchMethod(Invocation.method(#call, [text]),
+  _i5.Future<_i2.Either<_i6.FilesNavigationFailure, List<_i11.SearchAppearance>>>
+      call(String? text) => (super.noSuchMethod(
+          Invocation.method(#call, [text]),
           returnValue:
               _i5.Future<_i2.Either<_i6.FilesNavigationFailure, List<_i11.SearchAppearance>>>.value(
                   _FakeEither_0<_i6.FilesNavigationFailure, List<_i11.SearchAppearance>>(
-                      this, Invocation.method(#call, [text])))) as _i5.Future<
-          _i2.Either<_i6.FilesNavigationFailure, List<_i11.SearchAppearance>>>);
+                      this, Invocation.method(#call, [text])))) as _i5
+          .Future<_i2.Either<_i6.FilesNavigationFailure, List<_i11.SearchAppearance>>>);
 }
 
 /// A class which mocks [AppFilesTransmitter].

@@ -25,7 +25,6 @@ late MockLoadPdf loadPdf;
 late MockSearch search;
 late MockAppFilesTransmitter appFilesTransmitter;
 late MockTranslationsFilesTransmitter translationsFilesTransmitter;
- 
 
 @GenerateMocks([
   LoadFolderChildren,

@@ -4,6 +4,7 @@ import 'package:vido/features/files_navigator/data/data_sources/files_navigator_
 class FilesNavigatorLocalDataSourceImpl implements FilesNavigatorLocalDataSource{
   static const currentParentFolderIdKey = 'current_parent_folder_id';
   static const filesTreeLvlKey = 'files_tree_lvl';
+  static const parentIdKey = 'parent_id';
 
   final SharedPreferencesManager sharedPreferencesManager;
   const FilesNavigatorLocalDataSourceImpl({
@@ -30,5 +31,15 @@ class FilesNavigatorLocalDataSourceImpl implements FilesNavigatorLocalDataSource
   Future<void> setFilesTreeLvl(int lvl)async{
     await sharedPreferencesManager.setString(filesTreeLvlKey, '$lvl');
   }
-
+  
+  @override
+  Future<int> getParentId()async{
+    final stringParentId = await sharedPreferencesManager.getString(parentIdKey);
+    return int.parse(stringParentId);
+  }
+  
+  @override
+  Future<void> setParentId(int id)async{
+    await sharedPreferencesManager.setString(parentIdKey, '$id');
+  }
 }

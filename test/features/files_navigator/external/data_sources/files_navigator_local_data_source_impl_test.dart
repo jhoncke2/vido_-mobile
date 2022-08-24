@@ -22,6 +22,8 @@ void main(){
   group('set current parent folder id', _testSetCurrentParentFolderIdGroup);
   group('get files tree lvl', _testGetFilesTreeLvlGroup);
   group('set files tree lvl', _testSetFilesTreeLvlGroup);
+  group('get parent id', _testGetParentIdGroup);
+  group('set parent id', _testSetParentIdGroup);
 }
 
 void _testGetCurrentParentFolderIdGroup(){
@@ -82,5 +84,32 @@ void _testSetFilesTreeLvlGroup(){
   test('should call the specified methods', ()async{
     await localDataSource.setFilesTreeLvl(tLvl);
     verify(sharedPreferencesManager.setString(FilesNavigatorLocalDataSourceImpl.filesTreeLvlKey, '$tLvl'));
+  });
+}
+
+void _testGetParentIdGroup(){
+  late int tId;
+  setUp((){
+    tId = 0;
+    when(sharedPreferencesManager.getString(any)).thenAnswer((_) async => '$tId');
+  });
+  test('should call the specified methods', ()async{
+    await localDataSource.getParentId();
+    verify(sharedPreferencesManager.getString(FilesNavigatorLocalDataSourceImpl.parentIdKey));
+  });
+  test('should return the expected result', ()async{
+    final result = await localDataSource.getParentId();
+    expect(result, tId);
+  });
+}
+
+void _testSetParentIdGroup(){
+  late int tId;
+  setUp((){
+    tId = 0;
+  });
+  test('should call the specified methods', ()async{
+    await localDataSource.setParentId(tId);
+    verify(sharedPreferencesManager.setString(FilesNavigatorLocalDataSourceImpl.parentIdKey, '$tId'));
   });
 }

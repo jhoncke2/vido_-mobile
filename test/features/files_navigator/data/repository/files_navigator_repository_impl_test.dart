@@ -52,7 +52,6 @@ void main(){
 }
 
 void _testLoadFolderChildrenGroup(){
-  
   late String tAccessToken;
   setUp((){
     tAccessToken = 'access_token';
@@ -62,48 +61,148 @@ void _testLoadFolderChildrenGroup(){
 
   group('when the id is null', (){
     late List<AppFile> tFolderChildren;
-    late int tUserId;
+    late int tParentId;
+    late int? tTreeLvl;
     setUp((){
-      tFolderChildren = const [
-        Folder(id: 0, name: 'fol_1', children: [], parentId: 100),
-        PdfFile(id: 0, name: 'pdff_1', url: 'url_1', parentId: 100),
-        PdfFile(id: 1, name: 'pdf_2', url: 'url_2', parentId: 100),
-        Folder(id: 1, name: 'fol_2', children: [], parentId: 100)
+      tParentId = 100;
+      tFolderChildren = [
+        Folder(id: 0, name: 'fol_1', children: [], parentId: tParentId),
+        PdfFile(id: 0, name: 'pdff_1', url: 'url_1', parentId: tParentId),
+        PdfFile(id: 1, name: 'pdf_2', url: 'url_2', parentId: tParentId),
+        Folder(id: 1, name: 'fol_2', children: [], parentId: tParentId)
       ];
-      tUserId = 1000;
-      when(userExtraInfoGetter.getId())
-          .thenAnswer((_) async => tUserId);
     });
 
-    test('should call the specified methods', ()async{
-      when(remoteDataSource.getChildren(any, any, any))
-          .thenAnswer((_) async => tFolderChildren);
-      await filesNavigatorRepository.loadFolderChildren(null);
-      verify(userExtraInfoGetter.getAccessToken());
-      verify(userExtraInfoGetter.getId());
-      verify(remoteDataSource.getChildren(tUserId, FileParentType.user, tAccessToken));
-      verify(appFilesReceiver.setAppFiles(tFolderChildren));
-      verify(localDataSource.setFilesTreeLvl(0));
-      verifyNever(localDataSource.getFilesTreeLevel());
+    group('when the tree level is null', (){
+      late int tUserId;
+      setUp((){
+        tTreeLvl = null;
+        tUserId = 100;
+        when(localDataSource.getFilesTreeLevel())
+            .thenAnswer((_) async => tTreeLvl);
+        when(userExtraInfoGetter.getId())
+            .thenAnswer((_) async => tUserId);
+      });
+
+      test('should call the specified methods', ()async{
+        when(remoteDataSource.getChildren(any, any, any))
+            .thenAnswer((_) async => tFolderChildren);
+        await filesNavigatorRepository.loadFolderChildren(null);
+        verify(userExtraInfoGetter.getAccessToken());
+        verify(localDataSource.getFilesTreeLevel());
+        verify(userExtraInfoGetter.getId());
+        verify(remoteDataSource.getChildren(tUserId, FileParentType.user, tAccessToken));
+        verify(appFilesReceiver.setAppFiles(tFolderChildren));
+        verify(localDataSource.setFilesTreeLvl(0));
+        verify(localDataSource.setParentId(tParentId));
+      });
+
+      test('should return the expected result when all goes good', ()async{
+        when(remoteDataSource.getChildren(any, any, any))
+            .thenAnswer((_) async => tFolderChildren);
+        final result = await filesNavigatorRepository.loadFolderChildren(null);
+        expect(result, const Right(null));
+      });
+
+      test('should return the expected result when there is an AppException', ()async{
+        when(remoteDataSource.getChildren(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
+        final result = await filesNavigatorRepository.loadFolderChildren(null);
+        expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+      });
+
+      test('should return the expected result when there is another Exception', ()async{
+        when(remoteDataSource.getChildren(any, any, any)).thenThrow(Exception());
+        final result = await filesNavigatorRepository.loadFolderChildren(null);
+        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+      });
     });
 
-    test('should return the expected result when all goes good', ()async{
-      when(remoteDataSource.getChildren(any, any, any))
-          .thenAnswer((_) async => tFolderChildren);
-      final result = await filesNavigatorRepository.loadFolderChildren(null);
-      expect(result, const Right(null));
-    });
+    group('when the tree level is 0', (){
+      late int tUserId;
+      setUp((){
+        tTreeLvl = 0;
+        tUserId = 100;
+        when(localDataSource.getFilesTreeLevel())
+            .thenAnswer((_) async => tTreeLvl);
+        when(userExtraInfoGetter.getId())
+            .thenAnswer((_) async => tUserId);
+      });
 
-    test('should return the expected result when there is an AppException', ()async{
-      when(remoteDataSource.getChildren(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
-      final result = await filesNavigatorRepository.loadFolderChildren(null);
-      expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
-    });
+      test('should call the specified methods', ()async{
+        when(remoteDataSource.getChildren(any, any, any))
+            .thenAnswer((_) async => tFolderChildren);
+        await filesNavigatorRepository.loadFolderChildren(null);
+        verify(userExtraInfoGetter.getAccessToken());
+        verify(localDataSource.getFilesTreeLevel());
+        verify(userExtraInfoGetter.getId());
+        verify(remoteDataSource.getChildren(tUserId, FileParentType.user, tAccessToken));
+        verify(appFilesReceiver.setAppFiles(tFolderChildren));
+        verify(localDataSource.setParentId(tParentId));
+        verifyNever(localDataSource.setFilesTreeLvl(any));
+      });
 
-    test('should return the expected result when there is another Exception', ()async{
-      when(remoteDataSource.getChildren(any, any, any)).thenThrow(Exception());
-      final result = await filesNavigatorRepository.loadFolderChildren(null);
-      expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+      test('should return the expected result when all goes good', ()async{
+        when(remoteDataSource.getChildren(any, any, any))
+            .thenAnswer((_) async => tFolderChildren);
+        final result = await filesNavigatorRepository.loadFolderChildren(null);
+        expect(result, const Right(null));
+      });
+
+      test('should return the expected result when there is an AppException', ()async{
+        when(remoteDataSource.getChildren(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
+        final result = await filesNavigatorRepository.loadFolderChildren(null);
+        expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+      });
+
+      test('should return the expected result when there is another Exception', ()async{
+        when(remoteDataSource.getChildren(any, any, any)).thenThrow(Exception());
+        final result = await filesNavigatorRepository.loadFolderChildren(null);
+        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+      });
+    });
+    
+    group('when the tree level is 1', (){
+      late int tFileId;
+      setUp((){
+        tTreeLvl = 1;
+        tFileId = 101;
+        when(localDataSource.getFilesTreeLevel())
+            .thenAnswer((_) async => tTreeLvl);
+        when(localDataSource.getCurrentFileId())
+            .thenAnswer((_) async => tFileId);
+      });
+
+      test('should call the specified methods', ()async{
+        when(remoteDataSource.getChildren(any, any, any))
+            .thenAnswer((_) async => tFolderChildren);
+        await filesNavigatorRepository.loadFolderChildren(null);
+        verify(userExtraInfoGetter.getAccessToken());
+        verify(localDataSource.getFilesTreeLevel());
+        verify(localDataSource.getCurrentFileId());
+        verify(remoteDataSource.getChildren(tFileId, FileParentType.folder, tAccessToken));
+        verify(appFilesReceiver.setAppFiles(tFolderChildren));
+        verify(localDataSource.setParentId(tParentId));
+        verifyNever(localDataSource.setFilesTreeLvl(any));
+      });
+
+      test('should return the expected result when all goes good', ()async{
+        when(remoteDataSource.getChildren(any, any, any))
+            .thenAnswer((_) async => tFolderChildren);
+        final result = await filesNavigatorRepository.loadFolderChildren(null);
+        expect(result, const Right(null));
+      });
+
+      test('should return the expected result when there is an AppException', ()async{
+        when(remoteDataSource.getChildren(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
+        final result = await filesNavigatorRepository.loadFolderChildren(null);
+        expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+      });
+
+      test('should return the expected result when there is another Exception', ()async{
+        when(remoteDataSource.getChildren(any, any, any)).thenThrow(Exception());
+        final result = await filesNavigatorRepository.loadFolderChildren(null);
+        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+      });
     });
   });
 

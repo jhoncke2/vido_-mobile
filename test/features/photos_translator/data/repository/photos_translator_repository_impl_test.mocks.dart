@@ -248,8 +248,12 @@ class MockTranslationsFileParentFolderGetter extends _i1.Mock
       (super.noSuchMethod(Invocation.method(#getCurrentFileId, []),
           returnValue: _i7.Future<int>.value(0)) as _i7.Future<int>);
   @override
-  _i7.Future<int> getFilesTreeLevel() =>
+  _i7.Future<int?> getFilesTreeLevel() =>
       (super.noSuchMethod(Invocation.method(#getFilesTreeLevel, []),
+          returnValue: _i7.Future<int?>.value()) as _i7.Future<int?>);
+  @override
+  _i7.Future<int> getParentId() =>
+      (super.noSuchMethod(Invocation.method(#getParentId, []),
           returnValue: _i7.Future<int>.value(0)) as _i7.Future<int>);
 }
 
