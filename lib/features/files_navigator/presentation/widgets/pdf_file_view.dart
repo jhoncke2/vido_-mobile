@@ -16,14 +16,16 @@ class PdfFileView extends StatelessWidget{
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final blocState = BlocProvider.of<FilesNavigatorBloc>(context).state as OnPdfFile;
+    final blocState = BlocProvider.of<FilesNavigatorBloc>(context).state as OnPdf;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: screenHeight * 0.01),
         IconButton(
-          onPressed: (){
+          onPressed: (blocState is OnPdfFile)? (){
             BlocProvider.of<FilesNavigatorBloc>(context).add(SelectFilesParentEvent());
+          } : (){
+            BlocProvider.of<FilesNavigatorBloc>(context).add(BackToSearchAppearancesEvent());
           },
           icon: const Icon(
             Icons.arrow_back_ios,
@@ -34,9 +36,9 @@ class PdfFileView extends StatelessWidget{
         SizedBox(
           height: screenHeight * 0.7,
           width: screenWidth,
-          child: (blocState is OnPdfFileLoaded)? PDFView(
+          child: (blocState is OnPdfSuccess)? PDFView(
             filePath: blocState.pdf.path,
-            defaultPage: 0,
+            defaultPage: (blocState is OnSearchAppearancesPdfLoaded)? (blocState.appearance.pdfPage??0) : 0,
             swipeHorizontal: true,
             onViewCreated: (PDFViewController pdfViewController) {
               _controller.complete(pdfViewController);
@@ -46,7 +48,7 @@ class PdfFileView extends StatelessWidget{
             child: ErrorPanel(
               visible: true,
               errorTitle: 'Ha ocurrido un error con el pdf',
-              errorContent: (blocState as OnPdfFileError).message,
+              errorContent: (blocState as OnPdfError).message,
             ),
           ),
         ),

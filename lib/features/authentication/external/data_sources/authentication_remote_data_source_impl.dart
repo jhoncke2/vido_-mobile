@@ -31,8 +31,19 @@ class AuthenticationRemoteDataSourceImpl extends RemoteDataSource implements Aut
   }
   
   @override
-  Future<String> refreshAccessToken(String oldAccessToken) {
+  Future<String> refreshAccessToken(String oldAccessToken)async{
     // TODO: implement refreshAccessToken
     throw UnimplementedError();
+  }
+  
+  @override
+  Future<int> getUserId(String accessToken)async{
+    final result = await super.executeGeneralService(()async{
+      return await client.post(
+        super.getUri('${RemoteDataSource.baseApiUncodedPath}${authBaseApi}me'),
+        headers: createJsonContentTypeHeaders(),
+      );
+    });
+    return adapter.getIdFromResponse(result.body);
   }
 }

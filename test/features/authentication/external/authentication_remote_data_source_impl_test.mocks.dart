@@ -159,4 +159,8 @@ class MockAuthenticationRemoteAdapter extends _i1.Mock
   String getAccessTokenFromResponse(String? response) => (super.noSuchMethod(
       Invocation.method(#getAccessTokenFromResponse, [response]),
       returnValue: '') as String);
+  @override
+  int getIdFromResponse(String? response) =>
+      (super.noSuchMethod(Invocation.method(#getIdFromResponse, [response]),
+          returnValue: 0) as int);
 }

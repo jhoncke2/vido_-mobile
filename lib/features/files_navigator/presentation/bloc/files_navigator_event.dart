@@ -15,3 +15,20 @@ class SelectAppFileEvent extends FilesNavigatorEvent{
 class SelectFilesParentEvent extends FilesNavigatorEvent{
 
 }
+
+class SearchEvent extends FilesNavigatorEvent{
+
+}
+
+class RemoveSearchEvent extends FilesNavigatorEvent{
+
+}
+
+class SelectSearchAppearanceEvent extends FilesNavigatorEvent{
+  final SearchAppearance appearance;
+  SelectSearchAppearanceEvent(this.appearance);
+}
+
+class BackToSearchAppearancesEvent extends FilesNavigatorEvent{
+  
+}

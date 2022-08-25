@@ -8,7 +8,6 @@ import 'package:vido/features/authentication/data/data_sources/authentication_re
 import 'package:vido/features/authentication/data/repository/authentication_repository_impl.dart';
 import 'package:vido/features/authentication/domain/entities/user.dart';
 import 'package:vido/features/authentication/domain/failures/failures.dart';
-
 import 'authentication_repository_impl_test.mocks.dart';
 
 late AuthenticationRepositoryImpl authenticationRepository;
@@ -35,30 +34,37 @@ void main(){
 }
 
 void _testLoginGroup(){
-  late User tUser;
+  late User tUserInitial;
+  late User tUserUpdated;
   late String tNewAccessToken;
+  late int tId;
   setUp((){
-    tUser = const User(email: 'email', password: 'password');
+    tId = 0;
+    tUserInitial = User(email: 'email', password: 'password');
+    tUserUpdated = User(id: tId, email: 'email', password: 'password');
     tNewAccessToken = 'access_token';
+    when(remoteDataSource.getUserId(any))
+        .thenAnswer((_) async => tId);
   });
 
   test('shold call the specified methods', ()async{
     when(remoteDataSource.login(any)).thenAnswer((_) async => tNewAccessToken);
-    await authenticationRepository.login(tUser);
-    verify(remoteDataSource.login(tUser));
-    verify(localDataSource.setUser(tUser));
+    await authenticationRepository.login(tUserInitial);
+    verify(remoteDataSource.login(tUserInitial));
+    verify(remoteDataSource.getUserId(tNewAccessToken));
+    verify(localDataSource.setUser(tUserUpdated));
     verify(localDataSource.setAccessToken(tNewAccessToken));
   });
 
   test('should return the expected result when all goes good', ()async{
     when(remoteDataSource.login(any)).thenAnswer((_) async => tNewAccessToken);
-    final result = await authenticationRepository.login(tUser);
+    final result = await authenticationRepository.login(tUserInitial);
     expect(result, const Right(null));
   });
 
   test('should return the expected result when there is a ServerException', ()async{
     when(remoteDataSource.login(any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
-    final result = await authenticationRepository.login(tUser);
+    final result = await authenticationRepository.login(tUserInitial);
     expect(
       result, 
       const Left(AuthenticationFailure(
@@ -71,7 +77,7 @@ void _testLoginGroup(){
   test('should return the expected result when there is a DBException', ()async{
     when(remoteDataSource.login(any)).thenAnswer((_) async => tNewAccessToken);
     when(localDataSource.setAccessToken(any)).thenThrow(const DBException(type: DBExceptionType.PLATFORM));
-    final result = await authenticationRepository.login(tUser);
+    final result = await authenticationRepository.login(tUserInitial);
     expect(
       result, 
       const Left( AuthenticationFailure(
@@ -84,7 +90,7 @@ void _testLoginGroup(){
   test('should return the expected result when there is a non AppException', ()async{
     when(remoteDataSource.login(any)).thenAnswer((_) async => tNewAccessToken);
     when(localDataSource.setAccessToken(any)).thenThrow(Exception());
-    final result = await authenticationRepository.login(tUser);
+    final result = await authenticationRepository.login(tUserInitial);
     expect(
       result, 
       const Left( AuthenticationFailure(
@@ -132,19 +138,26 @@ void _testLogoutGroup(){
 }
 
 void _testReloginGroup(){
-  late User tUser;
+  late User tUserInitial;
   late String tAccessToken;
+  late int tNewId;
+  late User tUserUpdated;
   setUp((){
-    tUser = const User(email: 'email', password: 'password');
+    tUserInitial = User(id: 0, email: 'email', password: 'password');
     tAccessToken = 'access_token';
-    when(localDataSource.getUser()).thenAnswer((_) async => tUser);
+    tNewId = 1;
+    tUserUpdated = User(id: tNewId, email: 'email', password: 'password');
+    when(localDataSource.getUser()).thenAnswer((_) async => tUserInitial);
     when(remoteDataSource.login(any)).thenAnswer((_) async => tAccessToken);
+    when(remoteDataSource.getUserId(any)).thenAnswer((_) async => tNewId);
   });
 
   test('shold call the specified methods', ()async{
     await authenticationRepository.reLogin();
     verify(localDataSource.getUser());
-    verify(remoteDataSource.login(tUser));
+    verify(remoteDataSource.login(tUserInitial));
+    verify(remoteDataSource.getUserId(tAccessToken));
+    verify(localDataSource.setUser(tUserUpdated));
     verify(localDataSource.setAccessToken(tAccessToken));
   });
 

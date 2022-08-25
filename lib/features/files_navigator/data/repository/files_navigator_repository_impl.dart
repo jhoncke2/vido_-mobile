@@ -7,7 +7,6 @@ import 'package:vido/features/files_navigator/data/data_sources/files_navigator_
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_remote_data_source.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
 import 'package:vido/features/files_navigator/domain/repository/files_navigator_repository.dart';
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import '../../../../core/domain/file_parent_type.dart';
 import '../../../photos_translator/domain/entities/folder.dart';
@@ -30,26 +29,27 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   Future<Either<FilesNavigationFailure, void>> loadFolderChildren(int? id)async{
     return await _manageFunctionExceptions(()async{
       final accessToken = await userExtraInfoGetter.getAccessToken();
-      late List<AppFile> children;
+      late Folder folder;
       final treeLvl = await localDataSource.getFilesTreeLevel();
       if(id == null){
         if(treeLvl == null || treeLvl == 0){
           final userId = await userExtraInfoGetter.getId();
-          children = await remoteDataSource.getChildren(userId, FileParentType.user, accessToken);
+          folder = await remoteDataSource.getFolder(userId, FileParentType.user, accessToken);
         }else{
           final folderId = await localDataSource.getCurrentFileId();
-          children = await remoteDataSource.getChildren(folderId, FileParentType.folder, accessToken);
+          folder = await remoteDataSource.getFolder(folderId, FileParentType.folder, accessToken);
+          await localDataSource.setParentId(folder.parentId);
         }
         if(treeLvl == null){
           await localDataSource.setFilesTreeLvl(0);
         }
       }else{
-        children = await remoteDataSource.getChildren(id, FileParentType.folder, accessToken);
+        folder = await remoteDataSource.getFolder(id, FileParentType.folder, accessToken);
         await localDataSource.setCurrentFileId(id);
         await localDataSource.setFilesTreeLvl(treeLvl! + 1);
+        await localDataSource.setParentId(folder.parentId);
       }
-      await appFilesReceiver.setAppFiles(children);
-      await localDataSource.setParentId(children.first.parentId);
+      await appFilesReceiver.setAppFiles(folder.children);
       return const Right(null);
     });
   }
@@ -64,7 +64,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
         message: exception.message??'Ha ocurrido un error inesperado',
         exception: exception
       ));
-    }catch(exception, stackTrace){
+    }catch(exception){
       return const Left(FilesNavigationFailure(
         message: 'Ha ocurrido un error inesperado',
         exception: AppException('')
@@ -72,28 +72,38 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
     }
   }
 
-  //TODO: Corregir usando el método getChildren y el valor parentId de localDataSource
   @override
   Future<Either<FilesNavigationFailure, void>> loadFolderBrothers()async{
     return await _manageFunctionExceptions(()async{
       final filesTreeLvl = (await localDataSource.getFilesTreeLevel())!;
       if(filesTreeLvl > 0){
         final accessToken = await userExtraInfoGetter.getAccessToken();
-        final fileId = await localDataSource.getCurrentFileId();
-        final parent = (await remoteDataSource.getParentWithBrothers(fileId, accessToken)) as Folder;
-        await appFilesReceiver.setAppFiles(parent.children);
+        late int parentId;
+        late FileParentType parentType;
+        if(filesTreeLvl == 1){
+          parentId = await userExtraInfoGetter.getId();
+          parentType = FileParentType.user;
+        }else{
+          parentId = await localDataSource.getParentId();
+          parentType = FileParentType.folder;
+        }
+        final folder = await remoteDataSource.getFolder(parentId, parentType, accessToken);
+        await appFilesReceiver.setAppFiles(folder.children);
         await localDataSource.setFilesTreeLvl(filesTreeLvl - 1);
-        await localDataSource.setCurrentFileId(parent.id);
+        await localDataSource.setCurrentFileId(folder.id);
+        if(filesTreeLvl > 1){
+          await localDataSource.setParentId(folder.parentId);
+        }
       }
       return const Right(null);
     });
   }
 
   @override
-  Future<Either<FilesNavigationFailure, File>> loadPdf(PdfFile file)async{
+  Future<Either<FilesNavigationFailure, File>> loadFilePdf(PdfFile file)async{
     return await _manageFunctionExceptions(()async{
       final accessToken = await userExtraInfoGetter.getAccessToken();
-      final pdf = await remoteDataSource.getGeneratedPdf(file, accessToken);
+      final pdf = await remoteDataSource.getGeneratedPdf(file.url, accessToken);
       await localDataSource.setCurrentFileId(file.id);
       final treeLvl = (await localDataSource.getFilesTreeLevel())!;
       await localDataSource.setFilesTreeLvl(treeLvl + 1);
@@ -106,6 +116,15 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
     return await _manageFunctionExceptions(()async{
       final result = await remoteDataSource.search(text);
       return Right(result);
+    });
+  }
+  
+  @override
+  Future<Either<FilesNavigationFailure, File>> loadAppearancePdf(SearchAppearance appearance)async{
+    return await _manageFunctionExceptions(()async{
+      final accessToken = await userExtraInfoGetter.getAccessToken();
+      final pdf = await remoteDataSource.getGeneratedPdf(appearance.pdfUrl, accessToken);
+      return Right(pdf);
     });
   }
 }

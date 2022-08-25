@@ -45,6 +45,10 @@ class MockAuthenticationRemoteDataSource extends _i1.Mock
   _i4.Future<String> refreshAccessToken(String? oldAccessToken) => (super
       .noSuchMethod(Invocation.method(#refreshAccessToken, [oldAccessToken]),
           returnValue: _i4.Future<String>.value('')) as _i4.Future<String>);
+  @override
+  _i4.Future<int> getUserId(String? accessToken) =>
+      (super.noSuchMethod(Invocation.method(#getUserId, [accessToken]),
+          returnValue: _i4.Future<int>.value(0)) as _i4.Future<int>);
 }
 
 /// A class which mocks [AuthenticationLocalDataSource].

@@ -31,7 +31,7 @@ void _testLoginGroup(){
   late String tResponseBody;
   late String tAccessToken;
   setUp((){
-    tUser = const User(email: 'emailX', password: 'pass');
+    tUser = User(email: 'emailX', password: 'pass');
     tHeaders = {'Content-Type': 'application/json'};
     tStringBody = '{"email": "emailX", "password": "pass"}';
     tAccessToken = "access_token";

@@ -5,7 +5,6 @@ import 'package:vido/core/external/persistence.dart';
 import 'package:vido/core/external/shared_preferences_manager.dart';
 import 'package:vido/features/authentication/domain/entities/user.dart';
 import 'package:vido/features/authentication/external/data_sources/authentication_local_data_source_impl.dart';
-
 import 'authentication_local_data_source_impl_test.mocks.dart';
 
 late AuthenticationLocalDataSourceImpl localDataSource;
@@ -17,15 +16,18 @@ late MockDatabaseManager dbManager;
   DatabaseManager
 ])
 void main(){
-  dbManager = MockDatabaseManager();
-  preferencesManager = MockSharedPreferencesManager();
-  localDataSource = AuthenticationLocalDataSourceImpl(preferencesManager: preferencesManager, dbManager: dbManager);
+  setUp((){
+    dbManager = MockDatabaseManager();
+    preferencesManager = MockSharedPreferencesManager();
+    localDataSource = AuthenticationLocalDataSourceImpl(preferencesManager: preferencesManager, dbManager: dbManager);
+  });
 
   group('get access token', _testGetAccessTokenGroup);
   group('set access token', _testSetAccessTokenGroup);
   group('get user', _testGetUserGroup);
   group('set user', _testSetUserGroup);
   group('reset app', _testResetAppGroup);
+  group('get id', _testGetIdGroup);
 }
 
 void _testGetAccessTokenGroup(){
@@ -60,7 +62,9 @@ void _testSetAccessTokenGroup(){
 void _testGetUserGroup(){
   late User tUser;
   setUp((){
-    tUser = const User(email: 'email', password: 'password');
+    tUser = User(id: 0, email: 'email', password: 'password');
+    when(preferencesManager.getString(AuthenticationLocalDataSourceImpl.id))
+        .thenAnswer((_) async => '${tUser.id}');
     when(preferencesManager.getString(AuthenticationLocalDataSourceImpl.emailKey))
         .thenAnswer((_) async => tUser.email);
     when(preferencesManager.getString(AuthenticationLocalDataSourceImpl.passwordKey))
@@ -69,6 +73,7 @@ void _testGetUserGroup(){
 
   test('shold call the specified methods', ()async{
     await localDataSource.getUser();
+    verify(preferencesManager.getString(AuthenticationLocalDataSourceImpl.id));
     verify(preferencesManager.getString(AuthenticationLocalDataSourceImpl.emailKey));
     verify(preferencesManager.getString(AuthenticationLocalDataSourceImpl.passwordKey));
   });
@@ -82,11 +87,12 @@ void _testGetUserGroup(){
 void _testSetUserGroup(){
   late User tUser;
   setUp((){
-    tUser = const User(email: 'email', password: 'password');
+    tUser = User(id: 0, email: 'email', password: 'password');
   });
 
   test('shold call the specified methods', ()async{
     await localDataSource.setUser(tUser);
+    verify(preferencesManager.setString(AuthenticationLocalDataSourceImpl.id, '${tUser.id}'));
     verify(preferencesManager.setString(AuthenticationLocalDataSourceImpl.emailKey, tUser.email));
     verify(preferencesManager.setString(AuthenticationLocalDataSourceImpl.passwordKey, tUser.password));
   });
@@ -95,11 +101,28 @@ void _testSetUserGroup(){
 void _testResetAppGroup(){
   test('shold call the specified methods', ()async{
     await localDataSource.resetApp();
-    verify(preferencesManager.remove(AuthenticationLocalDataSourceImpl.accessTokenKey));
-    verify(preferencesManager.remove(AuthenticationLocalDataSourceImpl.emailKey));
-    verify(preferencesManager.remove(AuthenticationLocalDataSourceImpl.passwordKey));
+    verify(preferencesManager.clear());
     verify(dbManager.removeAll(pdfFilesTableName));
     verify(dbManager.removeAll(translationsTableName));
     verify(dbManager.removeAll(translFilesTableName));
+  });
+}
+
+void _testGetIdGroup(){
+  late int tId;
+  setUp((){
+    tId = 3000;
+    when(preferencesManager.getString(any))
+        .thenAnswer((_) async => '$tId');
+  });
+
+  test('should call the specified methods', ()async{
+    await localDataSource.getId();
+    verify(preferencesManager.getString(AuthenticationLocalDataSourceImpl.id));
+  });
+
+  test('should return the expected result', ()async{
+    final result = await localDataSource.getId();
+    expect(result, tId);
   });
 }

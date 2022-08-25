@@ -43,6 +43,10 @@ class MockSharedPreferencesManager extends _i1.Mock
       Invocation.method(#remove, [key]),
       returnValue: _i3.Future<void>.value(),
       returnValueForMissingStub: _i3.Future<void>.value()) as _i3.Future<void>);
+  @override
+  _i3.Future<void> clear() => (super.noSuchMethod(Invocation.method(#clear, []),
+      returnValue: _i3.Future<void>.value(),
+      returnValueForMissingStub: _i3.Future<void>.value()) as _i3.Future<void>);
 }
 
 /// A class which mocks [DatabaseManager].

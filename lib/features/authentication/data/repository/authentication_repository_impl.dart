@@ -19,9 +19,11 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository{
   Future<Either<AuthenticationFailure, void>> login(User user)async{
     return await _manageFunctionExceptions<void>(()async{
       final accessToken = await remoteDataSource.login(user);
-        await localDataSource.setUser(user);
-        await localDataSource.setAccessToken(accessToken);
-        return const Right(null);
+      final userId = await remoteDataSource.getUserId(accessToken);
+      final newUser = User(id: userId, email: user.email, password: user.password);
+      await localDataSource.setUser(newUser);
+      await localDataSource.setAccessToken(accessToken);
+      return const Right(null);
     });
   }
 
@@ -38,6 +40,9 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository{
     return await _manageFunctionExceptions<void>(()async{
       final user = await localDataSource.getUser();
       final accessToken = await remoteDataSource.login(user);
+      final id = await remoteDataSource.getUserId(accessToken);
+      final newUser = User(id: id, email: user.email, password: user.password);
+      await localDataSource.setUser(newUser);
       await localDataSource.setAccessToken(accessToken);
       return const Right(null);
     });

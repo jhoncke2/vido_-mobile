@@ -2,6 +2,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/shared_preferences_manager.dart';
 import 'package:vido/features/files_navigator/external/data_sources/files_navigator_local_data_source_impl.dart';
 import 'files_navigator_local_data_source_impl_test.mocks.dart';
@@ -57,20 +58,42 @@ void _testSetCurrentParentFolderIdGroup(){
 }
 
 void _testGetFilesTreeLvlGroup(){
-  late int tLvl;
-  setUp((){
-    tLvl = 10;
-    when(sharedPreferencesManager.getString(any)).thenAnswer((_) async => '$tLvl');
+  late int? tLvl;
+
+  group('when all goes good', (){
+    setUp((){
+      tLvl = 10;
+      when(sharedPreferencesManager.getString(any)).thenAnswer((_) async => '$tLvl');
+    });
+
+    test('should call the specified methods', ()async{
+      await localDataSource.getFilesTreeLevel();
+      verify(sharedPreferencesManager.getString(FilesNavigatorLocalDataSourceImpl.filesTreeLvlKey));
+    });
+    
+    test('should return the expected result when all goes good', ()async{
+      when(sharedPreferencesManager.getString(any)).thenAnswer((_) async => '$tLvl');
+      final result = await localDataSource.getFilesTreeLevel();
+      expect(result, tLvl);
+    });
   });
 
-  test('should call the specified methods', ()async{
-    await localDataSource.getFilesTreeLevel();
-    verify(sharedPreferencesManager.getString(FilesNavigatorLocalDataSourceImpl.filesTreeLvlKey));
-  });
-  
-  test('should return the expected result', ()async{
+  test('should return the expected result when there is an empty data storage exception', ()async{
+    when(sharedPreferencesManager.getString(any))
+        .thenThrow(const StorageException(message: 'empty data', type: StorageExceptionType.EMPTYDATA));
     final result = await localDataSource.getFilesTreeLevel();
-    expect(result, tLvl);
+    expect(result, null);
+  });
+
+  test('should throw the exception when there is another exception', ()async{
+    when(sharedPreferencesManager.getString(any))
+        .thenThrow(const StorageException(message: 'empty data', type: StorageExceptionType.NORMAL));
+    try{
+      await localDataSource.getFilesTreeLevel();
+      fail('debería lanzar un exception');
+    }catch(exception){
+      expect(exception, const StorageException(message: 'empty data', type: StorageExceptionType.NORMAL));
+    }
   });
 }
 

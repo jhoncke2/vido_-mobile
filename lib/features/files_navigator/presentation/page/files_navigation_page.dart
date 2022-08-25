@@ -6,6 +6,7 @@ import 'package:vido/features/authentication/presentation/bloc/authentication_bl
 import 'package:vido/features/files_navigator/presentation/bloc/files_navigator_bloc.dart';
 import 'package:vido/features/files_navigator/presentation/widgets/files_view/app_files_view.dart';
 import 'package:vido/features/files_navigator/presentation/widgets/pdf_file_view.dart';
+import 'package:vido/features/files_navigator/presentation/widgets/search_appearances_view.dart';
 import '../../../../injection_container.dart';
 import '../widgets/files_navigator_app_bar.dart';
 import '../widgets/translations_files_view.dart';
@@ -30,8 +31,10 @@ class FilesNavigationPage extends StatelessWidget {
                   _managePostFrameCallback(blocContext, state);
                   if(state is OnAppFiles){
                     return AppFilesView();
-                  }else if(state is OnPdfFile){
+                  }else if(state is OnPdf){
                     return PdfFileView();
+                  }else if(state is OnSearchAppearances){
+                    return SearchAppearancesView();
                   }else{
                     return Expanded(
                       child: Center(

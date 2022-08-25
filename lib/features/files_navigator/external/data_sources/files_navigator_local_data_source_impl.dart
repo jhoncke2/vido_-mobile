@@ -1,3 +1,4 @@
+import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/shared_preferences_manager.dart';
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_local_data_source.dart';
 
@@ -22,9 +23,19 @@ class FilesNavigatorLocalDataSourceImpl implements FilesNavigatorLocalDataSource
   }
 
   @override
-  Future<int> getFilesTreeLevel()async{
-    final stringLvl = await sharedPreferencesManager.getString(filesTreeLvlKey);
-    return int.parse(stringLvl);
+  Future<int?> getFilesTreeLevel()async{
+    try{
+      final stringLvl = await sharedPreferencesManager.getString(filesTreeLvlKey);
+      return int.parse(stringLvl);
+    }on StorageException catch(exception){
+      if(exception.type == StorageExceptionType.EMPTYDATA){
+        return null;
+      }else{
+        rethrow;
+      }
+    }on Exception{
+      rethrow;
+    }
   }
   
   @override

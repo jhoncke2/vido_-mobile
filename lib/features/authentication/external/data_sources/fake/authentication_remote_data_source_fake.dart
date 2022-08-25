@@ -11,4 +11,9 @@ class AuthenticationRemoteDataSourceFake implements AuthenticationRemoteDataSour
   Future<String> refreshAccessToken(String oldAccessToken)async{
     return oldAccessToken.substring(0, (oldAccessToken.length/2).ceil()) + 'new_acc_token';
   }
+  
+  @override
+  Future<int> getUserId(String accessToken)async{
+    return 0;
+  }
 }

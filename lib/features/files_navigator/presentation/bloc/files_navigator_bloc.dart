@@ -1,12 +1,14 @@
 import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:vido/core/domain/translations_transmitter.dart';
+import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
 import 'package:vido/features/files_navigator/presentation/files_transmitter/files_transmitter.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/load_appearance_pdf.dart';
 import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
-import 'package:vido/features/files_navigator/presentation/use_cases/load_pdf.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/load_file_pdf.dart';
 import '../use_cases/load_folder_brothers.dart';
 import '../use_cases/load_folder_children.dart';
 import '../use_cases/search.dart';
@@ -15,22 +17,29 @@ part 'files_navigator_event.dart';
 part 'files_navigator_state.dart';
 
 class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> {
+
+  static const generalErrorMessage = 'Ha ocurrido un error inesperado';
+  
   final LoadFolderChildren loadFolderChildren;
   final LoadFolderBrothers loadFolderBrothers;
-  final LoadPdf loadPdf;
+  final LoadFilePdf loadFilePdf;
+  final LoadAppearancePdf loadAppearancePdf;
   final Search search;
 
   late List<AppFile> _lastAppFiles;
   final AppFilesTransmitter appFilesTransmitter;
   final TranslationsFilesTransmitter translationsFilesTransmitter;
-  
+  final TextEditingController searchController;
+
   FilesNavigatorBloc({
     required this.loadFolderChildren,
     required this.loadFolderBrothers,
-    required this.loadPdf,
+    required this.loadFilePdf,
+    required this.loadAppearancePdf,
     required this.search,
     required this.appFilesTransmitter,
-    required this.translationsFilesTransmitter
+    required this.translationsFilesTransmitter,
+    required this.searchController
   }): super(OnFilesNavigatorInitial()) {
     _lastAppFiles = [];
     appFilesTransmitter.appFiles.listen((files){
@@ -43,6 +52,14 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
         await _selectAppFile(emit, event);
       }else if(event is SelectFilesParentEvent){
         await _selectFilesParent(emit);
+      }else if(event is SearchEvent){
+        await _search(emit, event);
+      }else if(event is RemoveSearchEvent){
+        _removeSearch(emit);
+      }else if(event is SelectSearchAppearanceEvent){
+        await _selectSearchAppearance(emit, event);
+      }else if(event is BackToSearchAppearancesEvent){
+        _backToSearchAppearances(emit);
       }
     });
   }
@@ -57,7 +74,7 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
     emit(OnLoadingAppFiles());
     final appFile = event.appFile;
     if(appFile is PdfFile){
-      final pdfResult = await loadPdf(appFile);
+      final pdfResult = await loadFilePdf(appFile);
       pdfResult.fold((error){
         emit(OnPdfFileError(
           message: error.message.isNotEmpty? error.message : 'Ha ocurrido un error inesperado',
@@ -76,6 +93,44 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
     emit(OnLoadingAppFiles());
     await loadFolderBrothers();
     emit(OnAppFiles());
+  }
+
+  Future<void> _search(Emitter<FilesNavigatorState> emit, SearchEvent event)async{
+    if(searchController.text.isNotEmpty){
+      emit(OnLoadingAppFiles());
+      final appearancesResult = await search(searchController.text);
+      appearancesResult.fold((failure){
+        final message = failure.message.isNotEmpty? failure.message : generalErrorMessage;
+        emit(OnSearchAppearancesError(message: message));
+      }, (appearances){
+        emit(OnSearchAppearancesSuccessShowing(appearances: appearances));
+      });
+    }
+  }
+
+  void _removeSearch(Emitter<FilesNavigatorState> emit){
+    searchController.clear();
+    emit(OnAppFiles());
+  }
+
+  Future<void> _selectSearchAppearance(Emitter<FilesNavigatorState> emit, SelectSearchAppearanceEvent event)async{
+    final appearances = (state as OnSearchAppearancesSuccess).appearances;
+    emit(OnLoadingAppFiles());
+    final pdfResult = await loadAppearancePdf(event.appearance);
+    pdfResult.fold((failure){
+      final message = failure.message.isNotEmpty? failure.message : generalErrorMessage;
+      emit(OnSearchAppearancesPdfError(
+        message: message,
+        appearances: appearances
+      ));
+    }, (pdf){
+      emit(OnSearchAppearancesPdfLoaded(pdf: pdf, appearance: event.appearance, appearances: appearances));
+    });
+  }
+
+  void _backToSearchAppearances(Emitter<FilesNavigatorState> emit){
+    final appearances = (state as OnSearchAppearancesPdf).appearances;
+    emit(OnSearchAppearancesSuccessShowing(appearances: appearances));
   }
 
   List<AppFile> get lastAppFiles => _lastAppFiles;

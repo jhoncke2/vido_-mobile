@@ -5,6 +5,7 @@ abstract class SharedPreferencesManager{
   Future<String> getString(String key);
   Future<void> setString(String key, String value);
   Future<void> remove(String key);
+  Future<void> clear();
 }
 
 class SharedPreferencesManagerImpl implements SharedPreferencesManager{
@@ -34,5 +35,10 @@ class SharedPreferencesManagerImpl implements SharedPreferencesManager{
   @override
   Future<void> remove(String key)async{
     await preferences.remove(key);
+  }
+
+  @override
+  Future<void> clear()async{
+    await preferences.clear();
   }
 }

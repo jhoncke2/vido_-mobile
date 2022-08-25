@@ -8,12 +8,12 @@ import 'package:vido/features/files_navigator/domain/entities/search_appearance.
 import 'package:vido/features/files_navigator/external/data_sources/fake/tree.dart';
 import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/folder.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import '../../../../../core/domain/exceptions.dart';
 import '../../../../../core/utils/http_responses_manager.dart';
 import '../../../../../core/utils/path_provider.dart';
 
 class FilesNavigatorRemoteDataSourceFake implements FilesNavigatorRemoteDataSource{
+  static const _examplePdfUrl = 'www.africau.edu/images/default/sample.pdf';
   final PathProvider pathProvider;
   final HttpResponsesManager httpResponsesManager;
   final Tree<int, AppFile> filesTree;
@@ -24,22 +24,30 @@ class FilesNavigatorRemoteDataSourceFake implements FilesNavigatorRemoteDataSour
   });
 
   @override
-  Future<List<AppFile>> getChildren(int folderId, FileParentType parentType, String accessToken)async{
-    return filesTree.getChildren(folderId);
+  Future<Folder> getFolder(int folderId, FileParentType parentType, String accessToken)async{
+    final folder = filesTree.getAt(folderId) as Folder;
+    if(folder.children.isEmpty){
+      folder.children.addAll( filesTree.getChildren(folder.id) );
+    }
+    return folder;
   }
 
   @override
-  Future<File> getGeneratedPdf(PdfFile file, String accessToken)async{
+  Future<File> getGeneratedPdf(String fileUrl, String accessToken)async{
     try{
       Completer<File> completer = Completer();
-      final pathParts = file.url.split('/');
+      final url = fileUrl
+          ..replaceAll(RegExp('https://'), '')
+          ..replaceAll('\\', '');
+      final urlParts = url.split('/');
       var request = await HttpClient().getUrl(
-        Uri.http(pathParts[2],'${pathParts[3]}/${pathParts[4]}/${pathParts[5]}')
+        Uri.https(urlParts[0], urlParts.sublist(1, urlParts.length).join('/'))
       );
       final dirPath = await pathProvider.generatePath();
       final response = await request.close();
       final bytes = await httpResponsesManager.getBytesFromResponse(response);
-      final pdf = File('$dirPath/pdf_${file.id}');
+      final date = DateTime.now();
+      final pdf = File('$dirPath/pdf_${date.year}${date.month}${date.day}${date.hour}${date.second}${date.millisecond}');
       await pdf.writeAsBytes(bytes, flush: true);
       completer.complete(pdf);
       return pdf;
@@ -62,7 +70,12 @@ class FilesNavigatorRemoteDataSourceFake implements FilesNavigatorRemoteDataSour
 
   @override
   Future<List<SearchAppearance>> search(String text)async{
-    // TODO: implement search
-    throw UnimplementedError();
+    return [
+      SearchAppearance(title: 'Archivo 1', text: 'Lo siguiente $text está escrito', pdfUrl: _examplePdfUrl, pdfPage: 1),
+      SearchAppearance(title: 'Archivo $text', text: 'Archivo $text', pdfUrl: _examplePdfUrl, pdfPage: null),
+      SearchAppearance(title: 'Archivo 3', text: 'El $text está escrito', pdfUrl: _examplePdfUrl, pdfPage: 0),
+      SearchAppearance(title: 'Archivo 4', text: 'Lo siguiente $text escrito', pdfUrl: _examplePdfUrl, pdfPage: 1),
+      SearchAppearance(title: 'Archivo 5', text: 'No puede $text estar escrito', pdfUrl: _examplePdfUrl, pdfPage: 0)
+    ];
   }
 }

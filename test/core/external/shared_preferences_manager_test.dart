@@ -4,7 +4,6 @@ import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/shared_preferences_manager.dart';
-
 import 'shared_preferences_manager_test.mocks.dart';
 
 late SharedPreferencesManagerImpl preferencesManager;
@@ -20,6 +19,7 @@ void main(){
   group('get string', _testGetStringGroup);
   group('set string', _testSetStringGroup);
   group('remove string', _testRemoveGroup);
+  group('clear', _testClearGroup);
 }
 
 void _testGetStringGroup(){
@@ -113,5 +113,15 @@ void _testRemoveGroup(){
     await preferencesManager.remove(tKey);
     verify(preferences.remove(tKey));
   });
+}
 
+void _testClearGroup(){
+  setUp((){
+    when(preferences.clear())
+        .thenAnswer((_) async => true);
+  });
+  test('should call the specified methods', ()async{
+    await preferencesManager.clear();
+    verify(preferences.clear());
+  });
 }

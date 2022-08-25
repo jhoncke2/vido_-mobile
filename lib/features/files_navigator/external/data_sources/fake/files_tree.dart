@@ -6,8 +6,8 @@ import '../../../../photos_translator/domain/entities/pdf_file.dart';
 
 final appFiles = Tree<int, AppFile>(
   root: TreeNode(
-    key: 10000, 
-    value: Folder(id: 10000, name: 'root', parentId: -1, children: []), 
+    key: 0, 
+    value: Folder(id: 0, name: 'root', parentId: -1, children: []), 
     children: [
       TreeNode(
         key: 1, 
@@ -21,7 +21,7 @@ final appFiles = Tree<int, AppFile>(
             ]
           ),
           TreeNode(
-            key: 3, 
+            key: 3,
             value: const PdfFile(id: 3, name: 'Factura 2', parentId: 0, url: 'http://www.africau.edu/images/default/sample.pdf'), 
             children: [
 

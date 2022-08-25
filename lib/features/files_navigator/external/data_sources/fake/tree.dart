@@ -20,6 +20,10 @@ class Tree<K, V>{
     return parents.last.value;
   }
 
+  V getAt(K key){
+    return _getSearched(key, root)!.value;
+  }
+
   bool _getSearchedParent(K searchedKey, TreeNode<K, V> currentNode, List<TreeNode<K, V>> parents){
     if(searchedKey == currentNode.key){
       return true;
@@ -53,7 +57,7 @@ class Tree<K, V>{
 
   TreeNode<K, V>? _getSearched(K searchedKey, TreeNode<K, V> currentNode){
     if(searchedKey == currentNode.key){
-      return currentNode; 
+      return currentNode;
     }else{
       final currentChildren = currentNode.children;
       for(final child in currentChildren){

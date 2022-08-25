@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:vido/core/external/app_files_remote_adapter.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
@@ -57,13 +58,15 @@ import 'package:vido/features/photos_translator/external/photos_translator_remot
 import 'package:vido/features/photos_translator/presentation/bloc/photos_translator_bloc.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_translations_file.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/end_photos_translations_file.dart';
-import 'package:vido/features/files_navigator/presentation/use_cases/load_pdf.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/load_file_pdf.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/translate_photo.dart';
 import 'features/authentication/domain/use_cases/logout.dart';
-import 'features/files_navigator/domain/user_cases/load_pdf_impl.dart';
+import 'features/files_navigator/domain/user_cases/load_appearance_pdf_impl.dart';
+import 'features/files_navigator/domain/user_cases/load_file_pdf_impl.dart';
 import 'features/files_navigator/domain/user_cases/load_folder_brothers_impl.dart';
 import 'features/files_navigator/domain/user_cases/load_folder_children_impl.dart';
 import 'features/files_navigator/domain/user_cases/search_impl.dart';
+import 'features/files_navigator/presentation/use_cases/load_appearance_pdf.dart';
 import 'features/photos_translator/domain/use_cases/create_folder_impl.dart';
 import 'features/photos_translator/external/fake/photos_translator_remote_data_source_fake.dart';
 import 'features/photos_translator/external/photos_translator_local_adapter.dart';
@@ -194,36 +197,43 @@ Future<void> init() async {
       remoteDataSource: sl<FilesNavigatorRemoteDataSource>(),
       appFilesReceiver: sl<AppFilesTransmitter>(),
       userExtraInfoGetter: sl<AuthenticationLocalDataSource>()
-    ),
-  );
-  sl.registerLazySingleton<LoadPdf>(
-    () => LoadPdfImpl(
-      repository: sl<FilesNavigatorRepository>()
-    ),
+    )
   );
   sl.registerLazySingleton<LoadFolderChildren>(
     () => LoadFolderChildrenImpl(
       repository: sl<FilesNavigatorRepository>()
-    ),
+    )
   );
   sl.registerLazySingleton<LoadFolderBrothers>(
     () => LoadFolderBrothersImpl(
       repository: sl<FilesNavigatorRepository>()
-    ),
+    )
   );
-   sl.registerLazySingleton<Search>(
+  sl.registerLazySingleton<LoadFilePdf>(
+    () => LoadFilePdfImpl(
+      repository: sl<FilesNavigatorRepository>()
+    )
+  );
+  sl.registerLazySingleton<LoadAppearancePdf>(
+    () => LoadAppearancePdfImpl(
+      repository: sl<FilesNavigatorRepository>()
+    )
+  );
+  sl.registerLazySingleton<Search>(
     () => SearchImpl(
       repository: sl<FilesNavigatorRepository>()
-    ),
+    )
   );
   sl.registerFactory<FilesNavigatorBloc>(
     () => FilesNavigatorBloc(
       loadFolderChildren: sl<LoadFolderChildren>(), 
       loadFolderBrothers: sl<LoadFolderBrothers>(), 
-      loadPdf: sl<LoadPdf>(),
+      loadFilePdf: sl<LoadFilePdf>(),
+      loadAppearancePdf: sl<LoadAppearancePdf>(),
       search: sl<Search>(),
       appFilesTransmitter: sl<AppFilesTransmitter>(), 
-      translationsFilesTransmitter: sl<TranslationsFilesTransmitter>()
+      translationsFilesTransmitter: sl<TranslationsFilesTransmitter>(),
+      searchController: TextEditingController(text: '')
     )
   );
   // ********************************************************* Authentication

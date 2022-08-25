@@ -5,6 +5,7 @@ import '../../features/photos_translator/domain/entities/pdf_file.dart';
 
 abstract class AppFilesRemoteAdapter{
   List<AppFile> getAppFilesFromJson(List<Map<String, dynamic>> jsonList);
+  Folder getFolderFromJson(Map<String, dynamic> json);
 }
 
 class AppFilesRemoteAdapterImpl implements AppFilesRemoteAdapter{
@@ -25,5 +26,31 @@ class AppFilesRemoteAdapterImpl implements AppFilesRemoteAdapter{
               url: json['route']
             )
       ).toList();
+    
+  List<AppFile> _getAppFilesFromType(List<Map<String, dynamic>> jsonList, String type) =>
+      jsonList.map<AppFile>(
+        (json) => (type == 'folder') ? Folder(
+          id: json['id'], 
+          name: json['name'], 
+          parentId: json['padre'], 
+          children: getAppFilesFromJson(json['children'].cast<Map<String, dynamic>>())
+        ) : PdfFile(
+          id: json['id'], 
+          name: json['name'], 
+          parentId: json['parent_id'], 
+          url: json['route']
+        )
+      ).toList();
+      
 
+  @override
+  Folder getFolderFromJson(Map<String, dynamic> json) => Folder(
+    id: json['id'],
+    name: json['name'],
+    parentId: json['padre'],
+    children: [
+      ..._getAppFilesFromType(json['carpetas'].cast<Map<String, dynamic>>(), 'folder'),
+      ..._getAppFilesFromType(json['archivos'].cast<Map<String, dynamic>>(), 'file')
+    ]
+  );
 }

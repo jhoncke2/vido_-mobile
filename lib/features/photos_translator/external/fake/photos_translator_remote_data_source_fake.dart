@@ -48,29 +48,6 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
     
     return pdfFile;
   }
-
-  @override
-  Future<File> getGeneratedPdf(PdfFile file, String accessToken)async{
-    try{
-      Completer<File> completer = Completer();
-      final pathParts = file.url.split('/');
-      var request = await HttpClient().getUrl(
-        Uri.https(pathParts[0], pathParts[1])
-      );
-      final dirPath = await pathProvider.generatePath();
-      final response = await request.close();
-      final bytes = await httpResponsesManager.getBytesFromResponse(response);
-      final pdf = File('$dirPath/pdf_${file.id}');
-      await pdf.writeAsBytes(bytes, flush: true);
-      completer.complete(pdf);
-      return pdf;
-    }catch(err, stackTrace){
-      print('********************** error ***************************');
-      print(err);
-      print(stackTrace);
-      throw const ServerException(type: ServerExceptionType.NORMAL);
-    }
-  }
   
   @override
   Future<void> createFolder(String name, int parentId, FileParentType parentType, String accessToken)async{

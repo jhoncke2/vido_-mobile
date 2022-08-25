@@ -6,6 +6,7 @@ import 'package:vido/core/external/app_files_remote_adapter.dart';
 import 'package:vido/core/external/remote_data_source.dart';
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_remote_data_source.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
+import 'package:vido/features/photos_translator/domain/entities/folder.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
 import 'package:http/http.dart' as http;
@@ -27,7 +28,7 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
     required this.adapter
   });
   @override
-  Future<List<AppFile>> getChildren(int folderId, FileParentType parentType, String accessToken)async{
+  Future<Folder> getFolder(int folderId, FileParentType parentType, String accessToken)async{
     final response = await executeGeneralService(()async{
       final body = {
         'directory_id': folderId,
@@ -40,8 +41,8 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
       );
       return result;
     });
-    final appFiles = adapter.getAppFilesFromJson(jsonDecode(response.body).cast<Map<String, dynamic>>());
-    return appFiles;
+    final folder = adapter.getFolderFromJson(jsonDecode(response.body));
+    return folder;
   }
   
   @override
@@ -51,16 +52,20 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
   }
 
   @override
-  Future<File> getGeneratedPdf(PdfFile file, String accessToken)async{
+  Future<File> getGeneratedPdf(String fileUrl, String accessToken)async{
     try{
       Completer<File> completer = Completer();
+      final url = fileUrl.split('https://')[1]
+          ..replaceAll(RegExp('\\'), '');
+      final urlParts = url.split('/');
       var request = await HttpClient().getUrl(
-        getUri('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$getGeneratedPdfUrl${file.id}')
+        Uri.https(urlParts[0], urlParts.sublist(1, urlParts.length).join('/'))
       );
       final response = await request.close();
       final dirPath = await pathProvider.generatePath();
       final bytes = await httpResponsesManager.getBytesFromResponse(response);
-      final pdf = File('$dirPath/pdf_${file.id}');
+      final date = DateTime.now();
+      final pdf = File('$dirPath/pdf_${date.year}${date.month}${date.day}${date.hour}${date.second}${date.millisecond}');
       await pdf.writeAsBytes(bytes, flush: true);
       completer.complete(pdf);
       return pdf;
