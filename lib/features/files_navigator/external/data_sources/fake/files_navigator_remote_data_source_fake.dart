@@ -37,11 +37,11 @@ class FilesNavigatorRemoteDataSourceFake implements FilesNavigatorRemoteDataSour
     try{
       Completer<File> completer = Completer();
       final url = fileUrl
-          ..replaceAll(RegExp('https://'), '')
-          ..replaceAll('\\', '');
+          .replaceAll(RegExp('http://'), '')
+          .replaceAll('\\', '');
       final urlParts = url.split('/');
       var request = await HttpClient().getUrl(
-        Uri.https(urlParts[0], urlParts.sublist(1, urlParts.length).join('/'))
+        Uri.http(urlParts[0], urlParts.sublist(1, urlParts.length).join('/'))
       );
       final dirPath = await pathProvider.generatePath();
       final response = await request.close();
@@ -69,13 +69,38 @@ class FilesNavigatorRemoteDataSourceFake implements FilesNavigatorRemoteDataSour
   }
 
   @override
-  Future<List<SearchAppearance>> search(String text)async{
+  Future<List<SearchAppearance>> search(String text, String accessToken)async{
     return [
-      SearchAppearance(title: 'Archivo 1', text: 'Lo siguiente $text está escrito', pdfUrl: _examplePdfUrl, pdfPage: 1),
-      SearchAppearance(title: 'Archivo $text', text: 'Archivo $text', pdfUrl: _examplePdfUrl, pdfPage: null),
-      SearchAppearance(title: 'Archivo 3', text: 'El $text está escrito', pdfUrl: _examplePdfUrl, pdfPage: 0),
-      SearchAppearance(title: 'Archivo 4', text: 'Lo siguiente $text escrito', pdfUrl: _examplePdfUrl, pdfPage: 1),
-      SearchAppearance(title: 'Archivo 5', text: 'No puede $text estar escrito', pdfUrl: _examplePdfUrl, pdfPage: 0)
+      SearchAppearance(
+        title: '<h2>Archivo 1</h2>', 
+        text: '<h3>Bajo la presente se expone el día de hoy que <strong>$text</strong> podría estar escrito</h3>', 
+        pdfUrl: _examplePdfUrl, 
+        pdfPage: 1
+      ),
+      SearchAppearance(
+        title: '<h2>Archivo <strong>$text</strong></h2>', 
+        text: '', 
+        pdfUrl: _examplePdfUrl, 
+        pdfPage: null
+      ),
+      SearchAppearance(
+        title: '<h2>Documento de petición</h2>', 
+        text: '<h3>Se prolongan las reuniones hasta previo aviso y <strong>$text</strong> no puede ser definido aún</h3>', 
+        pdfUrl: _examplePdfUrl, 
+        pdfPage: 0
+      ),
+      SearchAppearance(
+        title: '<h2>Contrataciones auditorías</h2>', 
+        text: '<h3>Lo siguiente (<strong>$text</strong>) puede o no estar presente, dependiendo de las renovaciones de los contratos</h3>', 
+        pdfUrl: _examplePdfUrl, 
+        pdfPage: 1
+      ),
+      SearchAppearance(
+        title: '<h2>Renovaciones contratos</h2>', 
+        text: '<h3>No puede aún haber claridad acerca del pasado tema. <strong>$text</strong> será definido próximamente.</h3>', 
+        pdfUrl: _examplePdfUrl, 
+        pdfPage: 0
+      )
     ];
   }
 }

@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:async';
-import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/persistence.dart';
 import 'package:vido/core/external/remote_data_source.dart';
 import 'package:vido/core/utils/http_responses_manager.dart';
@@ -36,7 +34,7 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
   }
 
   @override
-  Future<TranslationsFile> createTranslationsFile(String name, int parentId, FileParentType parentType, String accessToken)async{
+  Future<TranslationsFile> createTranslationsFile(String name, int parentId, String accessToken)async{
     return TranslationsFile(id: Random().nextInt(99999999), name: name, completed: false, translations: const []);
   }
 
@@ -50,8 +48,10 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
   }
   
   @override
-  Future<void> createFolder(String name, int parentId, FileParentType parentType, String accessToken)async{
+  Future<void> createFolder(String name, int parentId, String accessToken)async{
     final newFolder = Folder(id: Random().nextInt(999999999), name: name, parentId: parentId, children: []);
+    final parentFolder = filesTree.getAt(parentId);
+    (parentFolder as Folder).children.add(newFolder);
     filesTree.addAt(parentId, newFolder);
   }
 

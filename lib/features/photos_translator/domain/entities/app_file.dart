@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 abstract class AppFile extends Equatable{
   final int id;
   final String name;
-  final int parentId;
+  final int? parentId;
   const AppFile({
     required this.id, 
     required this.name,

@@ -30,6 +30,13 @@ abstract class RemoteDataSource{
     };
   }
 
+  Map<String, String> createAuthorizationMultipartHeaders(String accessToken){
+    return {
+      'Authorization':'Bearer $accessToken',
+      'Content-Type':'application/x-www-form-urlencoded'
+    }; 
+  }
+
   Future<http.Response> executeGeneralService(
     Future<http.Response> Function() service
   )async{

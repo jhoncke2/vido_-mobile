@@ -7,8 +7,6 @@ import 'package:vido/core/external/remote_data_source.dart';
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_remote_data_source.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
 import 'package:vido/features/photos_translator/domain/entities/folder.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/domain/exceptions.dart';
 import '../../../../core/utils/http_responses_manager.dart';
@@ -17,6 +15,7 @@ import '../../../../core/utils/path_provider.dart';
 class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements FilesNavigatorRemoteDataSource{
   static const baseFilesNavigationUrl = 'file-system';
   static const getGeneratedPdfUrl = 'show-pdf/';
+  static const searchUrl = 'search-pdf/';
   final PathProvider pathProvider;
   final HttpResponsesManager httpResponsesManager;
   final http.Client client;
@@ -32,7 +31,7 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
     final response = await executeGeneralService(()async{
       final body = {
         'directory_id': folderId,
-        'type': (parentType == FileParentType.user)? 'root' : 'carpeta'
+        'type': (parentType == FileParentType.user)? 'root' : 'directorio'
       };
       final result = await client.post(
         getUri('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$baseFilesNavigationUrl'),
@@ -44,25 +43,21 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
     final folder = adapter.getFolderFromJson(jsonDecode(response.body));
     return folder;
   }
-  
-  @override
-  Future<AppFile> getParentWithBrothers(int folderId, String accessToken)async{
-    // TODO: implement getChildren
-    throw UnimplementedError();
-  }
 
   @override
   Future<File> getGeneratedPdf(String fileUrl, String accessToken)async{
     try{
       Completer<File> completer = Completer();
-      final url = fileUrl.split('https://')[1]
-          ..replaceAll(RegExp('\\'), '');
+      final url = fileUrl
+          .replaceAll(RegExp('https://'), '')
+          .replaceAll('\\', '');
       final urlParts = url.split('/');
       var request = await HttpClient().getUrl(
         Uri.https(urlParts[0], urlParts.sublist(1, urlParts.length).join('/'))
       );
-      final response = await request.close();
+      request.headers.set('Authorization', 'Bearer $accessToken');
       final dirPath = await pathProvider.generatePath();
+      final response = await request.close();
       final bytes = await httpResponsesManager.getBytesFromResponse(response);
       final date = DateTime.now();
       final pdf = File('$dirPath/pdf_${date.year}${date.month}${date.day}${date.hour}${date.second}${date.millisecond}');
@@ -70,7 +65,7 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
       completer.complete(pdf);
       return pdf;
     }catch(err, stackTrace){
-      print('********************** error ***************************');
+      print('********************** pdf error ***************************');
       print(err);
       print(stackTrace);
       throw const ServerException(type: ServerExceptionType.NORMAL);
@@ -78,8 +73,16 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
   }
 
   @override
-  Future<List<SearchAppearance>> search(String text)async{
-    // TODO: implement search
-    throw UnimplementedError();
+  Future<List<SearchAppearance>> search(String text, String accessToken)async{
+    print('***************** search *****************************');
+    print('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$searchUrl$text');
+    final response = await super.executeGeneralService(()async{
+      return await client.get(
+        getUri('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$searchUrl$text'),
+        headers: super.createAuthorizationJsonHeaders(accessToken)
+      );
+    });
+    final appearances = adapter.getApearancesFromJson(jsonDecode(response.body).cast<Map<String, dynamic>>());
+    return appearances;
   }
 }

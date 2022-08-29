@@ -3,7 +3,6 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:vido/core/domain/file_parent_type.dart';
 import 'package:vido/core/external/translations_file_parent_folder_getter.dart';
 import 'package:vido/core/external/user_extra_info_getter.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_local_data_source.dart';
@@ -56,61 +55,29 @@ void _testCreatetranslatorsFileGroup() {
   late TranslationsFile tNewFile;
   late String tName;
   late String tAccessToken;
+  late int tParentFolderId;
   setUp(() {
     tName = 'new_name';
     tAccessToken = 'access_token';
     tNewFile = TranslationsFile(id: 0, name: tName, completed: false, translations: const []);
+    tParentFolderId = 10;
     when(userExtraInfoGetter.getAccessToken()).thenAnswer((_) async => tAccessToken);
-    when(remoteDataSource.createTranslationsFile(any, any, any, any))
+    when(remoteDataSource.createTranslationsFile(any, any, any))
         .thenAnswer((_) async => tNewFile);
+    when(translFileParentFolderGetter.getCurrentFileId())
+        .thenAnswer((_) async => tParentFolderId);
   });
 
-  group('when parent tree level is 0', (){
-    late int tUserId;
-    setUp((){
-      when(translFileParentFolderGetter.getFilesTreeLevel())
-          .thenAnswer((_) async => 0);
-      tUserId = 100;
-      when(userExtraInfoGetter.getId())
-          .thenAnswer((_) async => tUserId);
-    });
-
-    test('should call the specified methods', () async {
-      await photosTranslatorRepository.createTranslationsFile(tName);
-      verify(userExtraInfoGetter.getAccessToken());
-      verify(translFileParentFolderGetter.getFilesTreeLevel());
-      verify(remoteDataSource.createTranslationsFile(tName, tUserId, FileParentType.user, tAccessToken));
-      verify(localDataSource.createTranslationsFile(tNewFile));
-    });
-
-    test('should return the expected result', () async {
-      final result = await photosTranslatorRepository.createTranslationsFile(tName);
-      expect(result, Right(tNewFile.id));
-    });
+  test('should call the specified methods', () async {
+    await photosTranslatorRepository.createTranslationsFile(tName);
+    verify(userExtraInfoGetter.getAccessToken());
+    verify(remoteDataSource.createTranslationsFile(tName, tParentFolderId, tAccessToken));
+    verify(localDataSource.createTranslationsFile(tNewFile));
   });
-  
-  group('when parent tree level is 1', (){
-    late int tParentFolderId;
-    setUp((){
-      when(translFileParentFolderGetter.getFilesTreeLevel())
-          .thenAnswer((_) async => 1);
-      tParentFolderId = 10;
-      when(translFileParentFolderGetter.getCurrentFileId())
-          .thenAnswer((_) async => tParentFolderId);
-    });
 
-    test('should call the specified methods', () async {
-      await photosTranslatorRepository.createTranslationsFile(tName);
-      verify(userExtraInfoGetter.getAccessToken());
-      verify(translFileParentFolderGetter.getFilesTreeLevel());
-      verify(remoteDataSource.createTranslationsFile(tName, tParentFolderId, FileParentType.folder, tAccessToken));
-      verify(localDataSource.createTranslationsFile(tNewFile));
-    });
-
-    test('should return the expected result', () async {
-      final result = await photosTranslatorRepository.createTranslationsFile(tName);
-      expect(result, Right(tNewFile.id));
-    });
+  test('should return the expected result', () async {
+    final result = await photosTranslatorRepository.createTranslationsFile(tName);
+    expect(result, Right(tNewFile.id));
   });
 }
 
@@ -427,58 +394,26 @@ void _testTranslatePhotoGroup() {
 void _testCreateFolderGroup(){
   late String tName;
   late String tAccessToken;
-  
+  late int tFolderId;
   setUp((){
     tName = 'folder_name';
     tAccessToken = 'access_token';
+    tFolderId = 10;
     when(userExtraInfoGetter.getAccessToken())
         .thenAnswer((_) async => tAccessToken);
+    when(translFileParentFolderGetter.getCurrentFileId())
+        .thenAnswer((_) async => tFolderId);
   });
 
-  group('when the tree lvl is 0', (){
-    late int tUserId;
-    setUp((){
-      tUserId = 10;
-      when(translFileParentFolderGetter.getFilesTreeLevel())
-          .thenAnswer((_) async => 0);
-      when(userExtraInfoGetter.getId())
-          .thenAnswer((_) async => tUserId);
-    });
-
-    test('should call the specified methods', ()async{
-      await photosTranslatorRepository.createFolder(tName);
-      verify(translFileParentFolderGetter.getFilesTreeLevel());
-      verify(userExtraInfoGetter.getId());
-      verify(remoteDataSource.createFolder(tName, tUserId, FileParentType.user, tAccessToken));
-    });
-
-    test('should return the expected result when all goes good', ()async{
-      final result = await photosTranslatorRepository.createFolder(tName);
-      expect(result, const Right(null));
-    });
+  test('should call the specified methods', ()async{
+    await photosTranslatorRepository.createFolder(tName);
+    verify(translFileParentFolderGetter.getCurrentFileId());
+    verify(remoteDataSource.createFolder(tName, tFolderId, tAccessToken));
   });
 
-  group('when the tree lvl is 1', (){
-    late int tParentId;
-    setUp((){
-      tParentId = 11;
-      when(translFileParentFolderGetter.getFilesTreeLevel())
-          .thenAnswer((_) async => 1);
-      when(translFileParentFolderGetter.getCurrentFileId())
-          .thenAnswer((_) async => tParentId);
-    });
-
-    test('should call the specified methods', ()async{
-      await photosTranslatorRepository.createFolder(tName);
-      verify(translFileParentFolderGetter.getFilesTreeLevel());
-      verify(translFileParentFolderGetter.getCurrentFileId());
-      verify(remoteDataSource.createFolder(tName, tParentId, FileParentType.folder, tAccessToken));
-    });
-
-    test('should return the expected result when all goes good', ()async{
-      final result = await photosTranslatorRepository.createFolder(tName);
-      expect(result, const Right(null));
-    });
+  test('should return the expected result when all goes good', ()async{
+    final result = await photosTranslatorRepository.createFolder(tName);
+    expect(result, const Right(null));
   });
 }
 

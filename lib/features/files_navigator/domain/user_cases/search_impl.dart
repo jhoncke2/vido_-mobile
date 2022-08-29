@@ -3,15 +3,21 @@ import 'package:vido/features/files_navigator/domain/entities/search_appearance.
 import 'package:dartz/dartz.dart';
 import 'package:vido/features/files_navigator/domain/repository/files_navigator_repository.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart';
+import '../../../../core/domain/use_case_error_handler.dart';
 
 class SearchImpl implements Search{
+  final UseCaseErrorHandler errorHandler;
   final FilesNavigatorRepository repository;
   const SearchImpl({
-    required this.repository
+    required this.repository,
+    required this.errorHandler
   });
   @override
   Future<Either<FilesNavigationFailure, List<SearchAppearance>>> call(String text)async{
-    return await repository.search(text);
+    return await errorHandler.executeFunction<FilesNavigationFailure, List<SearchAppearance>>(
+      () => repository.search(text)
+    );
+     
   }
   
 }

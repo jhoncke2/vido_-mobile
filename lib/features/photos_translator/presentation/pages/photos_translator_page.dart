@@ -30,7 +30,7 @@ class PhotosTranslatorPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                height: dimens.getHeightPercentage(0.85),
+                height: dimens.getHeightPercentage(0.9),
                 child: BlocBuilder<PhotosTranslatorBloc, PhotosTranslatorState>(
                   builder: (context, state){
                     _managePostFrameCallBacks(context, state);

@@ -6,7 +6,6 @@ import 'package:vido/core/utils/http_responses_manager.dart';
 import 'package:vido/core/utils/path_provider.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_remote_adapter.dart';
-import '../../../core/domain/file_parent_type.dart';
 import '../data/data_sources/photos_translator_remote_data_source.dart';
 import 'package:http/http.dart' as http;
 import '../domain/entities/translation.dart';
@@ -17,7 +16,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   static const createTranslationsFileUrl = 'add-file';
   static const addTranslationUrl = 'add-pagine/';
   static const endTranslationsFileUrl = 'show-file/';
-  static const createFolderPdfUrl = 'add-directory/';
+  static const createFolderPdfUrl = 'add-directory';
   static const userParentType = 'user';
   static const folderParentType = 'directory';
   final http.Client client;
@@ -33,17 +32,15 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   });
 
   @override
-  Future<TranslationsFile> createTranslationsFile(String name, int parentId, FileParentType parentType, String accessToken)async{
+  Future<TranslationsFile> createTranslationsFile(String name, int parentId, String accessToken)async{
     final http.Response response = await super.executeGeneralService(()async{
       return await client.post(
         getUri('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$createTranslationsFileUrl'),
         body: jsonEncode({
           'name': name,
-          'directory_id': 1
+          'directory_id': parentId
         }),
-        headers: { 
-          'Content-Type': 'Application/json'
-        }
+        headers: super.createAuthorizationJsonHeaders(accessToken)
       );
     });
     final jsonResponse = await super.getResponseData(()async => jsonDecode(response.body));
@@ -52,9 +49,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
 
   @override
   Future<int> addTranslation(int fileId, Translation translation, String accessToken)async{
-    final headers = {
-      'Content-Type':'application/x-www-form-urlencoded'
-    };
+    final headers = super.createAuthorizationMultipartHeaders(accessToken);
     final fields = {
       'text': translation.text??''
     };
@@ -62,7 +57,12 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
       'field_name': 'image',
       'file': File(translation.imgUrl)
     };
+    print('************************* sending translation ***************************');
+    print(fileId);
+    print('------ --------');
+    print(translation.id);
     final response = await executeMultiPartRequestWithOneFile('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$addTranslationUrl$fileId', headers, fields, fileInfo);
+    print('----- translation response-----');
     return await super.getResponseData(
       () async => adapter.getTranslationFromJson( jsonDecode(response.body) ).id!
     );
@@ -84,7 +84,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   }
   
   @override
-  Future<void> createFolder(String name, int parentId, FileParentType parentType, String accessToken)async{
+  Future<void> createFolder(String name, int parentId, String accessToken)async{
     await super.executeGeneralService(()async{
       final body = {
         'name': name,

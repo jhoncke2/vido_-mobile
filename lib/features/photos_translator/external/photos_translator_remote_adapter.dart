@@ -87,12 +87,15 @@ class PhotosTranslatorRemoteAdapterImpl implements PhotosTranslatorRemoteAdapter
     ).toList();
     
     @override
-    Translation getTranslationFromJson(Map<String, dynamic> json) =>
-      Translation(
+    Translation getTranslationFromJson(Map<String, dynamic> json){
+      print(json['id']);
+      print(json['route']);
+      return Translation(
         id: json['id'], 
         imgUrl: json['route'], 
         text: json['text']
       );
+    }
       
     @override
     List<AppFile> getAppFilesFromJson(List<Map<String, dynamic>> jsonList) =>

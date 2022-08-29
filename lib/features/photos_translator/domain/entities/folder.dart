@@ -5,7 +5,7 @@ class Folder extends AppFile{
   const Folder({
     required int id,
     required String name,
-    required int parentId,
+    required int? parentId,
     required this.children
   }):super(
     id: id,

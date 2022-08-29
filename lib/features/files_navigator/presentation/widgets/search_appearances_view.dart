@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:vido/app_theme.dart';
 import 'package:vido/core/presentation/widgets/error_panel.dart';
 import 'package:vido/features/files_navigator/presentation/bloc/files_navigator_bloc.dart';
@@ -35,18 +36,22 @@ class SearchAppearancesView extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      Text(
-                        appearance.title,
-                        style: TextStyle(
-                          fontSize: dimens.subtitleTextSize
+                      SizedBox(
+                        height: dimens.getHeightPercentage(0.05),
+                        child: Html(
+                          data: appearance.title,
                         ),
                       ),
-                      Text(
-                        appearance.text,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: dimens.normalTextSize
+                      SizedBox(
+                        height: dimens.littleVerticalSpace,
+                      ),
+                      Visibility(
+                        visible: appearance.text.isNotEmpty,
+                        child: SizedBox(
+                          height: dimens.getHeightPercentage(0.1),
+                          child: Html(
+                            data: appearance.text,
+                          ),
                         ),
                       ),
                       Visibility(
@@ -55,7 +60,7 @@ class SearchAppearancesView extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Text(
-                              'En página ${appearance.pdfPage}',
+                              'En página ${appearance.pdfPage != null? appearance.pdfPage! + 1 : null}',
                               style: TextStyle(
                                 fontSize: dimens.littleTextSize,
                               ),

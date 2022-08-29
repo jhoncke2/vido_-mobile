@@ -35,10 +35,11 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
         if(treeLvl == null || treeLvl == 0){
           final userId = await userExtraInfoGetter.getId();
           folder = await remoteDataSource.getFolder(userId, FileParentType.user, accessToken);
+          await localDataSource.setCurrentFileId(folder.id);
         }else{
           final folderId = await localDataSource.getCurrentFileId();
           folder = await remoteDataSource.getFolder(folderId, FileParentType.folder, accessToken);
-          await localDataSource.setParentId(folder.parentId);
+          await localDataSource.setParentId(folder.parentId!);
         }
         if(treeLvl == null){
           await localDataSource.setFilesTreeLvl(0);
@@ -47,9 +48,10 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
         folder = await remoteDataSource.getFolder(id, FileParentType.folder, accessToken);
         await localDataSource.setCurrentFileId(id);
         await localDataSource.setFilesTreeLvl(treeLvl! + 1);
-        await localDataSource.setParentId(folder.parentId);
+        await localDataSource.setParentId(folder.parentId!);
       }
       await appFilesReceiver.setAppFiles(folder.children);
+      
       return const Right(null);
     });
   }
@@ -75,12 +77,12 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   @override
   Future<Either<FilesNavigationFailure, void>> loadFolderBrothers()async{
     return await _manageFunctionExceptions(()async{
-      final filesTreeLvl = (await localDataSource.getFilesTreeLevel())!;
-      if(filesTreeLvl > 0){
+      final filesTreeLvlInit = (await localDataSource.getFilesTreeLevel())!;
+      if(filesTreeLvlInit > 0){
         final accessToken = await userExtraInfoGetter.getAccessToken();
         late int parentId;
         late FileParentType parentType;
-        if(filesTreeLvl == 1){
+        if(filesTreeLvlInit == 1){
           parentId = await userExtraInfoGetter.getId();
           parentType = FileParentType.user;
         }else{
@@ -89,10 +91,11 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
         }
         final folder = await remoteDataSource.getFolder(parentId, parentType, accessToken);
         await appFilesReceiver.setAppFiles(folder.children);
-        await localDataSource.setFilesTreeLvl(filesTreeLvl - 1);
+        final filesTreeLevelUpdated = filesTreeLvlInit - 1;
+        await localDataSource.setFilesTreeLvl(filesTreeLevelUpdated);
         await localDataSource.setCurrentFileId(folder.id);
-        if(filesTreeLvl > 1){
-          await localDataSource.setParentId(folder.parentId);
+        if(filesTreeLevelUpdated > 0){
+          await localDataSource.setParentId(folder.parentId!);
         }
       }
       return const Right(null);
@@ -104,6 +107,8 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
     return await _manageFunctionExceptions(()async{
       final accessToken = await userExtraInfoGetter.getAccessToken();
       final pdf = await remoteDataSource.getGeneratedPdf(file.url, accessToken);
+      final newParentId = await localDataSource.getCurrentFileId();
+      await localDataSource.setParentId(newParentId);
       await localDataSource.setCurrentFileId(file.id);
       final treeLvl = (await localDataSource.getFilesTreeLevel())!;
       await localDataSource.setFilesTreeLvl(treeLvl + 1);
@@ -114,7 +119,8 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   @override
   Future<Either<FilesNavigationFailure, List<SearchAppearance>>> search(String text)async{
     return await _manageFunctionExceptions(()async{
-      final result = await remoteDataSource.search(text);
+      final accessToken = await userExtraInfoGetter.getAccessToken();
+      final result = await remoteDataSource.search(text, accessToken);
       return Right(result);
     });
   }

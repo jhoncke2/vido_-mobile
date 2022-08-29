@@ -12,6 +12,9 @@ class FilesNavigatorAppBar extends StatelessWidget{
     final dimens = AppDimens();
     return Container(
       height: dimens.appBarHeight,
+      padding: EdgeInsets.symmetric(
+        horizontal: dimens.normalContainerHorizontalPadding
+      ),
       decoration: const BoxDecoration(
         boxShadow: <BoxShadow>[
           BoxShadow(color: AppColors.shadow, spreadRadius: 0.01, blurRadius: 5, offset: Offset(0, 4))
@@ -27,7 +30,7 @@ class FilesNavigatorAppBar extends StatelessWidget{
             mini: true,
             child: Icon(
               Icons.add,
-              size: dimens.normalIconSize,
+              size: dimens.littleIconSize,
             ),
             onPressed: (){
               Navigator.of(context).pushNamed(NavigationRoutes.photosTranslator);
@@ -52,7 +55,7 @@ class FilesNavigatorAppBar extends StatelessWidget{
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide: const BorderSide(
-                            color: AppColors.secondary,
+                            color: AppColors.primary,
                             width: 2
                           ),
                           borderRadius: BorderRadius.only(
@@ -66,7 +69,7 @@ class FilesNavigatorAppBar extends StatelessWidget{
                         ),
                         filled: true,
                         hintStyle: TextStyle(color: Colors.grey[800]),
-                        hintText: "Type in your text",
+                        hintText: "Buscar",
                         fillColor: AppColors.backgroundPrimary
                       )
                     )
@@ -78,16 +81,16 @@ class FilesNavigatorAppBar extends StatelessWidget{
                         height: dimens.getHeightPercentage(0.052),
                         child: Icon(
                           (filesNavState is OnSearchAppearances)? Icons.close : Icons.search,
-                          size: dimens.normalIconSize,
+                          size: dimens.littleIconSize,
                           color: Colors.white,
                         ),
                       ),
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
-                          AppColors.secondary
+                          AppColors.primary
                         ),
                         overlayColor: MaterialStateProperty.all(
-                          AppColors.secondaryLight
+                          AppColors.primaryLight
                         ),
                         alignment: Alignment.centerLeft,
                         padding: MaterialStateProperty.all(
@@ -121,12 +124,12 @@ class FilesNavigatorAppBar extends StatelessWidget{
             builder: (authContext, authState) {
               _managePostFrameCallBacks(authContext, authState);
               return FloatingActionButton(
-                backgroundColor: AppColors.secondary,
+                backgroundColor: AppColors.primaryDark,
                 mini: true,
                 heroTag: 'logout_button',
                 child: Icon(
                   Icons.exit_to_app,
-                  size: dimens.normalIconSize,
+                  size: dimens.littleIconSize,
                 ),
                 onPressed: (authState is OnLoadingAuthentication)? null
                   :(){

@@ -8,18 +8,17 @@ class FileNamer extends StatelessWidget{
   const FileNamer({required this.canEnd, Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final dimens = AppDimens();
     return Center(
       child: SizedBox(
-        height: screenHeight * 0.35,
-        width: screenWidth,
+        height: dimens.getHeightPercentage(0.3),
+        width: dimens.getWidthPercentage(1),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             SizedBox(
-              width: screenWidth * 0.6,
+              width: dimens.getWidthPercentage(0.6),
               child: TextField(
                 decoration: const InputDecoration(
                   hintText: 'Nombre'
@@ -30,10 +29,14 @@ class FileNamer extends StatelessWidget{
               ),
             ),
             MaterialButton(
+              padding: EdgeInsets.symmetric(
+                horizontal: dimens.bigButtonHorizontalPadding
+              ),
               child: Text(
                 'Continuar',
                 style: TextStyle(
-                  fontSize: screenWidth * 0.0425
+                  fontSize: dimens.subtitleTextSize,
+                  color: canEnd? AppColors.textPrimaryDark : AppColors.textPrimary
                 ),
               ),
               color: AppColors.primary,

@@ -8,17 +8,15 @@ class TranslationsFileCreator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final dimens = AppDimens();
     final blocState = BlocProvider.of<PhotosTranslatorBloc>(context).state as OnInitializingTranslations;
     return SingleChildScrollView(
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.9,
         child: Column(
           children: [
-            ///*
             Container(
-              height: screenHeight * 0.725,
+              height: dimens.getHeightPercentage(0.76),
               decoration: BoxDecoration(
                 color: Colors.black,
                 border: Border.all(
@@ -37,8 +35,8 @@ class TranslationsFileCreator extends StatelessWidget {
                     child: LayoutBuilder(
                         builder: (BuildContext context, BoxConstraints constraints) {
                       return SizedBox(
-                        height: screenHeight * 0.6,
-                        width: screenWidth,
+                        height: dimens.getHeightPercentage(0.6),
+                        width: dimens.getWidthPercentage(1),
                       );
                     }),
                   ),
@@ -47,15 +45,31 @@ class TranslationsFileCreator extends StatelessWidget {
             ),
             Expanded(child: Container()),
             MaterialButton(
-              child: const Text('Tomar foto'),
+              minWidth: dimens.getWidthPercentage(0.5),
+              child: Text(
+                'Tomar foto',
+                style: TextStyle(
+                  color: blocState.canTranslate? AppColors.textPrimaryDark
+                          : AppColors.textPrimary,
+                  fontSize: dimens.normalTextSize
+                ),
+              ),
               color: AppColors.primary,
               onPressed: blocState.canTranslate? (){
                 BlocProvider.of<PhotosTranslatorBloc>(context).add(AddPhotoTranslationEvent());
               } : null,
             ),
             MaterialButton(
-              child: const Text('Terminar archivo'),
-              color: AppColors.secondary,
+              minWidth: dimens.getWidthPercentage(0.5),
+              child: Text(
+                'Terminar archivo',
+                style: TextStyle(
+                  color: blocState.canEnd? AppColors.textPrimaryDark
+                          : AppColors.textPrimary,
+                  fontSize: dimens.normalTextSize
+                )
+              ),
+              color: AppColors.primary,
               onPressed: blocState.canEnd? (){
                 BlocProvider.of<PhotosTranslatorBloc>(context).add(EndTranslationsFileEvent());
               } : null,

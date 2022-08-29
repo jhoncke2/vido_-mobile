@@ -35,21 +35,24 @@ class AppFilesView extends StatelessWidget{
                 controller: scrollController,
                 child: GridView.count(
                   controller: scrollController,
-                  crossAxisCount: 3,
+                  crossAxisCount: 2,
                   children: [
                     FileItem(
                       icon: Icons.folder, 
-                      iconColor: Colors.yellow[800]!, 
-                      text: '..', 
+                      iconColor: AppColors.iconPrimary,
+                      text: '..',
+                      interSpace: 5,
+                      bigText: true,
                       onTap: (){
                         BlocProvider.of<FilesNavigatorBloc>(context).add(SelectFilesParentEvent());
                       }
                     ),
                     ...files.map(
                       (f) => FileItem(
-                        icon: (f is Folder)? Icons.folder : Icons.picture_as_pdf, 
-                        iconColor: (f is Folder)? Colors.yellow[800]! : Colors.red[700]!, 
-                        text: f.name, 
+                        icon: (f is Folder)? Icons.folder : Icons.picture_as_pdf,
+                        iconColor: (f is Folder)? AppColors.iconPrimary : Colors.red[700]!,
+                        text: f.name,
+                        bigIcon: f is Folder,
                         onTap: (){
                           BlocProvider.of<FilesNavigatorBloc>(context).add(SelectAppFileEvent(f));
                         }

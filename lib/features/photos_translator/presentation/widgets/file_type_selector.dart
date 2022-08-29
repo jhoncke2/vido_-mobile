@@ -26,7 +26,7 @@ class FileTypeSelector extends StatelessWidget {
             child: Text(
               'Crear Carpeta',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppColors.textPrimaryDark,
                 fontSize: dimens.subtitleTextSize
               )
             ),
@@ -46,7 +46,7 @@ class FileTypeSelector extends StatelessWidget {
             child: Text(
               'Crear archivo',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppColors.textPrimaryDark,
                 fontSize: dimens.subtitleTextSize
               )
             ),

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 
 class AppColors{
-  static const primary = Color.fromRGBO(255, 195, 0, 1);
-  static const primaryLight = Color.fromRGBO(255, 235, 40, 1);
-  static const secondary = Color.fromRGBO(244, 132, 97, 1);
-  static const secondaryLight = Color.fromRGBO(244, 172, 137, 1);
+  static const primary = Color.fromRGBO(47, 157, 192, 1);
+  static const primaryLight = Color.fromRGBO(79, 190, 220, 1);
+  static const primaryDark = Color.fromRGBO(25, 86, 114, 1);
+  static const secondary = Color.fromRGBO(240, 240, 240, 1);
+  static const secondaryLight = Color.fromRGBO(249, 249, 249, 1);
   static const textPrimary = Colors.black;
+  static const textPrimaryDark = Colors.white;
   static const textSecondary = Colors.grey;
   static const shadow = Color.fromRGBO(200, 200, 200, 1);
   static const backgroundPrimary = Colors.white;
   static const backgroundSecondary = Color.fromRGBO(240, 240, 240, 1);
+  static const iconPrimary = Color.fromRGBO(143, 171, 221, 1);
 }
 
 class AppDimens{
@@ -28,7 +31,7 @@ class AppDimens{
   double get scaffoldVerticalPadding => _screenHeight * 0.01;
   double get normalContainerHorizontalMargin => _screenWidth * 0.022;
   double get normalContainerVerticalMargin => _screenHeight * 0.011;
-  double get titleTextSize => 22;
+  double get titleTextSize => 26;
   double get subtitleTextSize => 20;
   double get normalTextSize => 17;
   double get littleTextSize => 15;
@@ -39,9 +42,10 @@ class AppDimens{
   double get littleContainerVerticalPadding => _screenHeight * 0.01;
   double get normalVerticalSpace => _screenHeight * 0.04;
   double get littleVerticalSpace => _screenHeight * 0.02;
-  double get littleIconSize => 18;
-  double get normalIconSize => 22;
-  double get bigIconSize => 26;
+  double get littleIconSize => 22;
+  double get normalIconSize => 47.5;
+  double get bigIconSize => 65;
+  double get bigButtonHorizontalPadding => 40;
   double get appBarHeight => _screenHeight * 0.09;
   double get bigBorderRadius => _screenWidth * 0.1;
   double getHeightPercentage(double perc) => _screenHeight * perc;

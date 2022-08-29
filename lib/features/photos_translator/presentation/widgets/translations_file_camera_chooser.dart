@@ -25,17 +25,26 @@ class TranslationsFileCameraChooser extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: (BlocProvider.of<PhotosTranslatorBloc>(context).cameras).map(
-              (cam) => MaterialButton(
-                child: Text(
-                  cam.lensDirection.name,
-                  style: const TextStyle(
-                    fontSize: 17
-                  ),
+              (cam) => Container(
+                margin: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.02
                 ),
-                color: AppColors.primary,
-                onPressed: (){
-                  BlocProvider.of<PhotosTranslatorBloc>(context).add(ChooseCameraEvent(camera: cam));
-                }
+                child: MaterialButton(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.1
+                  ),
+                  child: Text(
+                    cam.lensDirection.name,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      color: AppColors.textPrimaryDark
+                    ),
+                  ),
+                  color: AppColors.primary,
+                  onPressed: (){
+                    BlocProvider.of<PhotosTranslatorBloc>(context).add(ChooseCameraEvent(camera: cam));
+                  }
+                ),
               )
             ).toList(),
           ),

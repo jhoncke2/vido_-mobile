@@ -41,7 +41,7 @@ class AuthenticationRemoteDataSourceImpl extends RemoteDataSource implements Aut
     final result = await super.executeGeneralService(()async{
       return await client.post(
         super.getUri('${RemoteDataSource.baseApiUncodedPath}${authBaseApi}me'),
-        headers: createJsonContentTypeHeaders(),
+        headers: createAuthorizationJsonHeaders(accessToken),
       );
     });
     return adapter.getIdFromResponse(result.body);

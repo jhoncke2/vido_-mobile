@@ -5,7 +5,7 @@ class PdfFile extends AppFile{
   const PdfFile({
     required int id, 
     required String name,
-    required int parentId,
+    required int? parentId,
     required this.url
   }):super(
     id: id,

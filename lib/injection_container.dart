@@ -96,146 +96,6 @@ Future<void> init() async {
     () => AppFilesRemoteAdapterImpl()
   );
 
-  // *************************************** Photos translator
-  sl.registerLazySingleton<PhotosTranslatorRemoteAdapter>(() => PhotosTranslatorRemoteAdapterImpl());
-  sl.registerLazySingleton<PhotosTranslatorLocalAdapter>(() => PhotosTranslatorLocalAdapterImpl());
-  
-  sl.registerLazySingleton<PathProvider>(() => PathProviderImpl());
-  sl.registerLazySingleton<HttpResponsesManager>(() => HttpResponsesManagerImpl());
-  ///*
-  sl.registerLazySingleton<PhotosTranslatorRemoteDataSource>(
-    () => _implementRealOrFake<PhotosTranslatorRemoteDataSource>(
-      realImpl: PhotosTranslatorRemoteDataSourceImpl(
-        client: sl<http.Client>(),
-        adapter: sl<PhotosTranslatorRemoteAdapter>(),
-        pathProvider: sl<PathProvider>(),
-        httpResponsesManager: sl<HttpResponsesManager>()
-      ),
-      fakeImpl: PhotosTranslatorRemoteDataSourceFake(
-        persistenceManager: sl<DatabaseManager>(), 
-        adapter: sl<PhotosTranslatorLocalAdapter>(), 
-        pathProvider: sl<PathProvider>(), 
-        httpResponsesManager: sl<HttpResponsesManager>(),
-        filesTree: filesTree.appFiles
-      )
-    )
-  );
-
-  sl.registerLazySingleton<ImageRotationFixer>(() => ImageRotationFixerImpl());
-  sl.registerLazySingleton<PhotosTranslatorLocalDataSource>(
-    () => PhotosTranslatorLocalDataSourceImpl(
-      adapter: sl<PhotosTranslatorLocalAdapter>(), 
-      databaseManager: sl<DatabaseManager>(), 
-      translator: sl<PhotosTranslator>(),
-      rotationFixer: sl<ImageRotationFixer>()
-    )
-  );
-  sl.registerLazySingleton<PhotosTranslatorRepository>(() => PhotosTranslatorRepositoryImpl(
-    remoteDataSource: sl<PhotosTranslatorRemoteDataSource>(),
-    localDataSource: sl<PhotosTranslatorLocalDataSource>(),
-    translationsFilesReceiver: sl<TranslationsFilesTransmitter>(),
-    translFileParentFolderGetter: sl<FilesNavigatorLocalDataSource>(),
-    userExtraInfoGetter: sl<AuthenticationLocalDataSource>()
-  )..initPendingTranslations());
-  final translationsFilesController = StreamController<List<TranslationsFile>>();
-  sl.registerLazySingleton<TranslationsFilesTransmitter>(
-    () => TranslationsFilesTransmitterImpl(translationsFilesController: translationsFilesController)
-  );
-  sl.registerLazySingleton<CreateTranslationsFile>(
-    () => CreateTranslationsFileImpl(repository: sl<PhotosTranslatorRepository>())
-  );
-  sl.registerLazySingleton<EndPhotosTranslationsFile>(
-    () => EndPhotosTranslationsFileImpl(repository: sl<PhotosTranslatorRepository>())
-  );
-  sl.registerLazySingleton<TranslatePhoto>(
-    () => TranslatePhotoImpl(repository: sl<PhotosTranslatorRepository>())
-  );
-  sl.registerLazySingleton<CreateFolder>(
-    () => CreateFolderImpl(repository: sl<PhotosTranslatorRepository>())
-  );
-  sl.registerFactory<PhotosTranslatorBloc>( () => PhotosTranslatorBloc(
-    createTranslationsFile: sl<CreateTranslationsFile>(),
-    translatePhoto: sl<TranslatePhoto>(),
-    endPhotosTranslation: sl<EndPhotosTranslationsFile>(),
-    createFolder: sl<CreateFolder>(),
-    cameras: cameras,
-    getNewCameraController: (CameraDescription cam) => CameraController(
-      cam,
-      ResolutionPreset.max,
-      enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.jpeg,
-    )
-  ));
-
-  // ******************************************************** Files Navigator
-  sl.registerLazySingleton<AppFilesTransmitter>(
-    () => AppFilesTransmitterImpl(
-      streamController: StreamController<List<AppFile>>()
-    )
-  );
-  sl.registerLazySingleton<FilesNavigatorLocalDataSource>(
-    () => FilesNavigatorLocalDataSourceImpl(sharedPreferencesManager: sl<SharedPreferencesManager>())
-  );
-  sl.registerLazySingleton<FilesNavigatorRemoteDataSource>(
-    () => _implementRealOrFake(
-      realImpl: FilesNavigatorRemoteDataSourceImpl(
-        pathProvider: sl<PathProvider>(),
-        httpResponsesManager: sl<HttpResponsesManager>(),
-        client: sl<http.Client>(),
-        adapter: sl<AppFilesRemoteAdapter>()
-      ), 
-      fakeImpl: FilesNavigatorRemoteDataSourceFake(
-        pathProvider: sl<PathProvider>(),
-        httpResponsesManager: sl<HttpResponsesManager>(),
-        filesTree: filesTree.appFiles
-      )
-    )
-  );
-  sl.registerLazySingleton<FilesNavigatorRepository>(
-    () => FilesNavigatorRepositoryImpl(
-      localDataSource: sl<FilesNavigatorLocalDataSource>(),
-      remoteDataSource: sl<FilesNavigatorRemoteDataSource>(),
-      appFilesReceiver: sl<AppFilesTransmitter>(),
-      userExtraInfoGetter: sl<AuthenticationLocalDataSource>()
-    )
-  );
-  sl.registerLazySingleton<LoadFolderChildren>(
-    () => LoadFolderChildrenImpl(
-      repository: sl<FilesNavigatorRepository>()
-    )
-  );
-  sl.registerLazySingleton<LoadFolderBrothers>(
-    () => LoadFolderBrothersImpl(
-      repository: sl<FilesNavigatorRepository>()
-    )
-  );
-  sl.registerLazySingleton<LoadFilePdf>(
-    () => LoadFilePdfImpl(
-      repository: sl<FilesNavigatorRepository>()
-    )
-  );
-  sl.registerLazySingleton<LoadAppearancePdf>(
-    () => LoadAppearancePdfImpl(
-      repository: sl<FilesNavigatorRepository>()
-    )
-  );
-  sl.registerLazySingleton<Search>(
-    () => SearchImpl(
-      repository: sl<FilesNavigatorRepository>()
-    )
-  );
-  sl.registerFactory<FilesNavigatorBloc>(
-    () => FilesNavigatorBloc(
-      loadFolderChildren: sl<LoadFolderChildren>(), 
-      loadFolderBrothers: sl<LoadFolderBrothers>(), 
-      loadFilePdf: sl<LoadFilePdf>(),
-      loadAppearancePdf: sl<LoadAppearancePdf>(),
-      search: sl<Search>(),
-      appFilesTransmitter: sl<AppFilesTransmitter>(), 
-      translationsFilesTransmitter: sl<TranslationsFilesTransmitter>(),
-      searchController: TextEditingController(text: '')
-    )
-  );
   // ********************************************************* Authentication
   sl.registerLazySingleton<AuthenticationRemoteAdapter>(
     () => AuthenticationRemoteAdapterImpl()
@@ -279,6 +139,164 @@ Future<void> init() async {
       logout: sl<Logout>()
     )
   );
+
+  // ******************************************************** Files Navigator
+  sl.registerLazySingleton<AppFilesTransmitter>(
+    () => AppFilesTransmitterImpl(
+      streamController: StreamController<List<AppFile>>()
+    )
+  );
+  sl.registerLazySingleton<FilesNavigatorLocalDataSource>(
+    () => FilesNavigatorLocalDataSourceImpl(sharedPreferencesManager: sl<SharedPreferencesManager>())
+  );
+  sl.registerLazySingleton<FilesNavigatorRemoteDataSource>(
+    () => _implementRealOrFake(
+      realImpl: FilesNavigatorRemoteDataSourceImpl(
+        pathProvider: sl<PathProvider>(),
+        httpResponsesManager: sl<HttpResponsesManager>(),
+        client: sl<http.Client>(),
+        adapter: sl<AppFilesRemoteAdapter>()
+      ), 
+      fakeImpl: FilesNavigatorRemoteDataSourceFake(
+        pathProvider: sl<PathProvider>(),
+        httpResponsesManager: sl<HttpResponsesManager>(),
+        filesTree: filesTree.appFiles
+      )
+    )
+  );
+  sl.registerLazySingleton<FilesNavigatorRepository>(
+    () => FilesNavigatorRepositoryImpl(
+      localDataSource: sl<FilesNavigatorLocalDataSource>(),
+      remoteDataSource: sl<FilesNavigatorRemoteDataSource>(),
+      appFilesReceiver: sl<AppFilesTransmitter>(),
+      userExtraInfoGetter: sl<AuthenticationLocalDataSource>()
+    )
+  );
+  sl.registerLazySingleton<LoadFolderChildren>(
+    () => LoadFolderChildrenImpl(
+      repository: sl<FilesNavigatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
+  sl.registerLazySingleton<LoadFolderBrothers>(
+    () => LoadFolderBrothersImpl(
+      repository: sl<FilesNavigatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
+  sl.registerLazySingleton<LoadFilePdf>(
+    () => LoadFilePdfImpl(
+      repository: sl<FilesNavigatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
+  sl.registerLazySingleton<LoadAppearancePdf>(
+    () => LoadAppearancePdfImpl(
+      repository: sl<FilesNavigatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
+  sl.registerLazySingleton<Search>(
+    () => SearchImpl(
+      repository: sl<FilesNavigatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
+  sl.registerFactory<FilesNavigatorBloc>(
+    () => FilesNavigatorBloc(
+      loadFolderChildren: sl<LoadFolderChildren>(), 
+      loadFolderBrothers: sl<LoadFolderBrothers>(), 
+      loadFilePdf: sl<LoadFilePdf>(),
+      loadAppearancePdf: sl<LoadAppearancePdf>(),
+      search: sl<Search>(),
+      appFilesTransmitter: sl<AppFilesTransmitter>(), 
+      translationsFilesTransmitter: sl<TranslationsFilesTransmitter>(),
+      searchController: TextEditingController(text: '')
+    )
+  );
+
+  // *************************************** Photos translator
+  sl.registerLazySingleton<PhotosTranslatorRemoteAdapter>(() => PhotosTranslatorRemoteAdapterImpl());
+  sl.registerLazySingleton<PhotosTranslatorLocalAdapter>(() => PhotosTranslatorLocalAdapterImpl());
+  
+  sl.registerLazySingleton<PathProvider>(() => PathProviderImpl());
+  sl.registerLazySingleton<HttpResponsesManager>(() => HttpResponsesManagerImpl());
+  ///*
+  sl.registerLazySingleton<PhotosTranslatorRemoteDataSource>(
+    () => _implementRealOrFake<PhotosTranslatorRemoteDataSource>(
+      realImpl: PhotosTranslatorRemoteDataSourceImpl(
+        client: sl<http.Client>(),
+        adapter: sl<PhotosTranslatorRemoteAdapter>(),
+        pathProvider: sl<PathProvider>(),
+        httpResponsesManager: sl<HttpResponsesManager>()
+      ),
+      fakeImpl: PhotosTranslatorRemoteDataSourceFake(
+        persistenceManager: sl<DatabaseManager>(), 
+        adapter: sl<PhotosTranslatorLocalAdapter>(), 
+        pathProvider: sl<PathProvider>(), 
+        httpResponsesManager: sl<HttpResponsesManager>(),
+        filesTree: filesTree.appFiles
+      )
+    )
+  );
+
+  sl.registerLazySingleton<ImageRotationFixer>(() => ImageRotationFixerImpl());
+  sl.registerLazySingleton<PhotosTranslatorLocalDataSource>(
+    () => PhotosTranslatorLocalDataSourceImpl(
+      adapter: sl<PhotosTranslatorLocalAdapter>(), 
+      databaseManager: sl<DatabaseManager>(), 
+      translator: sl<PhotosTranslator>(),
+      rotationFixer: sl<ImageRotationFixer>()
+    )
+  );
+  final translationsFilesController = StreamController<List<TranslationsFile>>();
+  sl.registerLazySingleton<TranslationsFilesTransmitter>(
+    () => TranslationsFilesTransmitterImpl(translationsFilesController: translationsFilesController)
+  );
+  sl.registerSingleton<PhotosTranslatorRepository>(PhotosTranslatorRepositoryImpl(
+    remoteDataSource: sl<PhotosTranslatorRemoteDataSource>(),
+    localDataSource: sl<PhotosTranslatorLocalDataSource>(),
+    translationsFilesReceiver: sl<TranslationsFilesTransmitter>(),
+    translFileParentFolderGetter: sl<FilesNavigatorLocalDataSource>(),
+    userExtraInfoGetter: sl<AuthenticationLocalDataSource>()
+  )..initPendingTranslations());
+  sl.registerLazySingleton<CreateTranslationsFile>(
+    () => CreateTranslationsFileImpl(
+      repository: sl<PhotosTranslatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
+  sl.registerLazySingleton<EndPhotosTranslationsFile>(
+    () => EndPhotosTranslationsFileImpl(
+      repository: sl<PhotosTranslatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
+  sl.registerLazySingleton<TranslatePhoto>(
+    () => TranslatePhotoImpl(
+      repository: sl<PhotosTranslatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
+  sl.registerLazySingleton<CreateFolder>(
+    () => CreateFolderImpl(
+      repository: sl<PhotosTranslatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
+  sl.registerFactory<PhotosTranslatorBloc>( () => PhotosTranslatorBloc(
+    createTranslationsFile: sl<CreateTranslationsFile>(),
+    translatePhoto: sl<TranslatePhoto>(),
+    endPhotosTranslation: sl<EndPhotosTranslationsFile>(),
+    createFolder: sl<CreateFolder>(),
+    cameras: cameras,
+    getNewCameraController: (CameraDescription cam) => CameraController(
+      cam,
+      ResolutionPreset.max,
+      enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.jpeg,
+    )
+  ));
 
   // ********** Init
   sl.registerLazySingleton<ThereIsAuthentication>(

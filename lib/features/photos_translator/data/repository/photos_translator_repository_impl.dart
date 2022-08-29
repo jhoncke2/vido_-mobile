@@ -29,17 +29,9 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
   @override
   Future<Either<PhotosTranslatorFailure, int>> createTranslationsFile(String name) async {
     return await _manageFunctionExceptions(()async{
-      late int parentId;
-      late FileParentType parentType;
-      if((await translFileParentFolderGetter.getFilesTreeLevel()) == 0){
-        parentId = await userExtraInfoGetter.getId();
-        parentType = FileParentType.user;
-      }else{
-        parentId = await translFileParentFolderGetter.getCurrentFileId();
-        parentType = FileParentType.folder;
-      }
+      final parentId = await translFileParentFolderGetter.getCurrentFileId();
       final accessToken = await userExtraInfoGetter.getAccessToken();
-      final newFile = await remoteDataSource.createTranslationsFile(name, parentId, parentType, accessToken);
+      final newFile = await remoteDataSource.createTranslationsFile(name, parentId, accessToken);
       await localDataSource.createTranslationsFile(newFile);
       return Right(newFile.id);
     });
@@ -109,27 +101,18 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
       }
     }
   }
-  
-  @override
-  Future<Either<PhotosTranslatorFailure, void>> initPendingTranslations()async{
-    await _translateFirstUncompletedPhoto();
-    return const Right(null);
-  }
 
   @override
   Future<Either<PhotosTranslatorFailure, void>> createFolder(String name)async{
     final accessToken = await userExtraInfoGetter.getAccessToken();
-    final treeLevel = await translFileParentFolderGetter.getFilesTreeLevel();
-    late int parentId;
-    late FileParentType parentType;
-    if(treeLevel == 0){
-      parentId = await userExtraInfoGetter.getId();
-      parentType = FileParentType.user;
-    }else{
-      parentId = await translFileParentFolderGetter.getCurrentFileId();
-      parentType = FileParentType.folder;
-    }
-    await remoteDataSource.createFolder(name, parentId, parentType, accessToken);
+    final currentFileId = await translFileParentFolderGetter.getCurrentFileId();
+    await remoteDataSource.createFolder(name, currentFileId, accessToken);
+    return const Right(null);
+  }
+
+  @override
+  Future<Either<PhotosTranslatorFailure, void>> initPendingTranslations()async{
+    await _translateFirstUncompletedPhoto();
     return const Right(null);
   }
 }

@@ -29,7 +29,7 @@ class PdfFileView extends StatelessWidget{
           },
           icon: const Icon(
             Icons.arrow_back_ios,
-            color: AppColors.secondary,
+            color: AppColors.primary,
             size: 20,
           )
         ),
