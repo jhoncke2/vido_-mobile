@@ -68,10 +68,17 @@ class LoginPage extends StatelessWidget {
                         height: dimens.normalVerticalSpace,
                       ),
                       MaterialButton(
+                        highlightColor: AppColors.primaryLight,
+                        minWidth: dimens.getWidthPercentage(0.75),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(40)
+                          )
+                        ),
                         child: Text(
                           'INGRESAR',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: authState is OnLoadingAuthentication? AppColors.textSecondary : AppColors.textPrimary,
                             fontSize: dimens.subtitleTextSize
                           ),
                         ),

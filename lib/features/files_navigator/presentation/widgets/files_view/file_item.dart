@@ -43,7 +43,7 @@ class FileItem extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: bigText? dimens.titleTextSize : dimens.subtitleTextSize
+                  fontSize: bigText? dimens.titleTextSize : dimens.normalTextSize
                 ),
               ),
             )

@@ -50,7 +50,7 @@ class AppFilesView extends StatelessWidget{
                     ...files.map(
                       (f) => FileItem(
                         icon: (f is Folder)? Icons.folder : Icons.picture_as_pdf,
-                        iconColor: (f is Folder)? AppColors.iconPrimary : Colors.red[700]!,
+                        iconColor: (f is Folder)? AppColors.iconPrimary : Colors.red[400]!,
                         text: f.name,
                         bigIcon: f is Folder,
                         onTap: (){

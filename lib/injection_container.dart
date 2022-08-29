@@ -74,7 +74,7 @@ import 'features/photos_translator/external/photos_translator_remote_data_source
 import 'features/files_navigator/external/data_sources/fake/files_tree.dart' as filesTree;
 
 final sl = GetIt.instance;
-bool useRealData = false;
+bool useRealData = true;
 
 Future<void> init() async {
   sl.registerLazySingleton<PhotosTranslator>(() => PhotosTranslatorImpl());

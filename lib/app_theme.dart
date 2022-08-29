@@ -43,8 +43,8 @@ class AppDimens{
   double get normalVerticalSpace => _screenHeight * 0.04;
   double get littleVerticalSpace => _screenHeight * 0.02;
   double get littleIconSize => 22;
-  double get normalIconSize => 47.5;
-  double get bigIconSize => 65;
+  double get normalIconSize => 52.5;
+  double get bigIconSize => 70;
   double get bigButtonHorizontalPadding => 40;
   double get appBarHeight => _screenHeight * 0.09;
   double get bigBorderRadius => _screenWidth * 0.1;
