@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:vido/core/external/app_files_remote_adapter.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
-
 import 'core/external/persistence.dart';
 import 'core/utils/path_provider.dart';
 import 'package:camera/camera.dart';

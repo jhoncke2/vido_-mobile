@@ -25,49 +25,51 @@ class PhotosTranslatorPage extends StatelessWidget {
             BlocProvider<PhotosTranslatorBloc>(create: (_) => sl<PhotosTranslatorBloc>()),
             BlocProvider<AuthenticationBloc>(create: (_) => sl<AuthenticationBloc>())
           ],
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                height: dimens.getHeightPercentage(0.9),
-                child: BlocBuilder<PhotosTranslatorBloc, PhotosTranslatorState>(
-                  builder: (context, state){
-                    _managePostFrameCallBacks(context, state);
-                    if(state is OnSelectingFileType){
-                      return FileTypeSelector();
-                    }else if(state is OnSelectingCamera){
-                        return TranslationsFileCameraChooser();
-                    }else if(state is OnCreatingTranslationsFile){
-                      if(state is OnNamingTranslationsFile){
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: dimens.getHeightPercentage(0.9),
+                  child: BlocBuilder<PhotosTranslatorBloc, PhotosTranslatorState>(
+                    builder: (context, state){
+                      _managePostFrameCallBacks(context, state);
+                      if(state is OnSelectingFileType){
+                        return FileTypeSelector();
+                      }else if(state is OnSelectingCamera){
+                          return TranslationsFileCameraChooser();
+                      }else if(state is OnCreatingTranslationsFile){
+                        if(state is OnNamingTranslationsFile){
+                          return FileNamer(canEnd: state.canEnd);
+                        }else{
+                          return TranslationsFileCreator();
+                        }
+                      }else if(state is OnCreatingFolder){
                         return FileNamer(canEnd: state.canEnd);
-                      }else{
-                        return TranslationsFileCreator();
-                      }
-                    }else if(state is OnCreatingFolder){
-                      return FileNamer(canEnd: state.canEnd);
-                    }else if(state is OnLoadingTranslationsError){
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Text(
-                            state.error,
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 18
+                      }else if(state is OnLoadingTranslationsError){
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: Text(
+                              state.error,
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 18
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    }else{
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  },
+                        );
+                      }else{
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
