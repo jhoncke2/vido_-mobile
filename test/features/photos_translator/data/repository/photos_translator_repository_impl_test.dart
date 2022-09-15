@@ -44,41 +44,83 @@ void main() {
     );
   });
 
-  group('create translators file', _testCreatetranslatorsFileGroup);
+  group('create translations file', _testCreatetranslationsFileGroup);
   group('end photos translation file', _testEndPhotosTranslationFileGroup);
   group('translate photo', _testTranslatePhotoGroup);
   group('create folder', _testCreateFolderGroup);
   group('init pending translations', _testInitPendingTranslations);
 }
 
-void _testCreatetranslatorsFileGroup() {
+void _testCreatetranslationsFileGroup() {
   late TranslationsFile tNewFile;
   late String tName;
   late String tAccessToken;
   late int tParentFolderId;
-  setUp(() {
-    tName = 'new_name';
-    tAccessToken = 'access_token';
-    tNewFile = TranslationsFile(id: 0, name: tName, completed: false, translations: const []);
-    tParentFolderId = 10;
-    when(userExtraInfoGetter.getAccessToken()).thenAnswer((_) async => tAccessToken);
-    when(remoteDataSource.createTranslationsFile(any, any, any))
-        .thenAnswer((_) async => tNewFile);
-    when(translFileParentFolderGetter.getCurrentFileId())
-        .thenAnswer((_) async => tParentFolderId);
+
+  group('when the proccess type is ocr', (){
+    setUp(() {
+      tName = 'new_name';
+      tAccessToken = 'access_token';
+      tNewFile = TranslationsFile(
+        id: 0, 
+        name: tName, 
+        completed: false, 
+        translations: const [],
+        proccessType: TranslationProccessType.ocr
+      );
+      tParentFolderId = 10;
+      when(userExtraInfoGetter.getAccessToken()).thenAnswer((_) async => tAccessToken);
+      when(remoteDataSource.createTranslationsFile(any, any, any))
+          .thenAnswer((_) async => tNewFile);
+      when(translFileParentFolderGetter.getCurrentFileId())
+          .thenAnswer((_) async => tParentFolderId);
+    });
+
+    test('should call the specified methods', () async {
+      await photosTranslatorRepository.createTranslationsFile(tName, TranslationProccessType.ocr);
+      verify(userExtraInfoGetter.getAccessToken());
+      verify(remoteDataSource.createTranslationsFile(tName, tParentFolderId, tAccessToken));
+      verify(localDataSource.createTranslationsFile(tNewFile));
+    });
+
+    test('should return the expected result', () async {
+      final result = await photosTranslatorRepository.createTranslationsFile(tName, TranslationProccessType.ocr);
+      expect(result, Right(tNewFile.id));
+    });
   });
 
-  test('should call the specified methods', () async {
-    await photosTranslatorRepository.createTranslationsFile(tName);
-    verify(userExtraInfoGetter.getAccessToken());
-    verify(remoteDataSource.createTranslationsFile(tName, tParentFolderId, tAccessToken));
-    verify(localDataSource.createTranslationsFile(tNewFile));
-  });
+  group('when the proccess type is icr', (){
+    setUp(() {
+      tName = 'new_name';
+      tAccessToken = 'access_token';
+      tNewFile = TranslationsFile(
+        id: 1,
+        name: tName, 
+        completed: false, 
+        translations: const [],
+        proccessType: TranslationProccessType.icr
+      );
+      tParentFolderId = 10;
+      when(userExtraInfoGetter.getAccessToken()).thenAnswer((_) async => tAccessToken);
+      when(remoteDataSource.createTranslationsFile(any, any, any))
+          .thenAnswer((_) async => tNewFile);
+      when(translFileParentFolderGetter.getCurrentFileId())
+          .thenAnswer((_) async => tParentFolderId);
+    });
 
-  test('should return the expected result', () async {
-    final result = await photosTranslatorRepository.createTranslationsFile(tName);
-    expect(result, Right(tNewFile.id));
+    test('should call the specified methods', () async {
+      await photosTranslatorRepository.createTranslationsFile(tName, TranslationProccessType.icr);
+      verify(userExtraInfoGetter.getAccessToken());
+      verify(remoteDataSource.createTranslationsFile(tName, tParentFolderId, tAccessToken));
+      verify(localDataSource.createTranslationsFile(tNewFile));
+    });
+
+    test('should return the expected result', () async {
+      final result = await photosTranslatorRepository.createTranslationsFile(tName, TranslationProccessType.icr);
+      expect(result, Right(tNewFile.id));
+    });
   });
+  
 }
 
 void _testEndPhotosTranslationFileGroup() {
@@ -103,11 +145,29 @@ void _testTranslatePhotoGroup() {
   group('when localDataSource is translating', () {
     setUp(() {
       tUncompletedtranslationsFilesInit = const [
-        TranslationsFile(id: 0, name: 'f0', completed: false, translations: []),
-        TranslationsFile(id: 1, name: 'f1', completed: false, translations: [])
+        TranslationsFile(
+          id: 0, 
+          name: 'f0', 
+          completed: false, 
+          translations: [],
+          proccessType: TranslationProccessType.ocr
+        ),
+        TranslationsFile(
+          id: 1, 
+          name: 'f1', 
+          completed: false, 
+          translations: [],
+          proccessType: TranslationProccessType.icr
+        )
       ];
       when(localDataSource.translating).thenReturn(true);
-      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => const TranslationsFile(id: 0, name: 'file_0', completed: false, translations: []));
+      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => const TranslationsFile(
+        id: 0, 
+        name: 'file_0', 
+        completed: false, 
+        translations: [],
+        proccessType: TranslationProccessType.ocr
+      ));
       when(localDataSource.getTranslationsFiles()).thenAnswer((_) async => tUncompletedtranslationsFilesInit);
     });
 
@@ -158,13 +218,15 @@ void _testTranslatePhotoGroup() {
         id: fileId,
         name: fileName,
         completed: true,
-        translations: [tFirstUncompletedTranslation]
+        translations: [tFirstUncompletedTranslation],
+        proccessType: TranslationProccessType.ocr
       );
       tTranslatedFile = TranslationsFile(
         id: fileId,
         name: fileName,
         completed: true,
-        translations: [tTranslationWithRemoteId]
+        translations: [tTranslationWithRemoteId],
+        proccessType: TranslationProccessType.ocr
       );
       tPdfFile = const PdfFile(id: fileId, name: fileName, url: 'pdf_url', parentId: 100);
       when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => tUntranslatedFile);
@@ -178,7 +240,7 @@ void _testTranslatePhotoGroup() {
         tUncompletedTranslationsFilesFin
       ];
       when(localDataSource.getTranslationsFiles())
-        .thenAnswer( (_) async => uncompletedTranslsFilesResponses.removeAt(0));
+          .thenAnswer( (_) async => uncompletedTranslsFilesResponses.removeAt(0));
       when(localDataSource.translate(any, any))
           .thenAnswer((_) async => tTranslatedTranslation);
       when(remoteDataSource.addTranslation(any, any, any))
@@ -235,7 +297,6 @@ void _testTranslatePhotoGroup() {
     late List<TranslationsFile> tUncompletedtranslationsFiles2;
     late List<TranslationsFile> tUncompletedtranslationsFilesFin;
     late PdfFile tCompletedFile;
-    late List<PdfFile> tCompletedFiles;
     setUp(() {
       tAccessToken = 'access_token';
       const tTranslationText1 = 'translation_text_1';
@@ -260,6 +321,7 @@ void _testTranslatePhotoGroup() {
         text: tTranslationText2,
         imgUrl: 'url_2'
       );
+      
       tUntranslatedFile1 = TranslationsFile(
         id: 1052,
         name: 'tf_1052',
@@ -267,7 +329,8 @@ void _testTranslatePhotoGroup() {
         translations: [
           const Translation(id: 2050, text: 'text_x', imgUrl: 'url_0'),
           tFirstUncompletedTranslation,
-        ]
+        ],
+        proccessType: TranslationProccessType.icr
       );
       tTranslatedFile1 = TranslationsFile(
         id: 1052,
@@ -276,13 +339,16 @@ void _testTranslatePhotoGroup() {
         translations: [
           const Translation(id: 2050, text: 'text_x', imgUrl: 'url_0'),
           tFirstTranslatedTranslation,
-        ]
+        ],
+        proccessType: TranslationProccessType.icr
       );
+      
       tUntranslatedFile2 = TranslationsFile(
         id: 1053,
         name: 'tf_1053',
         completed: false,
-        translations: [tSecondUncompletedTranslation]
+        translations: [tSecondUncompletedTranslation],
+        proccessType: TranslationProccessType.ocr
       );
       tTranslatedFile2 = const TranslationsFile(
         id: 1053,
@@ -290,39 +356,39 @@ void _testTranslatePhotoGroup() {
         completed: true,
         translations: [
           Translation(id: 2053, text: 'text_xxx', imgUrl: 'url_2')
-        ]
+        ],
+        proccessType: TranslationProccessType.ocr
       );
       tUncompletedtranslationsFilesInit = [
         tUntranslatedFile1,
         tUntranslatedFile2
       ];
       tUncompletedtranslationsFiles2 = [
-        const TranslationsFile(
+        TranslationsFile(
           id: 1052,
           name: 'tf_1052',
           completed: true,
           translations: [
-            Translation(id: 2050, text: 'text_x', imgUrl: 'url_0'),
-            Translation(id: 2052, text: 'text_xx', imgUrl: 'url_1'),
-          ]
+            const Translation(id: 2050, text: 'text_x', imgUrl: 'url_0'),
+            tFirstTranslatedTranslation
+          ],
+          proccessType: TranslationProccessType.icr
         ),
         tUntranslatedFile2
       ];
       tUncompletedtranslationsFilesFin = [
-        const TranslationsFile(
+        TranslationsFile(
           id: 1052,
           name: 'tf_1052',
           completed: true,
           translations: [
-            Translation(id: 2050, text: 'text_x', imgUrl: 'url_0'),
-            Translation(id: 2052, text: 'text_xx', imgUrl: 'url_1'),
-          ]
+            const Translation(id: 2050, text: 'text_x', imgUrl: 'url_0'),
+            tFirstTranslatedTranslation
+          ],
+          proccessType: TranslationProccessType.icr
         ),
       ];
       tCompletedFile = PdfFile(id: tTranslatedFile2.id, name: tTranslatedFile2.name, url: 'pdf_url', parentId: 100);
-      tCompletedFiles = [
-        tCompletedFile
-      ];
       tFirstTranslationWithRemoteId = const Translation(
           id: 3052, text: tTranslationText1, imgUrl: 'url_1');
       tSecondTranslationWithRemoteId = const Translation(
@@ -340,18 +406,17 @@ void _testTranslatePhotoGroup() {
         tTranslatedFile1
       ];
       when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => currentCreatedFileResponses.removeAt(0));
-      final translateResponses = [
-        tFirstTranslatedTranslation,
-        tSecondTranslatedTranslation
-      ];
-      when(localDataSource.translate(any, any))
-          .thenAnswer((_) async => translateResponses.removeAt(0));
+
+      when(localDataSource.translate(any, tUntranslatedFile2.id))
+          .thenAnswer((_) async => tSecondTranslatedTranslation);
       final addTranslationResponses = [
         tFirstTranslationWithRemoteId.id!,
         tSecondTranslationWithRemoteId.id!
       ];
       when(remoteDataSource.addTranslation(any, any, any))
           .thenAnswer((_) async => addTranslationResponses.removeAt(0));
+      when(remoteDataSource.translateWithIcr(any, any, any))
+          .thenAnswer((_) async => tFirstTranslatedTranslation);
       when(localDataSource.getTranslationsFile(tUntranslatedFile1.id)).thenAnswer((_) async => tTranslatedFile1);
       when(localDataSource.getTranslationsFile(tUntranslatedFile2.id)).thenAnswer((_) async => tTranslatedFile2);
       when(remoteDataSource.endTranslationFile(any, any)).thenAnswer((_) async => tCompletedFile);
@@ -365,7 +430,8 @@ void _testTranslatePhotoGroup() {
       verify(localDataSource.getTranslationsFiles()).called(3);
       verify(translationsFilesReceiver.setTranslationsFiles(tUncompletedtranslationsFilesInit));
 
-      verify(localDataSource.translate(tFirstUncompletedTranslation, tUntranslatedFile1.id));
+      verifyNever(localDataSource.translate(tFirstUncompletedTranslation, tUntranslatedFile1.id));
+      verify(remoteDataSource.translateWithIcr(tUntranslatedFile1.id, tFirstUncompletedTranslation.imgUrl, tAccessToken));
       verify(localDataSource.updateTranslation(tUntranslatedFile1.id, tFirstTranslatedTranslation));
       verify(localDataSource.getCurrentCreatedFile()).called(2);
       verify(localDataSource.getTranslationsFile(tUntranslatedFile1.id));
@@ -379,7 +445,7 @@ void _testTranslatePhotoGroup() {
       verify(localDataSource.removeTranslationsFile(tTranslatedFile2));
       verify(translationsFilesReceiver.setTranslationsFiles(tUncompletedtranslationsFilesFin));
 
-      verify(remoteDataSource.addTranslation(tUntranslatedFile1.id, tFirstTranslatedTranslation, tAccessToken));
+      verifyNever(remoteDataSource.addTranslation(tUntranslatedFile1.id, tFirstTranslatedTranslation, tAccessToken));
       verify(remoteDataSource.addTranslation(tUntranslatedFile2.id, tSecondTranslatedTranslation, tAccessToken));
       verify(userExtraInfoGetter.getAccessToken());
     });
@@ -423,11 +489,29 @@ void _testInitPendingTranslations(){
   group('when localDataSource is translating', () {
     setUp(() {
       tUncompletedtranslationsFilesInit = const [
-        TranslationsFile(id: 0, name: 'f0', completed: false, translations: []),
-        TranslationsFile(id: 1, name: 'f1', completed: false, translations: [])
+        TranslationsFile(
+          id: 0, 
+          name: 'f0', 
+          completed: false, 
+          translations: [],
+          proccessType: TranslationProccessType.ocr
+        ),
+        TranslationsFile(
+          id: 1, 
+          name: 'f1', 
+          completed: false, 
+          translations: [],
+          proccessType: TranslationProccessType.ocr
+        )
       ];
       when(localDataSource.translating).thenReturn(true);
-      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => const TranslationsFile(id: 0, name: 'file_0', completed: false, translations: []));
+      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => const TranslationsFile(
+        id: 0, 
+        name: 'file_0', 
+        completed: false, 
+        translations: [],
+        proccessType: TranslationProccessType.ocr
+      ));
       when(localDataSource.getTranslationsFiles()).thenAnswer((_) async => tUncompletedtranslationsFilesInit);
     });
 
@@ -476,13 +560,15 @@ void _testInitPendingTranslations(){
         id: fileId,
         name: fileName,
         completed: true,
-        translations: [tFirstUncompletedTranslation]
+        translations: [tFirstUncompletedTranslation],
+        proccessType: TranslationProccessType.ocr
       );
       tTranslatedFile = TranslationsFile(
         id: fileId,
         name: fileName,
         completed: true,
-        translations: [tTranslationWithRemoteId]
+        translations: [tTranslationWithRemoteId],
+        proccessType: TranslationProccessType.ocr
       );
       tPdfFile = const PdfFile(id: fileId, name: fileName, url: 'pdf_url', parentId: 100);
       when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => tUntranslatedFile);

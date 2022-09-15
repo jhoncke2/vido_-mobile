@@ -32,7 +32,7 @@ abstract class OnCreatingAppFile extends PhotosTranslatorState{
   final String name;
   final bool canEnd;
   const OnCreatingAppFile({
-    required this.name, 
+    required this.name,
     required this.canEnd
   });
   @override
@@ -40,39 +40,45 @@ abstract class OnCreatingAppFile extends PhotosTranslatorState{
 }
 
 class OnCreatingTranslationsFile extends OnCreatingAppFile{
+  final TranslationProccessType proccessType;
   const OnCreatingTranslationsFile({
-    required String name, 
+    required String name,
+    required this.proccessType,
     required bool canEnd
   }) : super(
     name: name,
     canEnd: canEnd
   );
   @override
-  List<Object> get props => [...super.props, name, canEnd];
+  List<Object> get props => [...super.props, name, proccessType, canEnd];
 }
 
 class OnNamingTranslationsFile extends OnCreatingTranslationsFile{
   const OnNamingTranslationsFile({
     required String name,
+    required TranslationProccessType proccessType,
     required bool canEnd,
   }): super(
     name: name,
-    canEnd: canEnd
+    canEnd: canEnd,
+    proccessType: proccessType
   );
 }
 
-class OnInitializingTranslations extends OnCreatingTranslationsFile{
+class OnAddingTranslations extends OnCreatingTranslationsFile{
   final int id;
   final bool canTranslate;
   final CameraController? cameraController;
-  const OnInitializingTranslations({
+  const OnAddingTranslations({
     required this.id,
     required String name,
+    required TranslationProccessType proccessType,
     required bool canEnd,
     required this.canTranslate,
     required this.cameraController
   }): super(
     name: name,
+    proccessType: proccessType,
     canEnd: canEnd
   );
   @override

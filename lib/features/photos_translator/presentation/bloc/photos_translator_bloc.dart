@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
+import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_translations_file.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/end_photos_translations_file.dart';
@@ -32,12 +33,14 @@ class PhotosTranslatorBloc extends Bloc<PhotosTranslatorEvent, PhotosTranslatorS
         _initFileTypeSelection(emit);
       }else if (event is InitTranslationsFileCreationEvent) {
         await _initTranslationsFile(emit);
-      } else if (event is ChooseCameraEvent) {
+      }else if (event is ChooseCameraEvent) {
         await _chooseCamera(emit, event);
-      } else if (event is ChangeFileNameEvent) {
+      }else if (event is ChangeFileNameEvent) {
         _changeFileName(emit, event);
-      }else if(event is SaveCurrentFileNameEvent){
-        await _saveCurrentFileName(emit);
+      }else if(event is ChangeFileProccessTypeEvent){
+        _changeFileProccessType(emit, event);
+      }else if(event is EndFileInitializingEvent){
+        await _endFileInitializing(emit);
       }else if (event is AddPhotoTranslationEvent) {
         await _addPhotoTranslation(emit);
       }  else if (event is EndTranslationsFileEvent) {
@@ -57,7 +60,11 @@ class PhotosTranslatorBloc extends Bloc<PhotosTranslatorEvent, PhotosTranslatorS
     if(cameraController == null){
       emit(OnSelectingCamera());
     }else{
-      emit(const OnNamingTranslationsFile(name: '', canEnd: false));
+      emit(const OnNamingTranslationsFile(
+        name: '',
+        proccessType: TranslationProccessType.ocr,
+        canEnd: false
+      ));
     }
   }
 
@@ -65,31 +72,55 @@ class PhotosTranslatorBloc extends Bloc<PhotosTranslatorEvent, PhotosTranslatorS
     await cameraController?.dispose();
     cameraController = getNewCameraController(event.camera);
     await cameraController!.initialize();
-    emit(const OnNamingTranslationsFile(name: '', canEnd: false));
+    emit(const OnNamingTranslationsFile(
+      name: '',
+      proccessType: TranslationProccessType.ocr,
+      canEnd: false
+    ));
   }
 
   void _changeFileName(Emitter<PhotosTranslatorState> emit, ChangeFileNameEvent event) {
     final newName = event.name;
-    final canEnd = newName.isNotEmpty;
+    final canEnd = _translationsFileCanEnd(newName);
     if(state is OnNamingTranslationsFile){
-      emit( OnNamingTranslationsFile(name: newName, canEnd: canEnd) );
+      final proccessType = (state as OnNamingTranslationsFile).proccessType;
+      emit(OnNamingTranslationsFile(
+        name: newName,
+        proccessType: proccessType,
+        canEnd: canEnd
+      ));
     }else{
       emit( OnCreatingFolder(name: newName, canEnd: canEnd) );
     }
-    
+  }
+
+  bool _translationsFileCanEnd(String name) => 
+      name.isNotEmpty;
+
+  void _changeFileProccessType(Emitter<PhotosTranslatorState> emit, ChangeFileProccessTypeEvent event){
+    final name = (state as OnNamingTranslationsFile).name;
+    final canEnd = _translationsFileCanEnd(name);
+    emit(OnNamingTranslationsFile(
+      name: name, 
+      proccessType: event.proccessType, 
+      canEnd: canEnd
+    ));
   }
   
-  Future<void> _saveCurrentFileName(Emitter<PhotosTranslatorState> emit)async{
-    final name = (state as OnCreatingAppFile).name;
+  Future<void> _endFileInitializing(Emitter<PhotosTranslatorState> emit)async{
+    final onCreatingState = (state as OnCreatingAppFile);
+    final name = onCreatingState.name;
     final stateIsTranslationsFiles = state is OnCreatingTranslationsFile;
     emit(OnLoadingTranslations());
     if(stateIsTranslationsFiles){
-      final eitherId = await createTranslationsFile(name);
+      final proccessType = (onCreatingState as OnCreatingTranslationsFile).proccessType;
+      final eitherId = await createTranslationsFile(name, proccessType);
       eitherId.fold((_){
 
       }, (id){
-        emit(OnInitializingTranslations(
-          id: id, 
+        emit(OnAddingTranslations(
+          id: id,
+          proccessType: proccessType,
           name: name,
           canTranslate: true,
           canEnd: false, 
@@ -103,19 +134,20 @@ class PhotosTranslatorBloc extends Bloc<PhotosTranslatorEvent, PhotosTranslatorS
   }
 
   Future<void> _addPhotoTranslation(Emitter<PhotosTranslatorState> emit) async {
-    final onCreatingState = (state as OnInitializingTranslations);
-    emit(OnInitializingTranslations(
-        id: onCreatingState.id,
-        name: onCreatingState.name,
-        canTranslate: false,
-        canEnd: false,
-        cameraController: onCreatingState.cameraController
-      )
-    );
+    final onCreatingState = (state as OnAddingTranslations);
+    emit(OnAddingTranslations(
+      id: onCreatingState.id,
+      name: onCreatingState.name,
+      proccessType: TranslationProccessType.ocr,
+      canTranslate: false,
+      canEnd: false,
+      cameraController: onCreatingState.cameraController
+    ));
     final picture = await onCreatingState.cameraController!.takePicture();
-    emit(OnInitializingTranslations(
+    emit(OnAddingTranslations(
         id: onCreatingState.id,
         name: onCreatingState.name,
+        proccessType: TranslationProccessType.ocr,
         canTranslate: true,
         canEnd: true,
         cameraController: onCreatingState.cameraController

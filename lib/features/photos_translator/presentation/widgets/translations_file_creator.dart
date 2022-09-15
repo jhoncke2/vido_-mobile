@@ -9,7 +9,7 @@ class TranslationsFileCreator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dimens = AppDimens();
-    final blocState = BlocProvider.of<PhotosTranslatorBloc>(context).state as OnInitializingTranslations;
+    final blocState = BlocProvider.of<PhotosTranslatorBloc>(context).state as OnAddingTranslations;
     return SingleChildScrollView(
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.9,

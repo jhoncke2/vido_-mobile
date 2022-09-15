@@ -41,7 +41,7 @@ class FileNamer extends StatelessWidget{
               ),
               color: AppColors.primary,
               onPressed: (canEnd)? (){
-                BlocProvider.of<PhotosTranslatorBloc>(context).add(SaveCurrentFileNameEvent());
+                BlocProvider.of<PhotosTranslatorBloc>(context).add(EndFileInitializingEvent());
               } : null
             )
           ],

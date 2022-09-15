@@ -27,7 +27,12 @@ class ChangeFileNameEvent extends PhotosTranslatorEvent{
   ChangeFileNameEvent(this.name);
 }
 
-class SaveCurrentFileNameEvent extends PhotosTranslatorEvent{
+class ChangeFileProccessTypeEvent extends PhotosTranslatorEvent{
+  final TranslationProccessType proccessType;
+  ChangeFileProccessTypeEvent(this.proccessType);
+}
+
+class EndFileInitializingEvent extends PhotosTranslatorEvent{
 
 }
 

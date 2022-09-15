@@ -14,7 +14,6 @@ abstract class PhotosTranslatorLocalAdapter{
 }
 
 class PhotosTranslatorLocalAdapterImpl implements PhotosTranslatorLocalAdapter{
-
   @override
   List<Map<String, dynamic>> getJsonFromPdfFiles(List<PdfFile> files) => files.map<Map<String, dynamic>>(
     (file) => getJsonFromPdfFile(file)
@@ -36,7 +35,9 @@ class PhotosTranslatorLocalAdapterImpl implements PhotosTranslatorLocalAdapter{
         id: fileJson[idKey], 
         name: fileJson[translFilesNameKey], 
         completed: false,
-        translations: getTranslationsFromJson( (jsonTranslations.isNotEmpty)? jsonTranslations[i] : [] )
+        translations: getTranslationsFromJson( (jsonTranslations.isNotEmpty)? jsonTranslations[i] : [] ),
+        proccessType: fileJson[translFilesProccessTypeKey] == translFilesProccessTypeOCRValue? TranslationProccessType.ocr
+                    : TranslationProccessType.icr
       ));
     }
     return files;
@@ -48,7 +49,9 @@ class PhotosTranslatorLocalAdapterImpl implements PhotosTranslatorLocalAdapter{
     translFilesNameKey: file.name,
     translFilesStatusKey: (file.status == TranslationsFileStatus.creating)? translFileStatusOnCreationValue
                         : (file.status == TranslationsFileStatus.created)? translFileStatusCreatedValue
-                        : translFileStatusSendingValue
+                        : translFileStatusSendingValue,
+    translFilesProccessTypeKey: (file.proccessType == TranslationProccessType.ocr)? translFilesProccessTypeOCRValue
+                              : translFilesProccessTypeICRValue
   };
   
   @override
@@ -56,7 +59,9 @@ class PhotosTranslatorLocalAdapterImpl implements PhotosTranslatorLocalAdapter{
     id: json[idKey], 
     name: json[translFilesNameKey], 
     completed: false, 
-    translations: getTranslationsFromJson(translations)
+    translations: getTranslationsFromJson(translations),
+    proccessType: json[translFilesProccessTypeKey] == translFilesProccessTypeOCRValue? TranslationProccessType.ocr
+                    : TranslationProccessType.icr
   );
 
   @override

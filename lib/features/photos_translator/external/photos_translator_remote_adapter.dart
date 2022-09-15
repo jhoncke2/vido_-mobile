@@ -9,9 +9,8 @@ abstract class PhotosTranslatorRemoteAdapter{
   List<PdfFile> getPdfFilesFromJson(List<Map<String, dynamic>> jsonList);
   List<Map<String, dynamic>> getJsonListFromPdfFiles(List<PdfFile> files);
   PdfFile getPdfFileFromJson(Map<String, dynamic> json);
-  List<TranslationsFile> getTranslationsFilesFromJson(List<Map<String, dynamic>> jsonList);
   List<Map<String, dynamic>> getJsonListFromTranslationsFiles(List<TranslationsFile> files);
-  TranslationsFile getTranslationsFileFromJson(Map<String, dynamic> json);
+  TranslationsFile getTranslationsFileFromJson(Map<String, dynamic> json, TranslationProccessType proccsesType);
   Translation getTranslationFromJson(Map<String, dynamic> json);
 }
 
@@ -39,7 +38,7 @@ class PhotosTranslatorRemoteAdapterImpl implements PhotosTranslatorRemoteAdapter
       id: json['id'], 
       name: json['name'], 
       url: json['route'],
-      parentId: json['parent_id']
+      parentId: json['parent_id'],
     );
   
   @override
@@ -54,18 +53,13 @@ class PhotosTranslatorRemoteAdapterImpl implements PhotosTranslatorRemoteAdapter
     ).toList();
   
   @override
-  List<TranslationsFile> getTranslationsFilesFromJson(List<Map<String, dynamic>> jsonList) =>
-    jsonList.map(
-      (j) => getTranslationsFileFromJson(j)
-    ).toList();
-
-  @override
-  TranslationsFile getTranslationsFileFromJson(Map<String, dynamic> json) => 
+  TranslationsFile getTranslationsFileFromJson(Map<String, dynamic> json, TranslationProccessType proccsesType) => 
     TranslationsFile(
       id: json['id'],
       name: json['name'],
       completed: json['completed']??false,
-      translations: _getTranslationsFromJson(((json['translations']??[]) as List).cast<Map<String, dynamic>>())
+      translations: _getTranslationsFromJson(((json['translations']??[]) as List).cast<Map<String, dynamic>>()),
+      proccessType: proccsesType
     );
 
   List<Translation> _getTranslationsFromJson(List<Map<String, dynamic>> jsonList) =>

@@ -53,12 +53,20 @@ void _testCreateTranslationsFileGroup(){
   late TranslationsFile tFile;
   late Map<String, dynamic> tFileJson;
   setUp((){
-    tFile = const TranslationsFile(id: 0, name: 't_f_1', status: TranslationsFileStatus.sending, translations: [], completed: false);
+    tFile = const TranslationsFile(
+      id: 0, 
+      name: 't_f_1', 
+      status: TranslationsFileStatus.sending, 
+      translations: [], 
+      completed: false,
+      proccessType: TranslationProccessType.ocr
+    );
     tFileJson = {
-      'id': 0,
-      'name': 't_f_1',
+      idKey: 0,
+      translFilesNameKey: 't_f_1',
       'translations': [],
-      'completed': false
+      'completed': false,
+      translFilesStatusKey: translFileStatusSendingValue
     };
     when(adapter.getJsonFromTranslationsFile(any)).thenReturn(tFileJson);
     when(persistenceManager.insert(any, any)).thenAnswer((_) async => 0);
@@ -79,13 +87,27 @@ void _testEndTranslationsFileCreationGroup(){
   late Map<String, dynamic> tCreatedFileJson;
   setUp((){
     tFileId = 0;
-    tOnCreationFile = TranslationsFile(id: tFileId, name: 'f_1', status: TranslationsFileStatus.creating, translations: [], completed: true);
+    tOnCreationFile = TranslationsFile(
+      id: tFileId, 
+      name: 'f_1', 
+      status: TranslationsFileStatus.creating, 
+      translations: const [], 
+      completed: true,
+      proccessType: TranslationProccessType.ocr
+    );
     tOnCreationFileJson = {
       idKey: tFileId,
       translFilesNameKey: 'f_1',
       translFilesStatusKey: translFileStatusOnCreationValue
     };
-    tCreatedFile = TranslationsFile(id: tFileId, name: 'f_1', status: TranslationsFileStatus.created, completed: true, translations: []);
+    tCreatedFile = TranslationsFile(
+      id: tFileId, 
+      name: 'f_1', 
+      status: TranslationsFileStatus.created, 
+      completed: true, 
+      translations: const [],
+      proccessType: TranslationProccessType.ocr
+    );
     tCreatedFileJson =  {
       idKey: tFileId,
       translFilesNameKey: 'f_1',
@@ -138,7 +160,14 @@ void _testGetCurrentCreatedFileGroup(){
         translFilesNameKey: 'f_1',
         translFilesStatusKey: translFileStatusOnCreationValue
       };
-      tFile = TranslationsFile(id: 0, name: 'f_1', completed: false, translations: tTranslations, status: TranslationsFileStatus.creating);
+      tFile = TranslationsFile(
+        id: 0, 
+        name: 'f_1', 
+        completed: false, 
+        translations: tTranslations, 
+        status: TranslationsFileStatus.creating,
+        proccessType: TranslationProccessType.ocr
+      );
       when(persistenceManager.queryWhere(translFilesTableName, any, any)).thenAnswer((_) async => [tFileJson!]);
       when(persistenceManager.queryWhere(translationsTableName, any, any)).thenAnswer((_) async => tTranslationsJson);
       when(adapter.getTranslationsFileFromJson(any, any)).thenReturn(tFile!);
@@ -222,8 +251,22 @@ void _testGetTranslationsFilesGroup(){
       Translation(id: 102, imgUrl: 'url_3', text: 'text_3')
     ];
     tFiles = [
-      TranslationsFile(id: 0, name: 'name_1', completed: false, translations: tFirstFileTranslations, status: TranslationsFileStatus.created),
-      TranslationsFile(id: 1, name: 'name_2', completed: false, translations: tSecondFileTranslations, status: TranslationsFileStatus.sending)
+      TranslationsFile(
+        id: 0, 
+        name: 'name_1', 
+        completed: false, 
+        translations: tFirstFileTranslations, 
+        status: TranslationsFileStatus.created,
+        proccessType: TranslationProccessType.ocr
+      ),
+      TranslationsFile(
+        id: 1, 
+        name: 'name_2', 
+        completed: false, 
+        translations: tSecondFileTranslations, 
+        status: TranslationsFileStatus.sending,
+        proccessType: TranslationProccessType.ocr
+      )
     ];
     when(persistenceManager.queryWhere(translationsTableName, any, [tFiles[0].id])).thenAnswer((_) async => tFirstFileTranslationsJson);
     when(persistenceManager.queryWhere(translationsTableName, any, [tFiles[1].id])).thenAnswer((_) async => tSecondFileTranslationsJson);
@@ -269,7 +312,14 @@ void _testGetTranslationsFileGroup(){
     tTranslations = const [
       Translation(id: 100, imgUrl: 'url_1', text: null)
     ];
-    tFile = TranslationsFile(id: tFileId, name: 'name_1', completed: false, translations: tTranslations, status: TranslationsFileStatus.created);
+    tFile = TranslationsFile(
+      id: tFileId, 
+      name: 'name_1', 
+      completed: false, 
+      translations: tTranslations, 
+      status: TranslationsFileStatus.created,
+      proccessType: TranslationProccessType.ocr
+    );
     when(persistenceManager.querySingleOne(any, any)).thenAnswer((_) async => tFileJson);
     when(persistenceManager.queryWhere(translationsTableName, any, any)).thenAnswer((_) async => tTranslationsJson);
     when(adapter.getTranslationsFileFromJson(any, any)).thenAnswer((realInvocation) => tFile);
@@ -291,7 +341,14 @@ void _testGetTranslationsFileGroup(){
 void _testRemoveTranslationsFileGroup(){
   late TranslationsFile tFile;
   setUp((){
-    tFile = const TranslationsFile(id: 0, name: 'file_1', completed: false, translations: [], status: TranslationsFileStatus.sending);
+    tFile = const TranslationsFile(
+      id: 0, 
+      name: 'file_1', 
+      completed: false, 
+      translations: [], 
+      status: TranslationsFileStatus.sending,
+      proccessType: TranslationProccessType.ocr
+    );
   });
 
   test('shold call the specified methods', () async {
@@ -316,7 +373,14 @@ void _testSaveUncompletedTranslationGroup(){
       translFilesNameKey: 'f_1',
       translFilesStatusKey: translFileStatusOnCreationValue
     };
-    tCreatedFile = TranslationsFile(id: tCreatedFileId, name: 'f_1', completed: false, translations: [], status: TranslationsFileStatus.creating);
+    tCreatedFile = TranslationsFile(
+      id: tCreatedFileId, 
+      name: 'f_1', 
+      completed: false, 
+      translations: [], 
+      status: TranslationsFileStatus.creating,
+      proccessType: TranslationProccessType.ocr
+    );
     tTranslationJson = {
       idKey: null,
       translationsImgUrlKey: tImgUrl,

@@ -4,7 +4,6 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/presentation/bloc/photos_translator_bloc.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
@@ -48,13 +47,14 @@ void main() {
     translatePhoto = MockTranslatePhoto();
     createTranslationsFile = MockCreateTranslationsFile();
     photosTranslatorBloc = PhotosTranslatorBloc(
-        createTranslationsFile: createTranslationsFile,
-        translatePhoto: translatePhoto,
-        endPhotosTranslation: endPhotosTranslation,
-        createFolder: createFolder,
-        cameras: tCameras,
-        getNewCameraController: (CameraDescription camera) =>
-            tCameraController);
+      createTranslationsFile: createTranslationsFile,
+      translatePhoto: translatePhoto,
+      endPhotosTranslation: endPhotosTranslation,
+      createFolder: createFolder,
+      cameras: tCameras,
+      getNewCameraController: (CameraDescription camera) =>
+          tCameraController
+    );
   });
 
   test('should have the expected initialized elements', ()async{
@@ -65,7 +65,8 @@ void main() {
   group('init folder creation', _testInitFolderCreationGroup);
   group('choose camera', _testChooseCameraGroup);
   group('change file name', _testChangeFileNameGroup);
-  group('save file name', _testSaveFileNameGroup);
+  group('change file proccess type', _testChangeFileProccessTypeGroup);
+  group('end file initializing', _testEndFileInitializingGroup);
   group('add photo translation', _testAddPhotoTranslationGroup);
   group('end translations file creation', _testEndTranslationsFileCreationGroup);
   
@@ -101,7 +102,11 @@ void _testInitTranslationsFileCreationGroup() {
     photosTranslatorBloc.cameraController = tCameraController;
     final expectedOrderedStates = [
       OnLoadingTranslations(),
-      const OnNamingTranslationsFile(name: '', canEnd: false),
+      const OnNamingTranslationsFile(
+        name: '',
+        proccessType: TranslationProccessType.ocr,
+        canEnd: false
+      ),
     ];
     expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
     photosTranslatorBloc.add(InitTranslationsFileCreationEvent());
@@ -111,7 +116,10 @@ void _testInitTranslationsFileCreationGroup() {
 void _testInitFolderCreationGroup(){
   test('should emit the expected ordered states', ()async{
     final expectedOrdedStates = [
-      const OnCreatingFolder(name: '', canEnd: false)
+      const OnCreatingFolder(
+        name: '', 
+        canEnd: false
+      )
     ];
     expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrdedStates));
     photosTranslatorBloc.add(InitFolderCreationEvent());
@@ -119,9 +127,7 @@ void _testInitFolderCreationGroup(){
 }
 
 void _testChooseCameraGroup() {
-  late int tFileId;
   setUp(() {
-    tFileId = 1001;
     when(tCameraController.cameraId).thenReturn(0);
     when(tCameraController.enableAudio).thenReturn(false);
     when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
@@ -132,7 +138,11 @@ void _testChooseCameraGroup() {
     when(tCameraController.description).thenReturn(tCameras.first);
     photosTranslatorBloc.emit(OnSelectingCamera());
     final expectedOrderedStates = [
-      const OnNamingTranslationsFile(name: '', canEnd: false)
+      const OnNamingTranslationsFile(
+        name: '',
+        proccessType: TranslationProccessType.ocr,
+        canEnd: false
+      )
     ];
     when(tCameraController.description).thenReturn(tCameras.first);
     expectLater(
@@ -156,11 +166,14 @@ void _testChooseCameraGroup() {
     when(tCameraController.description).thenReturn(tCameras.last);
     photosTranslatorBloc.emit(OnSelectingCamera());
     final expectedOrderedStates = [
-      const OnNamingTranslationsFile(name: '', canEnd: false)
+      const OnNamingTranslationsFile(
+        name: '',
+        proccessType: TranslationProccessType.ocr,
+        canEnd: false
+      )
     ];
     when(tCameraController.description).thenReturn(tCameras.last);
-    expectLater(
-        photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
     photosTranslatorBloc.add(ChooseCameraEvent(camera: tCameras.last));
   });
 
@@ -180,7 +193,6 @@ void _testChooseCameraGroup() {
 void _testAddPhotoTranslationGroup() {
   late int tFileId;
   late MockCameraController tCameraController;
-  late List<TranslationsFile> tUncompletedFiles;
   late XFile tPicture;
   setUp(() {
     tFileId = 1001;
@@ -189,25 +201,16 @@ void _testAddPhotoTranslationGroup() {
     when(tCameraController.resolutionPreset).thenReturn(ResolutionPreset.max);
     when(tCameraController.enableAudio).thenReturn(false);
     when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
-    tUncompletedFiles = const [
-      TranslationsFile(id: 0, name: 'file_1', completed: false, translations: [
-        Translation(id: 100, imgUrl: 'url_1', text: null),
-        Translation(id: 101, imgUrl: 'url_2', text: 'texto_2'),
-      ]),
-      TranslationsFile(id: 1, name: 'file_2', completed: false, translations: [
-        Translation(id: 100, imgUrl: 'url_1', text: null),
-        Translation(id: 101, imgUrl: 'url_2', text: 'texto_2'),
-      ]),
-    ];
     tPicture = XFile('any_path');
     when(translatePhoto(any)).thenAnswer((_) async => const Right(null));
     when(tCameraController.takePicture()).thenAnswer((_) async => tPicture);
   });
 
   test('should call the specified methods when current state is OnCreating', () async {
-    photosTranslatorBloc.emit(OnInitializingTranslations(
+    photosTranslatorBloc.emit(OnAddingTranslations(
         id: tFileId,
         name: '',
+        proccessType: TranslationProccessType.ocr,
         canTranslate: true,
         canEnd: false,
         cameraController: tCameraController
@@ -218,26 +221,27 @@ void _testAddPhotoTranslationGroup() {
     verify(translatePhoto(tPicture.path));
   });
 
-  test(
-      'should yield the expected ordered states when current state is OnCreating and it cant end',
-      () async {
-    photosTranslatorBloc.emit(OnInitializingTranslations(
+  test('should yield the expected ordered states when current state is OnCreating and it cant end', () async {
+    photosTranslatorBloc.emit(OnAddingTranslations(
         id: tFileId,
         name: '',
+        proccessType: TranslationProccessType.ocr,
         canTranslate: true,
         canEnd: false,
         cameraController: tCameraController));
     final expectedOrderedStates = [
-      OnInitializingTranslations(
+      OnAddingTranslations(
         id: tFileId,
         name: '',
+        proccessType: TranslationProccessType.ocr,
         canTranslate: false,
         canEnd: false,
         cameraController: tCameraController
       ),
-      OnInitializingTranslations(
+      OnAddingTranslations(
           id: tFileId,
           name: '',
+          proccessType: TranslationProccessType.ocr,
           canTranslate: true,
           canEnd: true,
           cameraController: tCameraController)
@@ -246,29 +250,32 @@ void _testAddPhotoTranslationGroup() {
     photosTranslatorBloc.add(AddPhotoTranslationEvent());
   });
   
-  test(
-      'should yield the expected ordered states when current state is OnCreating and it already can end',
-      () async {
-    photosTranslatorBloc.emit(OnInitializingTranslations(
-        id: tFileId,
-        name: '',
-        canTranslate: true,
-        canEnd: false,
-        cameraController: tCameraController));
+  test('should yield the expected ordered states when current state is OnCreating and it already can end', () async {
+    photosTranslatorBloc.emit(OnAddingTranslations(
+      id: tFileId,
+      name: '',
+      proccessType: TranslationProccessType.ocr,
+      canTranslate: true,
+      canEnd: false,
+      cameraController: tCameraController
+    ));
     final expectedOrderedStates = [
-      OnInitializingTranslations(
+      OnAddingTranslations(
         id: tFileId,
         name: '',
+        proccessType: TranslationProccessType.ocr,
         canTranslate: false,
         canEnd: false,
         cameraController: tCameraController
       ),
-      OnInitializingTranslations(
-          id: tFileId,
-          name: '',
-          canTranslate: true,
-          canEnd: true,
-          cameraController: tCameraController)
+      OnAddingTranslations(
+        id: tFileId,
+        name: '',
+        proccessType: TranslationProccessType.ocr,
+        canTranslate: true,
+        canEnd: true,
+        cameraController: tCameraController
+      )
     ];
     expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
     photosTranslatorBloc.add(AddPhotoTranslationEvent());
@@ -288,29 +295,80 @@ void _testChangeFileNameGroup() {
       when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
     });
 
-    test('should yield the expected ordered states when file could end and now it cant', () {
-      photosTranslatorBloc.emit(const OnNamingTranslationsFile(name: 'n', canEnd: true));
+    test('should yield the expected ordered states when file could end and now it cant and proccessType is ocr', () {
+      photosTranslatorBloc.emit(const OnNamingTranslationsFile(
+        name: 'n',
+        proccessType: TranslationProccessType.ocr,
+        canEnd: true
+      ));
       tNewName = '';
       final expectedOrderedStates = [
-        OnNamingTranslationsFile(name: tNewName, canEnd: false)
+        OnNamingTranslationsFile(
+          name: tNewName,
+          proccessType: TranslationProccessType.ocr,
+          canEnd: false
+        )
       ];
-      expectLater(
-          photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
       photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
     });
 
-    test('should yield the expected ordered states when file could Not end and now it can', () {
-      photosTranslatorBloc.emit(const OnNamingTranslationsFile(name: '', canEnd: false));
+    test('should yield the expected ordered states when file could Not end and now it can and proccessType is ocr', () {
+      photosTranslatorBloc.emit(const OnNamingTranslationsFile(
+        name: '',
+        proccessType: TranslationProccessType.ocr,
+        canEnd: false
+      ));
       tNewName = 'new_name_x';
       final expectedOrderedStates = [
-        OnNamingTranslationsFile(name: tNewName, canEnd: true)
+        OnNamingTranslationsFile(
+          name: tNewName,
+          proccessType: TranslationProccessType.ocr,
+          canEnd: true
+        )
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
+    });
+
+    test('should yield the expected ordered states when file could end and now it cant and proccessType is icr', () {
+      photosTranslatorBloc.emit(const OnNamingTranslationsFile(
+        name: 'n',
+        proccessType: TranslationProccessType.icr,
+        canEnd: true
+      ));
+      tNewName = '';
+      final expectedOrderedStates = [
+        OnNamingTranslationsFile(
+          name: tNewName,
+          proccessType: TranslationProccessType.icr,
+          canEnd: false
+        )
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
+    });
+
+    test('should yield the expected ordered states when file could Not end and now it can and proccessType is icr', () {
+      photosTranslatorBloc.emit(const OnNamingTranslationsFile(
+        name: '',
+        proccessType: TranslationProccessType.icr,
+        canEnd: false
+      ));
+      tNewName = 'new_name_x';
+      final expectedOrderedStates = [
+        OnNamingTranslationsFile(
+          name: tNewName,
+          proccessType: TranslationProccessType.icr,
+          canEnd: true
+        )
       ];
       expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
       photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
     });
   });
 
-  group('when the state is OnCreatingTranslationsFile', (){
+  group('when the state is OnCreatingFolder', (){
     setUp(() {
       when(tCameraController.cameraId).thenReturn(0);
       when(tCameraController.resolutionPreset).thenReturn(ResolutionPreset.max);
@@ -341,13 +399,93 @@ void _testChangeFileNameGroup() {
   });
 }
 
-void _testSaveFileNameGroup(){
+void _testChangeFileProccessTypeGroup(){
+  late MockCameraController tCameraController;
+  setUp(() {
+    tCameraController = MockCameraController();
+    when(tCameraController.cameraId).thenReturn(0);
+    when(tCameraController.resolutionPreset).thenReturn(ResolutionPreset.max);
+    when(tCameraController.enableAudio).thenReturn(false);
+    when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
+  });
+
+  test('should yield the expected ordered states when file could end and the new translationProccessType is ocr', () {
+    photosTranslatorBloc.emit(const OnNamingTranslationsFile(
+      name: 'n',
+      proccessType: TranslationProccessType.icr,
+      canEnd: true
+    ));
+    final expectedOrderedStates = [
+      const OnNamingTranslationsFile(
+        name: 'n',
+        proccessType: TranslationProccessType.ocr,
+        canEnd: true
+      )
+    ];
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    photosTranslatorBloc.add(ChangeFileProccessTypeEvent(TranslationProccessType.ocr));
+  });
+
+  test('should yield the expected ordered states when file could not end and the new translationProccessType is ocr', () {
+    photosTranslatorBloc.emit(const OnNamingTranslationsFile(
+      name: '',
+      proccessType: TranslationProccessType.icr,
+      canEnd: false
+    ));
+    final expectedOrderedStates = [
+      const OnNamingTranslationsFile(
+        name: '',
+        proccessType: TranslationProccessType.ocr,
+        canEnd: false
+      )
+    ];
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    photosTranslatorBloc.add(ChangeFileProccessTypeEvent(TranslationProccessType.ocr));
+  });
+
+  test('should yield the expected ordered states when file could end and now it cant and proccessType is icr', () {
+    photosTranslatorBloc.emit(const OnNamingTranslationsFile(
+      name: 'n',
+      proccessType: TranslationProccessType.ocr,
+      canEnd: true
+    ));
+    final expectedOrderedStates = [
+      const OnNamingTranslationsFile(
+        name: 'n',
+        proccessType: TranslationProccessType.icr,
+        canEnd: true
+      )
+    ];
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    photosTranslatorBloc.add(ChangeFileProccessTypeEvent(TranslationProccessType.icr));
+  });
+
+  test('should yield the expected ordered states when file could Not end and now it can and proccessType is icr', () {
+    photosTranslatorBloc.emit(const OnNamingTranslationsFile(
+      name: '',
+      proccessType: TranslationProccessType.ocr,
+      canEnd: false
+    ));
+    final expectedOrderedStates = [
+      const OnNamingTranslationsFile(
+        name: '',
+        proccessType: TranslationProccessType.icr,
+        canEnd: false
+      )
+    ];
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    photosTranslatorBloc.add(ChangeFileProccessTypeEvent(TranslationProccessType.icr));
+  });
+}
+
+void _testEndFileInitializingGroup(){
   late String tName;
   setUp((){
     tName = 't_name';
   });
   group('when state is OnCreatingTranslationsFile', (){
     late int tId;
+    late TranslationProccessType tProccessType;
     setUp((){
       tId = 1001;
       photosTranslatorBloc.cameraController = tCameraController;
@@ -356,30 +494,74 @@ void _testSaveFileNameGroup(){
       when(tCameraController.enableAudio).thenReturn(false);
       when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
       when(tCameraController.description).thenReturn(tCameras.first);
-      photosTranslatorBloc.emit(OnNamingTranslationsFile(name: tName, canEnd: true));
-      when(createTranslationsFile(any)).thenAnswer((_) async => Right(tId));
+      when(createTranslationsFile(any, any)).thenAnswer((_) async => Right(tId));
     });
 
-    test('shold call the specified methods', ()async{
-      photosTranslatorBloc.add(SaveCurrentFileNameEvent());
-      await untilCalled(createTranslationsFile(any));
-      verify(createTranslationsFile(tName));
-      verifyNever(createFolder(any));
-    });
-    
-    test('should yield the expected ordered states', ()async{
-      final expectedOrderedStates = [
-        OnLoadingTranslations(),
-        OnInitializingTranslations(
-          id: tId,
+    group('when proccessType is ocr', (){
+      setUp((){
+        tProccessType = TranslationProccessType.ocr;
+        photosTranslatorBloc.emit(OnNamingTranslationsFile(
           name: tName,
-          canTranslate: true,
-          canEnd: false,
-          cameraController: tCameraController
-        )
-      ];
-      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
-      photosTranslatorBloc.add(SaveCurrentFileNameEvent());
+          proccessType: tProccessType,
+          canEnd: true
+        ));
+      });
+
+      test('shold call the specified methods', ()async{
+        photosTranslatorBloc.add(EndFileInitializingEvent());
+        await untilCalled(createTranslationsFile(any, any));
+        verify(createTranslationsFile(tName, tProccessType));
+        verifyNever(createFolder(any));
+      });
+      
+      test('should yield the expected ordered states', ()async{
+        final expectedOrderedStates = [
+          OnLoadingTranslations(),
+          OnAddingTranslations(
+            id: tId,
+            name: tName,
+            proccessType: tProccessType,
+            canTranslate: true,
+            canEnd: false,
+            cameraController: tCameraController
+          )
+        ];
+        expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+        photosTranslatorBloc.add(EndFileInitializingEvent());
+      });
+    });
+    group('when proccessType is icr', (){
+      setUp((){
+        tProccessType = TranslationProccessType.icr;
+        photosTranslatorBloc.emit(OnNamingTranslationsFile(
+          name: tName,
+          proccessType: tProccessType,
+          canEnd: true
+        ));
+      });
+
+      test('shold call the specified methods', ()async{
+        photosTranslatorBloc.add(EndFileInitializingEvent());
+        await untilCalled(createTranslationsFile(any, any));
+        verify(createTranslationsFile(tName, tProccessType));
+        verifyNever(createFolder(any));
+      });
+      
+      test('should yield the expected ordered states', ()async{
+        final expectedOrderedStates = [
+          OnLoadingTranslations(),
+          OnAddingTranslations(
+            id: tId,
+            name: tName,
+            proccessType: tProccessType,
+            canTranslate: true,
+            canEnd: false,
+            cameraController: tCameraController
+          )
+        ];
+        expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+        photosTranslatorBloc.add(EndFileInitializingEvent());
+      });
     });
   });
   group('when state is OnCreatingFolder', (){
@@ -390,10 +572,10 @@ void _testSaveFileNameGroup(){
     });
 
     test('shold call the specified methods', ()async{
-      photosTranslatorBloc.add(SaveCurrentFileNameEvent());
+      photosTranslatorBloc.add(EndFileInitializingEvent());
       await untilCalled(createFolder(any));
       verify(createFolder(tName));
-      verifyNever(createTranslationsFile(any));
+      verifyNever(createTranslationsFile(any, any));
     });
 
     test('should yield the expected ordered states', ()async{
@@ -402,27 +584,16 @@ void _testSaveFileNameGroup(){
         OnAppFileCreationEnded()
       ];
       expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
-      photosTranslatorBloc.add(SaveCurrentFileNameEvent());
+      photosTranslatorBloc.add(EndFileInitializingEvent());
     });
   });
 }
 
 void _testEndTranslationsFileCreationGroup() {
-  late List<TranslationsFile> tUncompletedFiles;
   late MockCameraController tCameraController;
   late int tFileId;
   late String tFileName;
   setUp(() {
-    tUncompletedFiles = const [
-      TranslationsFile(id: 0, name: 'file_1', completed: false, translations: [
-        Translation(id: 100, imgUrl: 'url_1', text: null),
-        Translation(id: 101, imgUrl: 'url_2', text: 'texto_2'),
-      ]),
-      TranslationsFile(id: 1, name: 'file_2', completed: false, translations: [
-        Translation(id: 102, imgUrl: 'url_1', text: null),
-        Translation(id: 103, imgUrl: 'url_2', text: 'texto_2'),
-      ]),
-    ];
     tCameraController = MockCameraController();
     when(tCameraController.cameraId).thenReturn(0);
     when(tCameraController.resolutionPreset).thenReturn(ResolutionPreset.max);
@@ -430,12 +601,14 @@ void _testEndTranslationsFileCreationGroup() {
     when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
     tFileId = 1000;
     tFileName = 'name_x';
-    photosTranslatorBloc.emit(OnInitializingTranslations(
-        id: tFileId,
-        name: tFileName,
-        canTranslate: true,
-        canEnd: true,
-        cameraController: tCameraController));
+    photosTranslatorBloc.emit(OnAddingTranslations(
+      id: tFileId,
+      name: tFileName,
+      proccessType: TranslationProccessType.ocr,
+      canTranslate: true,
+      canEnd: true,
+      cameraController: tCameraController
+    ));
     when(endPhotosTranslation())
         .thenAnswer((_) async => const Right(null));
   });

@@ -4,27 +4,29 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i8;
-import 'dart:convert' as _i15;
+import 'dart:convert' as _i16;
 import 'dart:io' as _i6;
-import 'dart:typed_data' as _i16;
-import 'dart:ui' as _i13;
+import 'dart:typed_data' as _i17;
+import 'dart:ui' as _i14;
 
 import 'package:camera/camera.dart' as _i3;
 import 'package:dartz/dartz.dart' as _i2;
 import 'package:flutter/foundation.dart' as _i5;
 import 'package:flutter/material.dart' as _i4;
-import 'package:flutter/services.dart' as _i14;
+import 'package:flutter/services.dart' as _i15;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:vido/features/photos_translator/domain/entities/translations_file.dart'
+    as _i10;
 import 'package:vido/features/photos_translator/domain/failures/photos_translator_failure.dart'
     as _i9;
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart'
-    as _i12;
+    as _i13;
 import 'package:vido/features/photos_translator/presentation/use_cases/create_translations_file.dart'
     as _i7;
 import 'package:vido/features/photos_translator/presentation/use_cases/end_photos_translations_file.dart'
-    as _i11;
+    as _i12;
 import 'package:vido/features/photos_translator/presentation/use_cases/translate_photo.dart'
-    as _i10;
+    as _i11;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -119,19 +121,20 @@ class MockCreateTranslationsFile extends _i1.Mock
   }
 
   @override
-  _i8.Future<_i2.Either<_i9.PhotosTranslatorFailure, int>> call(String? name) =>
-      (super.noSuchMethod(Invocation.method(#call, [name]),
+  _i8.Future<_i2.Either<_i9.PhotosTranslatorFailure, int>> call(
+          String? name, _i10.TranslationProccessType? proccessType) =>
+      (super.noSuchMethod(Invocation.method(#call, [name, proccessType]),
           returnValue:
               _i8.Future<_i2.Either<_i9.PhotosTranslatorFailure, int>>.value(
-                  _FakeEither_0<_i9.PhotosTranslatorFailure, int>(
-                      this, Invocation.method(#call, [name])))) as _i8
+                  _FakeEither_0<_i9.PhotosTranslatorFailure, int>(this,
+                      Invocation.method(#call, [name, proccessType])))) as _i8
           .Future<_i2.Either<_i9.PhotosTranslatorFailure, int>>);
 }
 
 /// A class which mocks [TranslatePhoto].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTranslatePhoto extends _i1.Mock implements _i10.TranslatePhoto {
+class MockTranslatePhoto extends _i1.Mock implements _i11.TranslatePhoto {
   MockTranslatePhoto() {
     _i1.throwOnMissingStub(this);
   }
@@ -151,7 +154,7 @@ class MockTranslatePhoto extends _i1.Mock implements _i10.TranslatePhoto {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockEndPhotosTranslationsFile extends _i1.Mock
-    implements _i11.EndPhotosTranslationsFile {
+    implements _i12.EndPhotosTranslationsFile {
   MockEndPhotosTranslationsFile() {
     _i1.throwOnMissingStub(this);
   }
@@ -169,7 +172,7 @@ class MockEndPhotosTranslationsFile extends _i1.Mock
 /// A class which mocks [CreateFolder].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCreateFolder extends _i1.Mock implements _i12.CreateFolder {
+class MockCreateFolder extends _i1.Mock implements _i13.CreateFolder {
   MockCreateFolder() {
     _i1.throwOnMissingStub(this);
   }
@@ -315,7 +318,7 @@ class MockCameraController extends _i1.Mock implements _i3.CameraController {
               returnValueForMissingStub: _i8.Future<void>.value())
           as _i8.Future<void>);
   @override
-  _i8.Future<void> setExposurePoint(_i13.Offset? point) => (super.noSuchMethod(
+  _i8.Future<void> setExposurePoint(_i14.Offset? point) => (super.noSuchMethod(
       Invocation.method(#setExposurePoint, [point]),
       returnValue: _i8.Future<void>.value(),
       returnValueForMissingStub: _i8.Future<void>.value()) as _i8.Future<void>);
@@ -337,7 +340,7 @@ class MockCameraController extends _i1.Mock implements _i3.CameraController {
           returnValue: _i8.Future<double>.value(0.0)) as _i8.Future<double>);
   @override
   _i8.Future<void> lockCaptureOrientation(
-          [_i14.DeviceOrientation? orientation]) =>
+          [_i15.DeviceOrientation? orientation]) =>
       (super.noSuchMethod(
               Invocation.method(#lockCaptureOrientation, [orientation]),
               returnValue: _i8.Future<void>.value(),
@@ -354,7 +357,7 @@ class MockCameraController extends _i1.Mock implements _i3.CameraController {
       returnValue: _i8.Future<void>.value(),
       returnValueForMissingStub: _i8.Future<void>.value()) as _i8.Future<void>);
   @override
-  _i8.Future<void> setFocusPoint(_i13.Offset? point) => (super.noSuchMethod(
+  _i8.Future<void> setFocusPoint(_i14.Offset? point) => (super.noSuchMethod(
       Invocation.method(#setFocusPoint, [point]),
       returnValue: _i8.Future<void>.value(),
       returnValueForMissingStub: _i8.Future<void>.value()) as _i8.Future<void>);
@@ -364,11 +367,11 @@ class MockCameraController extends _i1.Mock implements _i3.CameraController {
       returnValue: _i8.Future<void>.value(),
       returnValueForMissingStub: _i8.Future<void>.value()) as _i8.Future<void>);
   @override
-  void removeListener(_i13.VoidCallback? listener) =>
+  void removeListener(_i14.VoidCallback? listener) =>
       super.noSuchMethod(Invocation.method(#removeListener, [listener]),
           returnValueForMissingStub: null);
   @override
-  void addListener(_i13.VoidCallback? listener) =>
+  void addListener(_i14.VoidCallback? listener) =>
       super.noSuchMethod(Invocation.method(#addListener, [listener]),
           returnValueForMissingStub: null);
   @override
@@ -506,7 +509,7 @@ class MockFile extends _i1.Mock implements _i6.File {
   @override
   _i6.IOSink openWrite(
           {_i6.FileMode? mode = _i6.FileMode.write,
-          _i15.Encoding? encoding = const _i15.Utf8Codec()}) =>
+          _i16.Encoding? encoding = const _i16.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#openWrite, [], {#mode: mode, #encoding: encoding}),
           returnValue: _FakeIOSink_10(
@@ -515,35 +518,35 @@ class MockFile extends _i1.Mock implements _i6.File {
                   #openWrite, [], {#mode: mode, #encoding: encoding}))) as _i6
           .IOSink);
   @override
-  _i8.Future<_i16.Uint8List> readAsBytes() =>
+  _i8.Future<_i17.Uint8List> readAsBytes() =>
       (super.noSuchMethod(Invocation.method(#readAsBytes, []),
-              returnValue: _i8.Future<_i16.Uint8List>.value(_i16.Uint8List(0)))
-          as _i8.Future<_i16.Uint8List>);
+              returnValue: _i8.Future<_i17.Uint8List>.value(_i17.Uint8List(0)))
+          as _i8.Future<_i17.Uint8List>);
   @override
-  _i16.Uint8List readAsBytesSync() =>
+  _i17.Uint8List readAsBytesSync() =>
       (super.noSuchMethod(Invocation.method(#readAsBytesSync, []),
-          returnValue: _i16.Uint8List(0)) as _i16.Uint8List);
+          returnValue: _i17.Uint8List(0)) as _i17.Uint8List);
   @override
   _i8.Future<String> readAsString(
-          {_i15.Encoding? encoding = const _i15.Utf8Codec()}) =>
+          {_i16.Encoding? encoding = const _i16.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#readAsString, [], {#encoding: encoding}),
           returnValue: _i8.Future<String>.value('')) as _i8.Future<String>);
   @override
-  String readAsStringSync({_i15.Encoding? encoding = const _i15.Utf8Codec()}) =>
+  String readAsStringSync({_i16.Encoding? encoding = const _i16.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#readAsStringSync, [], {#encoding: encoding}),
           returnValue: '') as String);
   @override
   _i8.Future<List<String>> readAsLines(
-          {_i15.Encoding? encoding = const _i15.Utf8Codec()}) =>
+          {_i16.Encoding? encoding = const _i16.Utf8Codec()}) =>
       (super.noSuchMethod(
               Invocation.method(#readAsLines, [], {#encoding: encoding}),
               returnValue: _i8.Future<List<String>>.value(<String>[]))
           as _i8.Future<List<String>>);
   @override
   List<String> readAsLinesSync(
-          {_i15.Encoding? encoding = const _i15.Utf8Codec()}) =>
+          {_i16.Encoding? encoding = const _i16.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#readAsLinesSync, [], {#encoding: encoding}),
           returnValue: <String>[]) as List<String>);
@@ -566,7 +569,7 @@ class MockFile extends _i1.Mock implements _i6.File {
   @override
   _i8.Future<_i6.File> writeAsString(String? contents,
           {_i6.FileMode? mode = _i6.FileMode.write,
-          _i15.Encoding? encoding = const _i15.Utf8Codec(),
+          _i16.Encoding? encoding = const _i16.Utf8Codec(),
           bool? flush = false}) =>
       (super
           .noSuchMethod(Invocation.method(#writeAsString, [contents], {#mode: mode, #encoding: encoding, #flush: flush}),
@@ -582,7 +585,7 @@ class MockFile extends _i1.Mock implements _i6.File {
   @override
   void writeAsStringSync(String? contents,
           {_i6.FileMode? mode = _i6.FileMode.write,
-          _i15.Encoding? encoding = const _i15.Utf8Codec(),
+          _i16.Encoding? encoding = const _i16.Utf8Codec(),
           bool? flush = false}) =>
       super.noSuchMethod(
           Invocation.method(#writeAsStringSync, [contents],

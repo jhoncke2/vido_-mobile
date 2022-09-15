@@ -15,6 +15,9 @@ const translFileStatusOnCreationValue = 'on_creation';
 const translFileStatusCreatedValue = 'created';
 const translFileStatusSendingValue = 'sending';
 const translFilesParentIdKey = 'parent_id';
+const translFilesProccessTypeOCRValue = 'ocr';
+const translFilesProccessTypeICRValue = 'icr';
+const translFilesProccessTypeKey = 'proccess_type';
 
 const translationsTableName = 'Translations';
 const translationsImgUrlKey = 'img_url';

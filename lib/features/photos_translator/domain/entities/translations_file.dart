@@ -7,18 +7,25 @@ enum TranslationsFileStatus{
   sending
 }
 
+enum TranslationProccessType{
+  ocr,
+  icr
+}
+
 class TranslationsFile extends Equatable{
   final int id; 
   final String name;
   final bool completed;
   final TranslationsFileStatus? status;
   final List<Translation> translations;
+  final TranslationProccessType proccessType;
   const TranslationsFile({
     required this.id, 
     required this.name,
     required this.completed,
     this.status = TranslationsFileStatus.creating,
-    required this.translations
+    required this.translations,
+    required this.proccessType
   });
   @override
   List<Object?> get props => [
@@ -26,6 +33,7 @@ class TranslationsFile extends Equatable{
     name,
     completed,
     status,
-    translations
+    translations,
+    proccessType
   ];
 }

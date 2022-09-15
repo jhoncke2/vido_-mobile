@@ -11,7 +11,6 @@ import 'package:vido/features/photos_translator/domain/entities/translations_fil
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_local_adapter.dart';
-import '../../../../core/domain/file_parent_type.dart';
 import '../../../files_navigator/external/data_sources/fake/tree.dart';
 
 class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPartRequests implements PhotosTranslatorRemoteDataSource{
@@ -35,15 +34,25 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
 
   @override
   Future<TranslationsFile> createTranslationsFile(String name, int parentId, String accessToken)async{
-    return TranslationsFile(id: Random().nextInt(99999999), name: name, completed: false, translations: const []);
+    return TranslationsFile(
+      id: Random().nextInt(99999999), 
+      name: name, 
+      completed: false, 
+      translations: const [],
+      proccessType: TranslationProccessType.ocr
+    );
   }
 
   @override
   Future<PdfFile> endTranslationFile(int id, String accessToken)async{
     final translationsFileJson = await persistenceManager.querySingleOne(translFilesTableName, id);
     final translationsFile = adapter.getTranslationsFileFromJson(translationsFileJson, []);
-    final pdfFile = PdfFile(id: Random().nextInt(99999999), name: translationsFile.name, url: _examplePdfUrl, parentId: 100);
-    
+    final pdfFile = PdfFile(
+      id: Random().nextInt(99999999), 
+      name: translationsFile.name, 
+      url: _examplePdfUrl, 
+      parentId: 100
+    );
     return pdfFile;
   }
   
@@ -54,5 +63,14 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
     (parentFolder as Folder).children.add(newFolder);
     filesTree.addAt(parentId, newFolder);
   }
-
+  
+  @override
+  Future<Translation> translateWithIcr(int fileId, String photoUrl, String accessToken)async{
+    final translation = Translation(
+      id: Random().nextInt(99999999), 
+      imgUrl: photoUrl, 
+      text: 'translation text'
+    );
+    return translation;
+  }
 }

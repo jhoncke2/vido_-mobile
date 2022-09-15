@@ -44,7 +44,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
       );
     });
     final jsonResponse = await super.getResponseData(()async => jsonDecode(response.body));
-    return adapter.getTranslationsFileFromJson(jsonResponse);
+    return adapter.getTranslationsFileFromJson(jsonResponse, TranslationProccessType.ocr);
   }
 
   @override
@@ -96,5 +96,11 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
         body: jsonEncode(body)
       );
     });
+  }
+  
+  @override
+  Future<Translation> translateWithIcr(int fileId, String photoUrl, String accessToken)async{
+    // TODO: implement translateWithIcr
+    throw UnimplementedError();
   }
 }

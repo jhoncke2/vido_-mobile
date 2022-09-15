@@ -4,11 +4,11 @@ import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/user_extra_info_getter.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_local_data_source.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_remote_data_source.dart';
+import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/failures/photos_translator_failure.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/domain/repository/photos_translator_repository.dart';
 import 'package:vido/features/photos_translator/domain/translations_files_receiver.dart';
-import '../../../../core/domain/file_parent_type.dart';
 import '../../../../core/external/translations_file_parent_folder_getter.dart';
 
 //TODO: Tener en cuenta caso en que celular se apague y la pérdida de información en inCompletingProcessLastFiles
@@ -27,7 +27,7 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
   });
 
   @override
-  Future<Either<PhotosTranslatorFailure, int>> createTranslationsFile(String name) async {
+  Future<Either<PhotosTranslatorFailure, int>> createTranslationsFile(String name, TranslationProccessType proccessType) async {
     return await _manageFunctionExceptions(()async{
       final parentId = await translFileParentFolderGetter.getCurrentFileId();
       final accessToken = await userExtraInfoGetter.getAccessToken();
@@ -65,12 +65,6 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
 
   }
 
-  Future<void> _endFile(TranslationsFile endedFile)async{
-    final accessToken = await userExtraInfoGetter.getAccessToken();
-    await remoteDataSource.endTranslationFile(endedFile.id, accessToken);
-    await localDataSource.removeTranslationsFile(endedFile);
-  }
-
   @override
   Future<Either<PhotosTranslatorFailure, void>> translatePhoto(String? photoUrl) async {
     await localDataSource.saveUncompletedTranslation(photoUrl!);
@@ -85,10 +79,15 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
       for (final translFile in uncompletedTranslationsFiles) {
         for (final translation in translFile.translations) {
           if (translation.text == null) {
-            final translationCompleted = await localDataSource.translate(translation, translFile.id);
-            await localDataSource.updateTranslation(translFile.id, translationCompleted);
             final accessToken = await userExtraInfoGetter.getAccessToken();
-            await remoteDataSource.addTranslation(translFile.id, translationCompleted, accessToken);
+            late Translation translationCompleted;
+            if(translFile.proccessType == TranslationProccessType.icr){
+              translationCompleted = await remoteDataSource.translateWithIcr(translFile.id, translation.imgUrl, accessToken);
+            }else{
+              translationCompleted = await localDataSource.translate(translation, translFile.id);
+              await remoteDataSource.addTranslation(translFile.id, translationCompleted, accessToken);
+            }
+            await localDataSource.updateTranslation(translFile.id, translationCompleted);
             final createdFile = await localDataSource.getCurrentCreatedFile();
             final uncompletedFile = await localDataSource.getTranslationsFile(translFile.id);
             if((createdFile == null || createdFile.id != uncompletedFile.id) && uncompletedFile.translations.every((t) => t.text != null)){
@@ -100,6 +99,12 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
         }
       }
     }
+  }
+
+  Future<void> _endFile(TranslationsFile endedFile)async{
+    final accessToken = await userExtraInfoGetter.getAccessToken();
+    await remoteDataSource.endTranslationFile(endedFile.id, accessToken);
+    await localDataSource.removeTranslationsFile(endedFile);
   }
 
   @override

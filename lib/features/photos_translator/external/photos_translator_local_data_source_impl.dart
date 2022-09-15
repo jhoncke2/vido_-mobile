@@ -34,7 +34,8 @@ class PhotosTranslatorLocalDataSourceImpl implements PhotosTranslatorLocalDataSo
       name: file.name, 
       completed: file.completed, 
       translations: file.translations, 
-      status: TranslationsFileStatus.created
+      status: TranslationsFileStatus.created,
+      proccessType: file.proccessType
     );
     final updatedFileJson = adapter.getJsonFromTranslationsFile(updatedFile);
     await databaseManager.update(translFilesTableName, updatedFileJson, updatedFile.id);

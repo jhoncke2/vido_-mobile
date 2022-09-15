@@ -17,9 +17,9 @@ import 'package:vido/features/photos_translator/data/data_sources/photos_transla
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_remote_data_source.dart'
     as _i6;
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart'
-    as _i3;
-import 'package:vido/features/photos_translator/domain/entities/translation.dart'
     as _i4;
+import 'package:vido/features/photos_translator/domain/entities/translation.dart'
+    as _i3;
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart'
     as _i2;
 import 'package:vido/features/photos_translator/domain/translations_files_receiver.dart'
@@ -42,13 +42,13 @@ class _FakeTranslationsFile_0 extends _i1.SmartFake
       : super(parent, parentInvocation);
 }
 
-class _FakePdfFile_1 extends _i1.SmartFake implements _i3.PdfFile {
-  _FakePdfFile_1(Object parent, Invocation parentInvocation)
+class _FakeTranslation_1 extends _i1.SmartFake implements _i3.Translation {
+  _FakeTranslation_1(Object parent, Invocation parentInvocation)
       : super(parent, parentInvocation);
 }
 
-class _FakeTranslation_2 extends _i1.SmartFake implements _i4.Translation {
-  _FakeTranslation_2(Object parent, Invocation parentInvocation)
+class _FakePdfFile_2 extends _i1.SmartFake implements _i4.PdfFile {
+  _FakePdfFile_2(Object parent, Invocation parentInvocation)
       : super(parent, parentInvocation);
 }
 
@@ -116,19 +116,29 @@ class MockPhotosTranslatorRemoteDataSource extends _i1.Mock
                     accessToken
                   ])))) as _i7.Future<_i2.TranslationsFile>);
   @override
+  _i7.Future<_i3.Translation> translateWithIcr(
+          int? fileId, String? photoUrl, String? accessToken) =>
+      (super.noSuchMethod(
+          Invocation.method(#translateWithIcr, [fileId, photoUrl, accessToken]),
+          returnValue: _i7.Future<_i3.Translation>.value(_FakeTranslation_1(
+              this,
+              Invocation.method(
+                  #translateWithIcr, [fileId, photoUrl, accessToken])))) as _i7
+          .Future<_i3.Translation>);
+  @override
   _i7.Future<int> addTranslation(
-          int? fileId, _i4.Translation? translation, String? accessToken) =>
+          int? fileId, _i3.Translation? translation, String? accessToken) =>
       (super.noSuchMethod(
           Invocation.method(
               #addTranslation, [fileId, translation, accessToken]),
           returnValue: _i7.Future<int>.value(0)) as _i7.Future<int>);
   @override
-  _i7.Future<_i3.PdfFile> endTranslationFile(int? id, String? accessToken) =>
+  _i7.Future<_i4.PdfFile> endTranslationFile(int? id, String? accessToken) =>
       (super.noSuchMethod(
               Invocation.method(#endTranslationFile, [id, accessToken]),
-              returnValue: _i7.Future<_i3.PdfFile>.value(_FakePdfFile_1(this,
+              returnValue: _i7.Future<_i4.PdfFile>.value(_FakePdfFile_2(this,
                   Invocation.method(#endTranslationFile, [id, accessToken]))))
-          as _i7.Future<_i3.PdfFile>);
+          as _i7.Future<_i4.PdfFile>);
   @override
   _i7.Future<void> createFolder(
           String? name, int? parentId, String? accessToken) =>
@@ -166,18 +176,18 @@ class MockPhotosTranslatorLocalDataSource extends _i1.Mock
               returnValueForMissingStub: _i7.Future<void>.value())
           as _i7.Future<void>);
   @override
-  _i7.Future<_i4.Translation> translate(
-          _i4.Translation? uncompletedTranslation, int? translationsFileId) =>
+  _i7.Future<_i3.Translation> translate(
+          _i3.Translation? uncompletedTranslation, int? translationsFileId) =>
       (super.noSuchMethod(
               Invocation.method(
                   #translate, [uncompletedTranslation, translationsFileId]),
-              returnValue: _i7.Future<_i4.Translation>.value(_FakeTranslation_2(
+              returnValue: _i7.Future<_i3.Translation>.value(_FakeTranslation_1(
                   this,
                   Invocation.method(#translate, [uncompletedTranslation, translationsFileId]))))
-          as _i7.Future<_i4.Translation>);
+          as _i7.Future<_i3.Translation>);
   @override
   _i7.Future<void> updateTranslation(
-          int? fileId, _i4.Translation? translation) =>
+          int? fileId, _i3.Translation? translation) =>
       (super.noSuchMethod(
               Invocation.method(#updateTranslation, [fileId, translation]),
               returnValue: _i7.Future<void>.value(),
