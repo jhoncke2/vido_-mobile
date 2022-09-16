@@ -15,9 +15,11 @@ const translFileStatusOnCreationValue = 'on_creation';
 const translFileStatusCreatedValue = 'created';
 const translFileStatusSendingValue = 'sending';
 const translFilesParentIdKey = 'parent_id';
+const translFilesProccessTypeKey = 'proccess_type';
+const translFilesProccessTypeConstraintNameKey = 'chk_proccess_type';
 const translFilesProccessTypeOCRValue = 'ocr';
 const translFilesProccessTypeICRValue = 'icr';
-const translFilesProccessTypeKey = 'proccess_type';
+
 
 const translationsTableName = 'Translations';
 const translationsImgUrlKey = 'img_url';
@@ -99,7 +101,7 @@ class DataBaseManagerImpl implements DatabaseManager{
     try{
       return await function();
     }on PlatformException{
-      throw DBException(type: DBExceptionType.PLATFORM);
+      throw const DBException(type: DBExceptionType.PLATFORM);
     }
   }
 }
@@ -124,8 +126,10 @@ class CustomDataBaseFactory{
           $idKey INTEGER PRIMARY KEY,
           $translFilesNameKey TEXT NOT NULL,
           $translFilesStatusKey FLOAT NOT NULL,
+          $translFilesProccessTypeKey TEXT NOT NULL,
           $translFilesParentIdKey INTEGER,
-          CONSTRAINT $tranlFilesStatusConstraintNameKey check ($translFilesStatusKey in ('$translFileStatusOnCreationValue', '$translFileStatusCreatedValue', '$translFileStatusSendingValue'))
+          CONSTRAINT $tranlFilesStatusConstraintNameKey check ($translFilesStatusKey in ('$translFileStatusOnCreationValue', '$translFileStatusCreatedValue', '$translFileStatusSendingValue')),
+          CONSTRAINT $translFilesProccessTypeConstraintNameKey check ($translFilesProccessTypeKey in ('$translFilesProccessTypeOCRValue', '$translFilesProccessTypeICRValue'))
         )
       '''
     );

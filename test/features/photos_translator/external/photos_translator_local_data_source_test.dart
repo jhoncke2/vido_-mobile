@@ -53,11 +53,11 @@ void _testCreateTranslationsFileGroup(){
   late TranslationsFile tFile;
   late Map<String, dynamic> tFileJson;
   setUp((){
-    tFile = const TranslationsFile(
+    tFile = TranslationsFile(
       id: 0, 
       name: 't_f_1', 
       status: TranslationsFileStatus.sending, 
-      translations: [], 
+      translations: const [], 
       completed: false,
       proccessType: TranslationProccessType.ocr
     );
@@ -341,7 +341,7 @@ void _testGetTranslationsFileGroup(){
 void _testRemoveTranslationsFileGroup(){
   late TranslationsFile tFile;
   setUp((){
-    tFile = const TranslationsFile(
+    tFile = TranslationsFile(
       id: 0, 
       name: 'file_1', 
       completed: false, 

@@ -15,19 +15,19 @@ void main(){
   group('set translations files', (){
     late List<TranslationsFile> tTranslationsFiles;
     setUp((){
-      tTranslationsFiles = const [
+      tTranslationsFiles = [
         TranslationsFile(
           id: 0, 
           name: 'f_1', 
           completed: false, 
-          translations: [],
+          translations: const [],
           proccessType: TranslationProccessType.ocr
         ),
         TranslationsFile(
           id: 1, 
           name: 'f_2', 
           completed: true, 
-          translations: [],
+          translations: const [],
           proccessType: TranslationProccessType.icr
         )
       ];

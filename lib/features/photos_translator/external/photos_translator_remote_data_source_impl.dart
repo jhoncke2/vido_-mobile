@@ -99,7 +99,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   }
   
   @override
-  Future<Translation> translateWithIcr(int fileId, String photoUrl, String accessToken)async{
+  Future<Translation> translateWithIcr(int fileId, Translation translation, String accessToken)async{
     // TODO: implement translateWithIcr
     throw UnimplementedError();
   }

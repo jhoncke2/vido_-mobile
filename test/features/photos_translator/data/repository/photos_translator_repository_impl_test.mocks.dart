@@ -117,14 +117,14 @@ class MockPhotosTranslatorRemoteDataSource extends _i1.Mock
                   ])))) as _i7.Future<_i2.TranslationsFile>);
   @override
   _i7.Future<_i3.Translation> translateWithIcr(
-          int? fileId, String? photoUrl, String? accessToken) =>
+          int? fileId, _i3.Translation? translation, String? accessToken) =>
       (super.noSuchMethod(
-          Invocation.method(#translateWithIcr, [fileId, photoUrl, accessToken]),
-          returnValue: _i7.Future<_i3.Translation>.value(_FakeTranslation_1(
-              this,
               Invocation.method(
-                  #translateWithIcr, [fileId, photoUrl, accessToken])))) as _i7
-          .Future<_i3.Translation>);
+                  #translateWithIcr, [fileId, translation, accessToken]),
+              returnValue: _i7.Future<_i3.Translation>.value(_FakeTranslation_1(
+                  this,
+                  Invocation.method(#translateWithIcr, [fileId, translation, accessToken]))))
+          as _i7.Future<_i3.Translation>);
   @override
   _i7.Future<int> addTranslation(
           int? fileId, _i3.Translation? translation, String? accessToken) =>

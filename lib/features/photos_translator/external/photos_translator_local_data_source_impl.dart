@@ -87,6 +87,8 @@ class PhotosTranslatorLocalDataSourceImpl implements PhotosTranslatorLocalDataSo
 
   @override
   Future<Translation> translate(Translation uncompletedTranslation, int translationsFileId) async {
+    print('oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo');
+    print('translating with ocr');
     _isTranslating = true;
     final fixedImage = await rotationFixer.fix(uncompletedTranslation.imgUrl);
     final translationText = await translator.translate(uncompletedTranslation.imgUrl);

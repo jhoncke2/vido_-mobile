@@ -65,12 +65,13 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
   }
   
   @override
-  Future<Translation> translateWithIcr(int fileId, String photoUrl, String accessToken)async{
-    final translation = Translation(
-      id: Random().nextInt(99999999), 
-      imgUrl: photoUrl, 
-      text: 'translation text'
+  Future<Translation> translateWithIcr(int fileId, Translation translation, String accessToken)async{
+    print('iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii');
+    print('translating with icr');
+    return Translation(
+      id: translation.id, 
+      imgUrl: translation.imgUrl, 
+      text: 'translation_text'
     );
-    return translation;
   }
 }

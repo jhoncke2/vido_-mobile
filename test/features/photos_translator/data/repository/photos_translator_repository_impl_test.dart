@@ -53,6 +53,7 @@ void main() {
 
 void _testCreatetranslationsFileGroup() {
   late TranslationsFile tNewFile;
+  late TranslationsFile tUpdatedFile;
   late String tName;
   late String tAccessToken;
   late int tParentFolderId;
@@ -62,6 +63,13 @@ void _testCreatetranslationsFileGroup() {
       tName = 'new_name';
       tAccessToken = 'access_token';
       tNewFile = TranslationsFile(
+        id: 0, 
+        name: tName, 
+        completed: false, 
+        translations: const [],
+        proccessType: TranslationProccessType.icr
+      );
+      tUpdatedFile = TranslationsFile(
         id: 0, 
         name: tName, 
         completed: false, 
@@ -80,7 +88,7 @@ void _testCreatetranslationsFileGroup() {
       await photosTranslatorRepository.createTranslationsFile(tName, TranslationProccessType.ocr);
       verify(userExtraInfoGetter.getAccessToken());
       verify(remoteDataSource.createTranslationsFile(tName, tParentFolderId, tAccessToken));
-      verify(localDataSource.createTranslationsFile(tNewFile));
+      verify(localDataSource.createTranslationsFile(tUpdatedFile));
     });
 
     test('should return the expected result', () async {
@@ -94,6 +102,13 @@ void _testCreatetranslationsFileGroup() {
       tName = 'new_name';
       tAccessToken = 'access_token';
       tNewFile = TranslationsFile(
+        id: 1,
+        name: tName, 
+        completed: false, 
+        translations: const [],
+        proccessType: TranslationProccessType.ocr
+      );
+      tUpdatedFile = TranslationsFile(
         id: 1,
         name: tName, 
         completed: false, 
@@ -112,7 +127,7 @@ void _testCreatetranslationsFileGroup() {
       await photosTranslatorRepository.createTranslationsFile(tName, TranslationProccessType.icr);
       verify(userExtraInfoGetter.getAccessToken());
       verify(remoteDataSource.createTranslationsFile(tName, tParentFolderId, tAccessToken));
-      verify(localDataSource.createTranslationsFile(tNewFile));
+      verify(localDataSource.createTranslationsFile(tUpdatedFile));
     });
 
     test('should return the expected result', () async {
@@ -144,7 +159,7 @@ void _testTranslatePhotoGroup() {
 
   group('when localDataSource is translating', () {
     setUp(() {
-      tUncompletedtranslationsFilesInit = const [
+      tUncompletedtranslationsFilesInit = [
         TranslationsFile(
           id: 0, 
           name: 'f0', 
@@ -161,7 +176,7 @@ void _testTranslatePhotoGroup() {
         )
       ];
       when(localDataSource.translating).thenReturn(true);
-      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => const TranslationsFile(
+      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => TranslationsFile(
         id: 0, 
         name: 'file_0', 
         completed: false, 
@@ -350,11 +365,11 @@ void _testTranslatePhotoGroup() {
         translations: [tSecondUncompletedTranslation],
         proccessType: TranslationProccessType.ocr
       );
-      tTranslatedFile2 = const TranslationsFile(
+      tTranslatedFile2 = TranslationsFile(
         id: 1053,
         name: 'tf_1053',
         completed: true,
-        translations: [
+        translations: const [
           Translation(id: 2053, text: 'text_xxx', imgUrl: 'url_2')
         ],
         proccessType: TranslationProccessType.ocr
@@ -431,7 +446,7 @@ void _testTranslatePhotoGroup() {
       verify(translationsFilesReceiver.setTranslationsFiles(tUncompletedtranslationsFilesInit));
 
       verifyNever(localDataSource.translate(tFirstUncompletedTranslation, tUntranslatedFile1.id));
-      verify(remoteDataSource.translateWithIcr(tUntranslatedFile1.id, tFirstUncompletedTranslation.imgUrl, tAccessToken));
+      verify(remoteDataSource.translateWithIcr(tUntranslatedFile1.id, tFirstUncompletedTranslation, tAccessToken));
       verify(localDataSource.updateTranslation(tUntranslatedFile1.id, tFirstTranslatedTranslation));
       verify(localDataSource.getCurrentCreatedFile()).called(2);
       verify(localDataSource.getTranslationsFile(tUntranslatedFile1.id));
@@ -488,7 +503,7 @@ void _testInitPendingTranslations(){
 
   group('when localDataSource is translating', () {
     setUp(() {
-      tUncompletedtranslationsFilesInit = const [
+      tUncompletedtranslationsFilesInit = [
         TranslationsFile(
           id: 0, 
           name: 'f0', 
@@ -505,7 +520,7 @@ void _testInitPendingTranslations(){
         )
       ];
       when(localDataSource.translating).thenReturn(true);
-      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => const TranslationsFile(
+      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => TranslationsFile(
         id: 0, 
         name: 'file_0', 
         completed: false, 

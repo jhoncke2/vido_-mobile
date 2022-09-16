@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:equatable/equatable.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 
@@ -18,8 +20,8 @@ class TranslationsFile extends Equatable{
   final bool completed;
   final TranslationsFileStatus? status;
   final List<Translation> translations;
-  final TranslationProccessType proccessType;
-  const TranslationsFile({
+  late TranslationProccessType proccessType;
+  TranslationsFile({
     required this.id, 
     required this.name,
     required this.completed,

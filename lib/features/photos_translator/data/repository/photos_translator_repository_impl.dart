@@ -32,6 +32,7 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
       final parentId = await translFileParentFolderGetter.getCurrentFileId();
       final accessToken = await userExtraInfoGetter.getAccessToken();
       final newFile = await remoteDataSource.createTranslationsFile(name, parentId, accessToken);
+      newFile.proccessType = proccessType;
       await localDataSource.createTranslationsFile(newFile);
       return Right(newFile.id);
     });
@@ -82,7 +83,7 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
             final accessToken = await userExtraInfoGetter.getAccessToken();
             late Translation translationCompleted;
             if(translFile.proccessType == TranslationProccessType.icr){
-              translationCompleted = await remoteDataSource.translateWithIcr(translFile.id, translation.imgUrl, accessToken);
+              translationCompleted = await remoteDataSource.translateWithIcr(translFile.id, translation, accessToken);
             }else{
               translationCompleted = await localDataSource.translate(translation, translFile.id);
               await remoteDataSource.addTranslation(translFile.id, translationCompleted, accessToken);
