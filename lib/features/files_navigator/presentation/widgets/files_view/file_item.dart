@@ -27,7 +27,7 @@ class FileItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dimens = AppDimens();
-    return GestureDetector(
+    return InkWell(
       child: SizedBox(
         height: dimens.getHeightPercentage(0.2),
         child: Column(
@@ -67,7 +67,7 @@ class FileItem extends StatelessWidget {
         ),
       ),
       onTap: onTap,
-      onLongPress: onLongTap,
+      onLongPress: onLongTap
     );
   }
 }
