@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../../../../../app_theme.dart';
+
 class FileItem extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -9,11 +9,15 @@ class FileItem extends StatelessWidget {
   final bool bigIcon;
   final double? interSpace;
   final Function() onTap;
+  final Function() onLongTap;
+  final bool isSelected;
   const FileItem({
     required this.icon,
     required this.iconColor,
     required this.text,
     required this.onTap,
+    required this.onLongTap,
+    required this.isSelected,
     this.bigText = false,
     this.bigIcon = true,
     this.interSpace,
@@ -29,12 +33,24 @@ class FileItem extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(  
-              icon,
-              color: iconColor,
-              size: bigIcon? dimens.bigIconSize : dimens.normalIconSize,
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: isSelected? AppColors.primary : Colors.transparent,
+                  width: 2
+                )
+              ),
+              padding: EdgeInsets.all( isSelected? 10 : 0),
+              child: Icon(  
+                icon,
+                color: iconColor,
+                size: bigIcon? dimens.bigIconSize : dimens.normalIconSize,
+              ),
             ),
-            SizedBox(height: interSpace ?? dimens.littleVerticalSpace),
+            SizedBox(
+               height: (isSelected)? 10
+                        : interSpace ?? dimens.littleVerticalSpace
+            ),
             SizedBox(
               width: dimens.getWidthPercentage(0.3),
               child: Text(
@@ -51,6 +67,7 @@ class FileItem extends StatelessWidget {
         ),
       ),
       onTap: onTap,
+      onLongPress: onLongTap,
     );
   }
 }

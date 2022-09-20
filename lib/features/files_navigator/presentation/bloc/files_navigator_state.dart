@@ -24,11 +24,16 @@ abstract class OnAppFiles extends FilesNavigatorState{
 
 }
 
+abstract class OnError extends OnAppFiles{
+  String get message;
+}
+
 class OnAppFilesSuccess extends OnAppFiles{
   
 }
 
-class OnAppFilesError extends OnAppFiles{
+class OnAppFilesError extends OnAppFiles implements OnError{
+  @override
   final String message;
   OnAppFilesError({
     required this.message
@@ -146,18 +151,19 @@ class OnSearchAppearancesPdfError extends OnSearchAppearancesPdf implements OnPd
   List<Object> get props => [...super.props, message];
 }
 
-class OnIcrFilesSelection extends FilesNavigatorState{
+class OnIcrFilesSelection extends OnAppFiles{
   final List<int> filesIds;
-  const OnIcrFilesSelection({
+  OnIcrFilesSelection({
     required this.filesIds
   });
   @override
   List<Object> get props => [...super.props, filesIds];
 }
 
-class OnIcrFilesSelectionError extends OnIcrFilesSelection{
+class OnIcrFilesSelectionError extends OnIcrFilesSelection implements OnError{
+  @override
   final String message;
-  const OnIcrFilesSelectionError({
+  OnIcrFilesSelectionError({
     required this.message,
     required List<int> filesIds
   }) : super(filesIds: filesIds);

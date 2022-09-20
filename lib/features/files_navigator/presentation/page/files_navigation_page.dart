@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vido/features/authentication/presentation/bloc/authentication_bloc.dart';
 import 'package:vido/features/files_navigator/presentation/bloc/files_navigator_bloc.dart';
 import 'package:vido/features/files_navigator/presentation/widgets/files_view/app_files_view.dart';
+import 'package:vido/features/files_navigator/presentation/widgets/icr_report/icr_report_view.dart';
 import 'package:vido/features/files_navigator/presentation/widgets/pdf_file_view.dart';
 import 'package:vido/features/files_navigator/presentation/widgets/search_appearances_view.dart';
 import '../../../../injection_container.dart';
@@ -29,12 +30,14 @@ class FilesNavigationPage extends StatelessWidget {
               BlocBuilder<FilesNavigatorBloc, FilesNavigatorState>(
                 builder: (blocContext, state){
                   _managePostFrameCallback(blocContext, state);
-                  if(state is OnAppFilesSuccess){
+                  if(state is OnAppFiles){
                     return AppFilesView();
                   }else if(state is OnPdf){
                     return PdfFileView();
                   }else if(state is OnSearchAppearances){
                     return SearchAppearancesView();
+                  }else if(state is OnIcrTable){
+                    return IcrReportView(headers: state.colsHeads, rows: state.rows);
                   }else{
                     return Expanded(
                       child: Center(

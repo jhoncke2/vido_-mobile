@@ -587,12 +587,12 @@ void _testInitIcrFilesSelectionGroup(){
         )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
-      filesNavigatorBloc.add(LongPressFileEvent(tFile));
+      filesNavigatorBloc.add( LongPressFileEvent(tFile));
     });
   });
 
   test('should yield the expected ordered states when tue current state is OnIcrFilesSelection', ()async{
-    filesNavigatorBloc.emit(const OnIcrFilesSelection(filesIds: [1,3]));
+    filesNavigatorBloc.emit(OnIcrFilesSelection(filesIds: [1,3]));
     expectLater(filesNavigatorBloc.stream, emitsInOrder(const []));
   });
 }

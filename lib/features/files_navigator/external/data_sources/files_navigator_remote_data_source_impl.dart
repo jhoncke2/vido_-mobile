@@ -90,12 +90,16 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
   @override
   Future<List<Map<String, dynamic>>> generateIcr(List<int> filesIds, String accessToken)async{
     final response = await super.executeGeneralService(()async{
-      return await client.get(
+      final body = {
+        'document_id': filesIds
+      };
+      return await client.post(
         getUri('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$icrUrl'),
-        headers: super.createAuthorizationJsonHeaders(accessToken)
+        headers: super.createAuthorizationJsonHeaders(accessToken),
+        body: jsonEncode(body)
       );
     });
-    final icr = jsonDecode(response.body).cast<Map<String, dynamic>();
+    final icr = jsonDecode(response.body).cast<Map<String, dynamic>>();
     return icr;
   }
 }

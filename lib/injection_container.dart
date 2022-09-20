@@ -72,7 +72,7 @@ import 'features/photos_translator/domain/use_cases/create_folder_impl.dart';
 import 'features/photos_translator/external/fake/photos_translator_remote_data_source_fake.dart';
 import 'features/photos_translator/external/photos_translator_local_adapter.dart';
 import 'features/photos_translator/external/photos_translator_remote_data_source_impl.dart';
-import 'features/files_navigator/external/data_sources/fake/files_tree.dart' as filesTree;
+import 'features/files_navigator/external/data_sources/fake/files_tree.dart' as files_tree;
 
 final sl = GetIt.instance;
 bool useRealData = true;
@@ -161,7 +161,7 @@ Future<void> init() async {
       fakeImpl: FilesNavigatorRemoteDataSourceFake(
         pathProvider: sl<PathProvider>(),
         httpResponsesManager: sl<HttpResponsesManager>(),
-        filesTree: filesTree.appFiles
+        filesTree: files_tree.appFiles
       )
     )
   );
@@ -243,7 +243,7 @@ Future<void> init() async {
         adapter: sl<PhotosTranslatorLocalAdapter>(), 
         pathProvider: sl<PathProvider>(), 
         httpResponsesManager: sl<HttpResponsesManager>(),
-        filesTree: filesTree.appFiles
+        filesTree: files_tree.appFiles
       )
     )
   );

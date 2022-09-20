@@ -106,7 +106,98 @@ class FilesNavigatorRemoteDataSourceFake implements FilesNavigatorRemoteDataSour
   
   @override
   Future<List<Map<String, dynamic>>> generateIcr(List<int> filesIds, String accessToken)async{
-    // TODO: implement generateIcr
-    throw UnimplementedError();
+    return [
+      {
+        'id': 0,
+        'nombre': 'Elemento 1',
+        'Edad': 20,
+        'Descripción': 'Descripción del elemento 1',
+        'peso': '20kg'
+      },
+      {
+        'id': 1,
+        'nombre': 'Elemento 2',
+        'Edad': 22,
+        'Descripción': 'Descripción del elemento 2',
+        'peso': '22kg'
+      },
+      {
+        'id': 2,
+        'nombre': 'Elemento 3',
+        'Edad': 30,
+        'Descripción': 'Descripción del elemento 3',
+        'peso': '40kg'
+      },
+      {
+        'id': 3,
+        'nombre': 'Elemento 4',
+        'Edad': 21,
+        'Descripción': 'Descripción del elemento 4',
+        'peso': '25kg'
+      },
+      {
+        'id': 5,
+        'nombre': 'Elemento 5',
+        'Edad': 27,
+        'Descripción': 'Descripción del elemento 5',
+        'peso': '53kg'
+      },
+      {
+        'id': 6,
+        'nombre': 'Elemento 5',
+        'Edad': 27,
+        'Descripción': 'Descripción del elemento 5',
+        'peso': '53kg'
+      },
+      {
+        'id': 7,
+        'nombre': 'Elemento 5',
+        'Edad': 27,
+        'Descripción': 'Descripción del elemento 5',
+        'peso': '53kg'
+      },
+      {
+        'id': 8,
+        'nombre': 'Elemento 5',
+        'Edad': 27,
+        'Descripción': 'Descripción del elemento 5',
+        'peso': '53kg'
+      },
+      {
+        'id': 9,
+        'nombre': 'Elemento 5',
+        'Edad': 27,
+        'Descripción': 'Descripción del elemento 5',
+        'peso': '53kg'
+      },
+      {
+        'id': 10,
+        'nombre': 'Elemento 5',
+        'Edad': 27,
+        'Descripción': 'Descripción del elemento 5',
+        'peso': '53kg'
+      },
+      {
+        'id': 11,
+        'nombre': 'Elemento 5',
+        'Edad': 27,
+        'Descripción': 'Descripción del elemento 5',
+        'peso': '53kg'
+      },
+      {
+        'id': 12,
+        'nombre': 'Elemento 5',
+        'Edad': 27,
+        'Descripción': 'Descripción del elemento 5',
+        'peso': '53kg'
+      },
+      {
+        'id': 13,
+        'nombre': 'Elemento 5',
+        'Edad': 27,
+        'Descripción': 'Descripción del elemento 5',
+        'peso': '53kg'
+      }
+    ];
   }
 }
