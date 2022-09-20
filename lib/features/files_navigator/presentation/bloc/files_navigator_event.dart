@@ -32,3 +32,12 @@ class SelectSearchAppearanceEvent extends FilesNavigatorEvent{
 class BackToSearchAppearancesEvent extends FilesNavigatorEvent{
   
 }
+
+class LongPressFileEvent extends FilesNavigatorEvent{
+  final AppFile file;
+  LongPressFileEvent(this.file);
+}
+
+class GenerateIcrEvent extends FilesNavigatorEvent{
+
+}

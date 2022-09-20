@@ -68,7 +68,6 @@ void main() {
   group('save file name', _testSaveFileNameGroup);
   group('add photo translation', _testAddPhotoTranslationGroup);
   group('end translations file creation', _testEndTranslationsFileCreationGroup);
-  
 }
 
 void _testInitFileTypeSelectionGroup(){

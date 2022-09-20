@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:vido/core/external/app_files_remote_adapter.dart';
+import 'package:vido/features/files_navigator/domain/user_cases/generate_icr_impl.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/generate_icr.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
 import 'core/external/persistence.dart';
@@ -201,6 +203,12 @@ Future<void> init() async {
       errorHandler: sl<UseCaseErrorHandler>()
     )
   );
+  sl.registerLazySingleton<GenerateIcr>(
+    () => GenerateIcrImpl(
+      repository: sl<FilesNavigatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
   sl.registerFactory<FilesNavigatorBloc>(
     () => FilesNavigatorBloc(
       loadFolderChildren: sl<LoadFolderChildren>(), 
@@ -208,6 +216,7 @@ Future<void> init() async {
       loadFilePdf: sl<LoadFilePdf>(),
       loadAppearancePdf: sl<LoadAppearancePdf>(),
       search: sl<Search>(),
+      generateIcr: sl<GenerateIcr>(),
       appFilesTransmitter: sl<AppFilesTransmitter>(), 
       translationsFilesTransmitter: sl<TranslationsFilesTransmitter>(),
       searchController: TextEditingController(text: '')

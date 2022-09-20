@@ -103,4 +103,10 @@ class FilesNavigatorRemoteDataSourceFake implements FilesNavigatorRemoteDataSour
       )
     ];
   }
+  
+  @override
+  Future<List<Map<String, dynamic>>> generateIcr(List<int> filesIds, String accessToken)async{
+    // TODO: implement generateIcr
+    throw UnimplementedError();
+  }
 }

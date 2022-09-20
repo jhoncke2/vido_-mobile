@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_collection_literals
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
@@ -16,6 +18,7 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
   static const baseFilesNavigationUrl = 'file-system';
   static const getGeneratedPdfUrl = 'show-pdf/';
   static const searchUrl = 'search-pdf/';
+  static const icrUrl = 'icr';
   final PathProvider pathProvider;
   final HttpResponsesManager httpResponsesManager;
   final http.Client client;
@@ -74,8 +77,6 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
 
   @override
   Future<List<SearchAppearance>> search(String text, String accessToken)async{
-    print('***************** search *****************************');
-    print('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$searchUrl$text');
     final response = await super.executeGeneralService(()async{
       return await client.get(
         getUri('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$searchUrl$text'),
@@ -84,5 +85,17 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
     });
     final appearances = adapter.getApearancesFromJson(jsonDecode(response.body).cast<Map<String, dynamic>>());
     return appearances;
+  }
+  
+  @override
+  Future<List<Map<String, dynamic>>> generateIcr(List<int> filesIds, String accessToken)async{
+    final response = await super.executeGeneralService(()async{
+      return await client.get(
+        getUri('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$icrUrl'),
+        headers: super.createAuthorizationJsonHeaders(accessToken)
+      );
+    });
+    final icr = jsonDecode(response.body).cast<Map<String, dynamic>();
+    return icr;
   }
 }

@@ -40,9 +40,9 @@ class PhotosTranslatorBloc extends Bloc<PhotosTranslatorEvent, PhotosTranslatorS
         await _saveCurrentFileName(emit);
       }else if (event is AddPhotoTranslationEvent) {
         await _addPhotoTranslation(emit);
-      }  else if (event is EndTranslationsFileEvent) {
+      }else if (event is EndTranslationsFileEvent) {
         await _endTranslationsFile(emit);
-      } else if(event is InitFolderCreationEvent){
+      }else if(event is InitFolderCreationEvent){
         _initFolderCreation(emit);
       }
     });

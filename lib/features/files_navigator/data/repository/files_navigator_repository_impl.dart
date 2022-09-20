@@ -133,4 +133,13 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
       return Right(pdf);
     });
   }
+  
+  @override
+  Future<Either<FilesNavigationFailure, List<Map<String, dynamic>>>> generateIcr(List<int> ids)async{
+    return await _manageFunctionExceptions(()async{
+      final accessToken = await userExtraInfoGetter.getAccessToken();
+      final icr = await remoteDataSource.generateIcr(ids, accessToken);
+      return Right(icr);
+    });
+  }
 }

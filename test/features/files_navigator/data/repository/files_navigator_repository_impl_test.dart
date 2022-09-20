@@ -49,6 +49,7 @@ void main(){
   group('load file pdf', _testLoadFilePdfGroup);
   group('load appearance pdf', _testLoadAppearancePdfGroup);
   group('search', _testSearchGroup);
+  group('generate icr', _testGenerateIcrGroup);
 }
 
 void _testLoadFolderChildrenGroup(){
@@ -561,5 +562,68 @@ void _testSearchGroup(){
     when(remoteDataSource.search(any, any)).thenThrow(Exception());
     final result = await filesNavigatorRepository.search(tText);
     expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+  });
+}
+
+void _testGenerateIcrGroup(){
+  late String tAccessToken;
+  late List<int> tFilesIds;
+  setUp((){
+    tAccessToken = 'access_token';
+    tFilesIds = [0, 1, 10, 11];
+    when(userExtraInfoGetter.getAccessToken()).thenAnswer((_) async => tAccessToken);
+  });
+
+  group('when all goes good', (){
+    late List<Map<String, dynamic>> tIcr;
+    setUp((){
+      tIcr = [
+        {
+          'id': 0,
+          'name': 'name_1',
+          'description': 'desc_1'
+        },
+        {
+          'id': 1,
+          'name': 'name_2',
+          'description': 'desc_2'
+        },
+        {
+          'id': 2,
+          'name': 'name_3',
+          'description': 'desc_3'
+        }
+      ];
+      when(remoteDataSource.generateIcr(any, any)).thenAnswer((_) async => tIcr);
+    });
+
+    test('should call the specified methods', ()async{
+      await filesNavigatorRepository.generateIcr(tFilesIds);
+      verify(userExtraInfoGetter.getAccessToken());
+      verify(remoteDataSource.generateIcr(tFilesIds, tAccessToken));
+    });
+
+    test('should return the expected result', ()async{
+      final result = await filesNavigatorRepository.generateIcr(tFilesIds);
+      expect(result, Right(tIcr));
+    });
+  });
+
+  test('should return the expected result when remoteDataSource throws an AppException', ()async{
+    when(remoteDataSource.generateIcr(any, any)).thenThrow(const ServerException(type: ServerExceptionType.NORMAL));
+    final result = await filesNavigatorRepository.generateIcr(tFilesIds);
+    expect(result, const Left(FilesNavigationFailure(
+      exception: ServerException(type: ServerExceptionType.NORMAL),
+      message: ''
+    )));
+  });
+
+  test('should return the expected result when remoteDataSource throws another Exception', ()async{
+    when(remoteDataSource.generateIcr(any, any)).thenThrow(Exception());
+    final result = await filesNavigatorRepository.generateIcr(tFilesIds);
+    expect(result, const Left(FilesNavigationFailure(
+      exception: AppException(''),
+      message: 'Ha ocurrido un error inesperado'
+    )));
   });
 }

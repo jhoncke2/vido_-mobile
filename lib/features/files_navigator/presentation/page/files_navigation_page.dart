@@ -29,7 +29,7 @@ class FilesNavigationPage extends StatelessWidget {
               BlocBuilder<FilesNavigatorBloc, FilesNavigatorState>(
                 builder: (blocContext, state){
                   _managePostFrameCallback(blocContext, state);
-                  if(state is OnAppFiles){
+                  if(state is OnAppFilesSuccess){
                     return AppFilesView();
                   }else if(state is OnPdf){
                     return PdfFileView();

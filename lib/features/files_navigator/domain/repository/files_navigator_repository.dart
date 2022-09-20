@@ -11,4 +11,5 @@ abstract class FilesNavigatorRepository{
   Future<Either<FilesNavigationFailure, File>> loadFilePdf(PdfFile file);
   Future<Either<FilesNavigationFailure, File>> loadAppearancePdf(SearchAppearance appearance);
   Future<Either<FilesNavigationFailure, List<SearchAppearance>>> search(String text);
+  Future<Either<FilesNavigationFailure, List<Map<String, dynamic>>>> generateIcr(List<int> ids);
 }

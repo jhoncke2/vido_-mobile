@@ -9,6 +9,7 @@ import 'package:vido/features/files_navigator/presentation/use_cases/load_appear
 import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_file_pdf.dart';
+import '../use_cases/generate_icr.dart';
 import '../use_cases/load_folder_brothers.dart';
 import '../use_cases/load_folder_children.dart';
 import '../use_cases/search.dart';
@@ -25,6 +26,7 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
   final LoadFilePdf loadFilePdf;
   final LoadAppearancePdf loadAppearancePdf;
   final Search search;
+  final GenerateIcr generateIcr;
 
   late List<AppFile> _lastAppFiles;
   final AppFilesTransmitter appFilesTransmitter;
@@ -37,6 +39,7 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
     required this.loadFilePdf,
     required this.loadAppearancePdf,
     required this.search,
+    required this.generateIcr,
     required this.appFilesTransmitter,
     required this.translationsFilesTransmitter,
     required this.searchController
@@ -60,6 +63,10 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
         await _selectSearchAppearance(emit, event);
       }else if(event is BackToSearchAppearancesEvent){
         _backToSearchAppearances(emit);
+      }else if(event is LongPressFileEvent){
+        _longPressFileEvent(emit, event);
+      }else if(event is GenerateIcrEvent){
+        await _generateIcr(emit);
       }
     });
   }
@@ -67,32 +74,50 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
   Future<void> _loadInitiapAppFiles(Emitter<FilesNavigatorState> emit)async{
     emit(OnLoadingAppFiles());
     await loadFolderChildren(null);
-    emit(OnAppFiles());
+    emit(OnAppFilesSuccess());
   }
 
   Future<void> _selectAppFile(Emitter<FilesNavigatorState> emit, SelectAppFileEvent event)async{
-    emit(OnLoadingAppFiles());
+    
     final appFile = event.appFile;
     if(appFile is PdfFile){
-      final pdfResult = await loadFilePdf(appFile);
-      pdfResult.fold((error){
-        emit(OnPdfFileError(
-          message: error.message.isNotEmpty? error.message : 'Ha ocurrido un error inesperado',
-          file: appFile
-        ));
-      }, (pdf){
-        emit(OnPdfFileLoaded(file: appFile, pdf: pdf));
-      });
-    }else{
+      if(state is OnAppFilesSuccess){
+        emit(OnLoadingAppFiles());
+        final pdfResult = await loadFilePdf(appFile);
+        pdfResult.fold((error){
+          emit(OnPdfFileError(
+            message: error.message.isNotEmpty? error.message : 'Ha ocurrido un error inesperado',
+            file: appFile
+          ));
+        }, (pdf){
+          emit(OnPdfFileLoaded(file: appFile, pdf: pdf));
+        });
+      }else{
+        final filesIds = (state as OnIcrFilesSelection).filesIds;
+        if(filesIds.contains(appFile.id)){
+          if(filesIds.length == 1){
+            emit(OnAppFilesSuccess());
+          }else{
+            final newList = List<int>.from(filesIds)
+              ..remove(appFile.id);
+            emit(OnIcrFilesSelection(filesIds: newList));
+          }
+          
+        }else{
+          emit(OnIcrFilesSelection(filesIds: [...filesIds, event.appFile.id]));
+        }
+      }
+    }else if(state is OnAppFilesSuccess){
+      emit(OnLoadingAppFiles());
       await loadFolderChildren(event.appFile.id);
-      emit(OnAppFiles());
+      emit(OnAppFilesSuccess());
     }
   }
   
   Future<void> _selectFilesParent(Emitter<FilesNavigatorState> emit)async{
     emit(OnLoadingAppFiles());
     await loadFolderBrothers();
-    emit(OnAppFiles());
+    emit(OnAppFilesSuccess());
   }
 
   Future<void> _search(Emitter<FilesNavigatorState> emit, SearchEvent event)async{
@@ -110,7 +135,7 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
 
   void _removeSearch(Emitter<FilesNavigatorState> emit){
     searchController.clear();
-    emit(OnAppFiles());
+    emit(OnAppFilesSuccess());
   }
 
   Future<void> _selectSearchAppearance(Emitter<FilesNavigatorState> emit, SelectSearchAppearanceEvent event)async{
@@ -131,6 +156,32 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
   void _backToSearchAppearances(Emitter<FilesNavigatorState> emit){
     final appearances = (state as OnSearchAppearancesPdf).appearances;
     emit(OnSearchAppearancesSuccessShowing(appearances: appearances));
+  }
+
+  void _longPressFileEvent(Emitter<FilesNavigatorState> emit, LongPressFileEvent event){
+    if(state is OnAppFilesSuccess){
+      emit(OnIcrFilesSelection(filesIds: [event.file.id]));
+    }
+  }
+
+  Future<void> _generateIcr(Emitter<FilesNavigatorState> emit)async{
+    final filesIds = (state as OnIcrFilesSelection).filesIds;
+    emit(OnLoadingAppFiles());
+    final icrResult = await generateIcr(filesIds);
+    icrResult.fold((failure){
+      final message = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
+      emit(OnIcrFilesSelectionError(filesIds: filesIds, message: message));
+    }, (tableItems){
+      final columnsHeads = tableItems.first.keys.toList();
+      final List<List<String>> rows = [];
+      for(final item in tableItems){
+        final row = item.values.map<String>(
+          (v) => v.toString()
+        ).toList();
+        rows.add(row);
+      }
+      emit(OnIcrTable(colsHeads: columnsHeads, rows: rows));
+    });
   }
 
   List<AppFile> get lastAppFiles => _lastAppFiles;

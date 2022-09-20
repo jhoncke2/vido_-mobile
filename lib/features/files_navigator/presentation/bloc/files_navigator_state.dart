@@ -12,16 +12,29 @@ class OnFilesNavigatorInitial extends FilesNavigatorState {}
 class OnLoadingAppFiles extends FilesNavigatorState {}
 
 class OnLoadingAppFilesError extends FilesNavigatorState {
-  final String error;
+  final String message;
   const OnLoadingAppFilesError({
-    required this.error
+    required this.message
   });
   @override
-  List<Object> get props => [...super.props, error];
+  List<Object> get props => [...super.props, message];
 }
 
-class OnAppFiles extends FilesNavigatorState{
+abstract class OnAppFiles extends FilesNavigatorState{
+
+}
+
+class OnAppFilesSuccess extends OnAppFiles{
   
+}
+
+class OnAppFilesError extends OnAppFiles{
+  final String message;
+  OnAppFilesError({
+    required this.message
+  });
+  @override
+  List<Object> get props => [...super.props, message];
 }
 
 abstract class OnPdf{
@@ -131,4 +144,35 @@ class OnSearchAppearancesPdfError extends OnSearchAppearancesPdf implements OnPd
   );
   @override
   List<Object> get props => [...super.props, message];
+}
+
+class OnIcrFilesSelection extends FilesNavigatorState{
+  final List<int> filesIds;
+  const OnIcrFilesSelection({
+    required this.filesIds
+  });
+  @override
+  List<Object> get props => [...super.props, filesIds];
+}
+
+class OnIcrFilesSelectionError extends OnIcrFilesSelection{
+  final String message;
+  const OnIcrFilesSelectionError({
+    required this.message,
+    required List<int> filesIds
+  }) : super(filesIds: filesIds);
+  @override
+  List<Object> get props => [...super.props, message];
+}
+
+class OnIcrTable extends FilesNavigatorState{
+  final List<String> colsHeads;
+  final List<List<String>> rows;
+  const OnIcrTable({
+    required this.colsHeads, 
+    required this.rows
+  });
+
+  @override
+  List<Object> get props => [...super.props, colsHeads, rows];
 }

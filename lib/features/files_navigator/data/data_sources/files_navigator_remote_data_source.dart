@@ -7,4 +7,5 @@ abstract class FilesNavigatorRemoteDataSource{
   Future<Folder> getFolder(int folderId, FileParentType parentType, String accessToken);
   Future<File> getGeneratedPdf(String fileUrl, String accessToken);
   Future<List<SearchAppearance>> search(String text, String accessToken);
+  Future<List<Map<String, dynamic>>> generateIcr(List<int> filesIds, String accessToken);
 }

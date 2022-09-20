@@ -115,6 +115,14 @@ class MockFilesNavigatorRemoteDataSource extends _i1.Mock
               returnValue: _i5.Future<List<_i7.SearchAppearance>>.value(
                   <_i7.SearchAppearance>[]))
           as _i5.Future<List<_i7.SearchAppearance>>);
+  @override
+  _i5.Future<List<Map<String, dynamic>>> generateIcr(
+          List<int>? filesIds, String? accessToken) =>
+      (super.noSuchMethod(
+              Invocation.method(#generateIcr, [filesIds, accessToken]),
+              returnValue: _i5.Future<List<Map<String, dynamic>>>.value(
+                  <Map<String, dynamic>>[]))
+          as _i5.Future<List<Map<String, dynamic>>>);
 }
 
 /// A class which mocks [FilesNavigatorLocalDataSource].
