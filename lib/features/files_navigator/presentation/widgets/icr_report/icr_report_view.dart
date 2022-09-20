@@ -49,22 +49,27 @@ class IcrReportView extends StatelessWidget {
                     (h) => Cell(
                         text: h,
                         textIsBold: true,
-                        color: Colors.transparent
+                        color: AppColors.primarySuperLight
                       )
                   ).toList(),
                 ),
-                ...rows.map<Row>(
-                  (r) => Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: r.map<Widget>(
-                      (cell) => Cell(
-                        text: cell,
-                        textIsBold: false,
-                        color: Colors.transparent
-                      )
-                    ).toList(),
-                  )
-                ).toList()
+                ...(){
+                  final items = <Widget>[];
+                  for(int i = 0; i < rows.length; i++){
+                    final row = rows[i];
+                    items.add(Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: row.map<Widget>(
+                        (cell) => Cell(
+                          text: cell,
+                          textIsBold: false,
+                          color: (i%2 == 0)? Colors.transparent : AppColors.backgroundSecondary
+                        )
+                      ).toList(),
+                    ));
+                  }
+                  return items;
+                }()
               ],
             ),
           ),
