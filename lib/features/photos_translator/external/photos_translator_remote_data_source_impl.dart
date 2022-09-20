@@ -57,12 +57,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
       'field_name': 'image',
       'file': File(translation.imgUrl)
     };
-    print('************************* sending translation ***************************');
-    print(fileId);
-    print('------ --------');
-    print(translation.id);
     final response = await executeMultiPartRequestWithOneFile('${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$addTranslationUrl$fileId', headers, fields, fileInfo);
-    print('----- translation response-----');
     return await super.getResponseData(
       () async => adapter.getTranslationFromJson( jsonDecode(response.body) ).id!
     );

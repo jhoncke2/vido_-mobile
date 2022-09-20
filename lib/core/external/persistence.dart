@@ -110,7 +110,7 @@ class CustomDataBaseFactory{
   static Future<Database> initDataBase()async{
     Directory directory = await getApplicationDocumentsDirectory();
     String path = join(directory.path, DB_NAME);
-    //await deleteDatabase(path);
+    await deleteDatabase(path);
     return await openDatabase(path, version: DB_VERSION, onCreate: _onCreate);
   }
 
