@@ -4,6 +4,7 @@ class AppColors{
   static const primary = Color.fromRGBO(47, 157, 192, 1);
   static const primaryLight = Color.fromRGBO(79, 190, 220, 1);
   static const primaryDark = Color.fromRGBO(25, 86, 114, 1);
+  static const primarySuperLight = Color.fromRGBO(89, 200, 230, 1);
   static const secondary = Color.fromRGBO(240, 240, 240, 1);
   static const secondaryLight = Color.fromRGBO(249, 249, 249, 1);
   static const textPrimary = Colors.black;
