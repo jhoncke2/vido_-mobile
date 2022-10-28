@@ -27,7 +27,6 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
   final LoadAppearancePdf loadAppearancePdf;
   final Search search;
   final GenerateIcr generateIcr;
-
   late List<AppFile> _lastAppFiles;
   final AppFilesTransmitter appFilesTransmitter;
   final TranslationsFilesTransmitter translationsFilesTransmitter;

@@ -1,0 +1,4 @@
+enum FilesAcommodation{
+  cells,
+  verticalList
+}

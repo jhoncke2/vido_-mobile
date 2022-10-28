@@ -1,9 +1,9 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/shared_preferences_manager.dart';
+import 'package:vido/features/files_navigator/domain/entities/files_acommodation.dart';
 import 'package:vido/features/files_navigator/external/data_sources/files_navigator_local_data_source_impl.dart';
 import 'files_navigator_local_data_source_impl_test.mocks.dart';
 
@@ -25,6 +25,8 @@ void main(){
   group('set files tree lvl', _testSetFilesTreeLvlGroup);
   group('get parent id', _testGetParentIdGroup);
   group('set parent id', _testSetParentIdGroup);
+  group('set files acommodation', _testSetFilesAcommodationGroup);
+  group('get files acommodation', _testGetFilesAcommodationGroup);
 }
 
 void _testGetCurrentParentFolderIdGroup(){
@@ -134,5 +136,57 @@ void _testSetParentIdGroup(){
   test('should call the specified methods', ()async{
     await localDataSource.setParentId(tId);
     verify(sharedPreferencesManager.setString(FilesNavigatorLocalDataSourceImpl.parentIdKey, '$tId'));
+  });
+}
+
+void _testSetFilesAcommodationGroup(){
+  late FilesAcommodation tAcommodation;
+  test('should call the specified methods when acommodation is cells', ()async{
+    tAcommodation = FilesAcommodation.cells;
+    await localDataSource.setFilesAcommodation(tAcommodation);
+    verify(sharedPreferencesManager.setString(FilesNavigatorLocalDataSourceImpl.filesAcommodationKey, 'cells'));
+  });
+
+  test('should call the specified methods when acommodation is list_column', ()async{
+    tAcommodation = FilesAcommodation.cells;
+    await localDataSource.setFilesAcommodation(tAcommodation);
+    verify(sharedPreferencesManager.setString(FilesNavigatorLocalDataSourceImpl.filesAcommodationKey, 'cells'));
+  });
+
+  test('should call the specified methods when acommodation is vertical_list', ()async{
+    tAcommodation = FilesAcommodation.verticalList;
+    await localDataSource.setFilesAcommodation(tAcommodation);
+    verify(sharedPreferencesManager.setString(FilesNavigatorLocalDataSourceImpl.filesAcommodationKey, 'vertical_list'));
+  });
+}
+
+void _testGetFilesAcommodationGroup(){
+  test('should call the specified methods', ()async{
+    when(sharedPreferencesManager.getString(any)).thenAnswer((_) async => FilesNavigatorLocalDataSourceImpl.filesAcommodationCellsValue);
+    await localDataSource.getFilesAcommodation();
+  });
+
+  test('should return the expected result when the preferences value is cells', ()async{
+    when(sharedPreferencesManager.getString(any)).thenAnswer((_) async => FilesNavigatorLocalDataSourceImpl.filesAcommodationCellsValue);
+    final result = await localDataSource.getFilesAcommodation();
+    expect(result, FilesAcommodation.cells);
+  });
+
+  test('should return the expected result when the preferences value is vertical_list', ()async{
+    when(sharedPreferencesManager.getString(any)).thenAnswer((_) async => FilesNavigatorLocalDataSourceImpl.filesAcommodationVerticalListValue);
+    final result = await localDataSource.getFilesAcommodation();
+    expect(result, FilesAcommodation.verticalList);
+  });
+
+  test('should return the expected result when the preferences throws empty data storage exception', ()async{
+    when(sharedPreferencesManager.getString(any)).thenThrow(const StorageException(message: 'empty data', type: StorageExceptionType.EMPTYDATA));
+    final result = await localDataSource.getFilesAcommodation();
+    expect(result, FilesAcommodation.cells);
+  });
+
+  test('should return the expected result when the preferences throws normal storage exception', ()async{
+    when(sharedPreferencesManager.getString(any)).thenThrow(const StorageException(message: 'empty data', type: StorageExceptionType.EMPTYDATA));
+    final result = await localDataSource.getFilesAcommodation();
+    expect(result, FilesAcommodation.cells);
   });
 }
