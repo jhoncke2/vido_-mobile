@@ -4,13 +4,14 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i8;
-import 'dart:convert' as _i11;
+import 'dart:convert' as _i12;
 import 'dart:io' as _i3;
-import 'dart:typed_data' as _i12;
+import 'dart:typed_data' as _i13;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:vido/core/external/persistence.dart' as _i7;
 import 'package:vido/core/external/photos_translator.dart' as _i9;
+import 'package:vido/core/external/storage_pdf_picker.dart' as _i11;
 import 'package:vido/core/utils/image_rotation_fixer.dart' as _i10;
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart'
     as _i5;
@@ -219,6 +220,22 @@ class MockImageRotationFixer extends _i1.Mock
           as _i8.Future<_i3.File>);
 }
 
+/// A class which mocks [StoragePdfPicker].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockStoragePdfPicker extends _i1.Mock implements _i11.StoragePdfPicker {
+  MockStoragePdfPicker() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i8.Future<_i3.File> pick() =>
+      (super.noSuchMethod(Invocation.method(#pick, []),
+              returnValue: _i8.Future<_i3.File>.value(
+                  _FakeFile_1(this, Invocation.method(#pick, []))))
+          as _i8.Future<_i3.File>);
+}
+
 /// A class which mocks [File].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -348,7 +365,7 @@ class MockFile extends _i1.Mock implements _i3.File {
   @override
   _i3.IOSink openWrite(
           {_i3.FileMode? mode = _i3.FileMode.write,
-          _i11.Encoding? encoding = const _i11.Utf8Codec()}) =>
+          _i12.Encoding? encoding = const _i12.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#openWrite, [], {#mode: mode, #encoding: encoding}),
           returnValue: _FakeIOSink_6(
@@ -357,35 +374,35 @@ class MockFile extends _i1.Mock implements _i3.File {
                   #openWrite, [], {#mode: mode, #encoding: encoding}))) as _i3
           .IOSink);
   @override
-  _i8.Future<_i12.Uint8List> readAsBytes() =>
+  _i8.Future<_i13.Uint8List> readAsBytes() =>
       (super.noSuchMethod(Invocation.method(#readAsBytes, []),
-              returnValue: _i8.Future<_i12.Uint8List>.value(_i12.Uint8List(0)))
-          as _i8.Future<_i12.Uint8List>);
+              returnValue: _i8.Future<_i13.Uint8List>.value(_i13.Uint8List(0)))
+          as _i8.Future<_i13.Uint8List>);
   @override
-  _i12.Uint8List readAsBytesSync() =>
+  _i13.Uint8List readAsBytesSync() =>
       (super.noSuchMethod(Invocation.method(#readAsBytesSync, []),
-          returnValue: _i12.Uint8List(0)) as _i12.Uint8List);
+          returnValue: _i13.Uint8List(0)) as _i13.Uint8List);
   @override
   _i8.Future<String> readAsString(
-          {_i11.Encoding? encoding = const _i11.Utf8Codec()}) =>
+          {_i12.Encoding? encoding = const _i12.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#readAsString, [], {#encoding: encoding}),
           returnValue: _i8.Future<String>.value('')) as _i8.Future<String>);
   @override
-  String readAsStringSync({_i11.Encoding? encoding = const _i11.Utf8Codec()}) =>
+  String readAsStringSync({_i12.Encoding? encoding = const _i12.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#readAsStringSync, [], {#encoding: encoding}),
           returnValue: '') as String);
   @override
   _i8.Future<List<String>> readAsLines(
-          {_i11.Encoding? encoding = const _i11.Utf8Codec()}) =>
+          {_i12.Encoding? encoding = const _i12.Utf8Codec()}) =>
       (super.noSuchMethod(
               Invocation.method(#readAsLines, [], {#encoding: encoding}),
               returnValue: _i8.Future<List<String>>.value(<String>[]))
           as _i8.Future<List<String>>);
   @override
   List<String> readAsLinesSync(
-          {_i11.Encoding? encoding = const _i11.Utf8Codec()}) =>
+          {_i12.Encoding? encoding = const _i12.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#readAsLinesSync, [], {#encoding: encoding}),
           returnValue: <String>[]) as List<String>);
@@ -408,7 +425,7 @@ class MockFile extends _i1.Mock implements _i3.File {
   @override
   _i8.Future<_i3.File> writeAsString(String? contents,
           {_i3.FileMode? mode = _i3.FileMode.write,
-          _i11.Encoding? encoding = const _i11.Utf8Codec(),
+          _i12.Encoding? encoding = const _i12.Utf8Codec(),
           bool? flush = false}) =>
       (super
           .noSuchMethod(Invocation.method(#writeAsString, [contents], {#mode: mode, #encoding: encoding, #flush: flush}),
@@ -424,7 +441,7 @@ class MockFile extends _i1.Mock implements _i3.File {
   @override
   void writeAsStringSync(String? contents,
           {_i3.FileMode? mode = _i3.FileMode.write,
-          _i11.Encoding? encoding = const _i11.Utf8Codec(),
+          _i12.Encoding? encoding = const _i12.Utf8Codec(),
           bool? flush = false}) =>
       super.noSuchMethod(
           Invocation.method(#writeAsStringSync, [contents],

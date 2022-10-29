@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/user_extra_info_getter.dart';
@@ -8,7 +9,6 @@ import 'package:vido/features/photos_translator/domain/failures/photos_translato
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/domain/repository/photos_translator_repository.dart';
 import 'package:vido/features/photos_translator/domain/translations_files_receiver.dart';
-import '../../../../core/domain/file_parent_type.dart';
 import '../../../../core/external/translations_file_parent_folder_getter.dart';
 
 //TODO: Tener en cuenta caso en que celular se apague y la pérdida de información en inCompletingProcessLastFiles
@@ -114,6 +114,40 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
   Future<Either<PhotosTranslatorFailure, void>> initPendingTranslations()async{
     await _translateFirstUncompletedPhoto();
     return const Right(null);
+  }
+
+  @override
+  Future<Either<PhotosTranslatorFailure, File>> pickFile()async{
+    return await _tryFunction(()async{
+      final pdf = await localDataSource.pickPdf();
+      return Right(pdf);
+    });
+  }
+
+  Future<Either<PhotosTranslatorFailure, T>> _tryFunction<T>(Future<Either<PhotosTranslatorFailure, T>> Function() function)async{
+    try{
+      return await function();
+    }on AppException catch(exception){
+      return Left(PhotosTranslatorFailure(
+        exception: exception,
+        message: exception.message??''
+      ));
+    }on Object{
+      return const Left(PhotosTranslatorFailure(
+        exception: AppException(''),
+        message: ''
+      ));
+    }
+  }
+
+  @override
+  Future<Either<PhotosTranslatorFailure, void>> createPdfFile(String name, File file)async{
+    return await _tryFunction(()async{
+      final parentId = await translFileParentFolderGetter.getCurrentFileId();
+      final accessToken = await userExtraInfoGetter.getAccessToken();
+      await remoteDataSource.createPdfFile(name, file, parentId, accessToken);
+      return const Right(null);
+    });
   }
 }
 

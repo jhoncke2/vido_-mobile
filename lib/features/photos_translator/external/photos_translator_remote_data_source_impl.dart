@@ -92,4 +92,10 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
       );
     });
   }
+  
+  @override
+  Future<void> createPdfFile(String name, File pdf, int parentId, String accessToken)async{
+    // TODO: implement createPdfFile
+    throw UnimplementedError();
+  }
 }

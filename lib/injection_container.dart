@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:vido/core/external/app_files_remote_adapter.dart';
+import 'package:vido/core/external/storage_pdf_picker.dart';
 import 'package:vido/features/files_navigator/domain/user_cases/generate_icr_impl.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/generate_icr.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
+import 'package:vido/features/photos_translator/presentation/use_cases/create_pdf_file.dart';
+import 'package:vido/features/photos_translator/presentation/use_cases/pick_pdf.dart';
 import 'core/external/persistence.dart';
 import 'core/utils/path_provider.dart';
 import 'package:camera/camera.dart';
@@ -69,13 +72,15 @@ import 'features/files_navigator/domain/user_cases/load_folder_children_impl.dar
 import 'features/files_navigator/domain/user_cases/search_impl.dart';
 import 'features/files_navigator/presentation/use_cases/load_appearance_pdf.dart';
 import 'features/photos_translator/domain/use_cases/create_folder_impl.dart';
+import 'features/photos_translator/domain/use_cases/create_pdf_file.dart';
+import 'features/photos_translator/domain/use_cases/pick_pdf_impl.dart';
 import 'features/photos_translator/external/fake/photos_translator_remote_data_source_fake.dart';
 import 'features/photos_translator/external/photos_translator_local_adapter.dart';
 import 'features/photos_translator/external/photos_translator_remote_data_source_impl.dart';
 import 'features/files_navigator/external/data_sources/fake/files_tree.dart' as files_tree;
 
 final sl = GetIt.instance;
-bool useRealData = true;
+bool useRealData = false;
 
 Future<void> init() async {
   sl.registerLazySingleton<PhotosTranslator>(() => PhotosTranslatorImpl());
@@ -95,6 +100,9 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<AppFilesRemoteAdapter>(
     () => AppFilesRemoteAdapterImpl()
+  );
+  sl.registerLazySingleton<StoragePdfPicker>(
+    () => StoragePdfPickerImpl()
   );
 
   // ********************************************************* Authentication
@@ -254,7 +262,8 @@ Future<void> init() async {
       adapter: sl<PhotosTranslatorLocalAdapter>(), 
       databaseManager: sl<DatabaseManager>(), 
       translator: sl<PhotosTranslator>(),
-      rotationFixer: sl<ImageRotationFixer>()
+      rotationFixer: sl<ImageRotationFixer>(),
+      storagePdfPicker: sl<StoragePdfPicker>()
     )
   );
   final translationsFilesController = StreamController<List<TranslationsFile>>();
@@ -292,11 +301,25 @@ Future<void> init() async {
       errorHandler: sl<UseCaseErrorHandler>()
     )
   );
+  sl.registerLazySingleton<PickPdf>(
+    () => PickPdfImpl(
+      repository: sl<PhotosTranslatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
+  sl.registerLazySingleton<CreatePdfFile>(
+    () => CreatePdfFileImpl(
+      repository: sl<PhotosTranslatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
   sl.registerFactory<PhotosTranslatorBloc>( () => PhotosTranslatorBloc(
     createTranslationsFile: sl<CreateTranslationsFile>(),
     translatePhoto: sl<TranslatePhoto>(),
     endPhotosTranslation: sl<EndPhotosTranslationsFile>(),
     createFolder: sl<CreateFolder>(),
+    pickPdf: sl<PickPdf>(),
+    createPdfFile: sl<CreatePdfFile>(),
     cameras: cameras,
     getNewCameraController: (CameraDescription cam) => CameraController(
       cam,

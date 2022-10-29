@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:vido/core/external/persistence.dart';
 import 'package:vido/core/external/photos_translator.dart';
 import 'package:vido/core/utils/image_rotation_fixer.dart';
@@ -5,18 +6,21 @@ import 'package:vido/features/photos_translator/data/data_sources/photos_transla
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_local_adapter.dart';
+import '../../../core/external/storage_pdf_picker.dart';
 
 class PhotosTranslatorLocalDataSourceImpl implements PhotosTranslatorLocalDataSource{
   final PhotosTranslatorLocalAdapter adapter;
   final DatabaseManager databaseManager;
   final PhotosTranslator translator;
   final ImageRotationFixer rotationFixer;
+  final StoragePdfPicker storagePdfPicker;
   bool _isTranslating = false;
   PhotosTranslatorLocalDataSourceImpl({
     required this.adapter,
     required this.databaseManager,
     required this.translator,
-    required this.rotationFixer
+    required this.rotationFixer,
+    required this.storagePdfPicker
   });
 
   @override
@@ -100,5 +104,10 @@ class PhotosTranslatorLocalDataSourceImpl implements PhotosTranslatorLocalDataSo
   Future<void> updateTranslation(int fileId, Translation translation) async {
     final newTranslationJson = adapter.getJsonFromTranslation(translation, fileId);
     await databaseManager.update(translationsTableName, newTranslationJson, translation.id!);
+  }
+
+  @override
+  Future<File> pickPdf()async{
+    return await storagePdfPicker.pick();
   }
 }

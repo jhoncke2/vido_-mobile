@@ -4,6 +4,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:vido/core/external/persistence.dart';
 import 'package:vido/core/external/photos_translator.dart';
+import 'package:vido/core/external/storage_pdf_picker.dart';
 import 'package:vido/core/utils/image_rotation_fixer.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
@@ -16,16 +17,19 @@ late MockPhotosTranslatorLocalAdapter adapter;
 late MockDatabaseManager persistenceManager;
 late MockPhotosTranslator translator;
 late MockImageRotationFixer rotationFixer;
+late MockStoragePdfPicker storagePdfPicker;
 
 @GenerateMocks([
   PhotosTranslatorLocalAdapter,
   DatabaseManager,
   PhotosTranslator,
   ImageRotationFixer,
+  StoragePdfPicker,
   File
 ])
 void main(){
   setUp((){
+    storagePdfPicker = MockStoragePdfPicker();
     rotationFixer = MockImageRotationFixer();
     translator = MockPhotosTranslator();
     persistenceManager = MockDatabaseManager();
@@ -34,7 +38,8 @@ void main(){
       adapter: adapter,
       databaseManager: persistenceManager,
       translator: translator,
-      rotationFixer: rotationFixer
+      rotationFixer: rotationFixer,
+      storagePdfPicker: storagePdfPicker
     );
   });
 
@@ -47,6 +52,7 @@ void main(){
   group('save uncompleted translation', _testSaveUncompletedTranslationGroup);
   group('translate', _testTranslateGroup);
   group('update translation', _testUpdateTranslationGroup);
+  group('pick pdf', _testPickPdfGroup);
 }
 
 void _testCreateTranslationsFileGroup(){
@@ -401,5 +407,26 @@ void _testUpdateTranslationGroup(){
     await localDataSource.updateTranslation(tFileId, tTranslationUpdated);
     verify(adapter.getJsonFromTranslation(tTranslationUpdated, tFileId));
     verify(persistenceManager.update(translationsTableName, tTranslationUpdatedJson, tTranslationUpdated.id));
+  });
+}
+
+void _testPickPdfGroup(){
+  late MockFile tPdf;
+  setUp((){
+    tPdf = MockFile();
+    when(tPdf.path)
+        .thenReturn('pdf_path');
+    when(storagePdfPicker.pick())
+        .thenAnswer((_) async => tPdf);
+  });
+
+  test('should call ths specified methods', ()async{
+    await localDataSource.pickPdf();
+    verify(storagePdfPicker.pick());
+  });
+
+  test('should return the expected result', ()async{
+    final result = await localDataSource.pickPdf();
+    expect(result, tPdf);
   });
 }

@@ -44,7 +44,7 @@ class FileTypeSelector extends StatelessWidget {
               borderRadius: BorderRadius.circular(5)
             ),
             child: Text(
-              'Crear archivo',
+              'Generar archivo',
               style: TextStyle(
                 color: AppColors.textPrimaryDark,
                 fontSize: dimens.subtitleTextSize
@@ -52,6 +52,26 @@ class FileTypeSelector extends StatelessWidget {
             ),
             onPressed: (){
               BlocProvider.of<PhotosTranslatorBloc>(context).add(InitTranslationsFileCreationEvent());
+            },
+          ),
+          MaterialButton(
+            color: AppColors.primary,
+            padding: EdgeInsets.symmetric(
+              horizontal: dimens.getWidthPercentage(0.175),
+              vertical: dimens.littleContainerVerticalPadding
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5)
+            ),
+            child: Text(
+              'Seleccionar archivo',
+              style: TextStyle(
+                color: AppColors.textPrimaryDark,
+                fontSize: dimens.subtitleTextSize
+              )
+            ),
+            onPressed: (){
+              BlocProvider.of<PhotosTranslatorBloc>(context).add(InitPdfFileCreationEvent());
             },
           )
         ],

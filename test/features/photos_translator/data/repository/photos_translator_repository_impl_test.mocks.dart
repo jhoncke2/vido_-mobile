@@ -137,6 +137,14 @@ class MockPhotosTranslatorRemoteDataSource extends _i1.Mock
               returnValue: _i7.Future<void>.value(),
               returnValueForMissingStub: _i7.Future<void>.value())
           as _i7.Future<void>);
+  @override
+  _i7.Future<void> createPdfFile(
+          String? name, _i5.File? pdf, int? parentId, String? accessToken) =>
+      (super.noSuchMethod(
+          Invocation.method(#createPdfFile, [name, pdf, parentId, accessToken]),
+          returnValue: _i7.Future<void>.value(),
+          returnValueForMissingStub:
+              _i7.Future<void>.value()) as _i7.Future<void>);
 }
 
 /// A class which mocks [PhotosTranslatorLocalDataSource].
@@ -212,6 +220,12 @@ class MockPhotosTranslatorLocalDataSource extends _i1.Mock
               returnValue: _i7.Future<void>.value(),
               returnValueForMissingStub: _i7.Future<void>.value())
           as _i7.Future<void>);
+  @override
+  _i7.Future<_i5.File> pickPdf() =>
+      (super.noSuchMethod(Invocation.method(#pickPdf, []),
+              returnValue: _i7.Future<_i5.File>.value(
+                  _FakeFile_3(this, Invocation.method(#pickPdf, []))))
+          as _i7.Future<_i5.File>);
 }
 
 /// A class which mocks [TranslationsFilesReceiver].
