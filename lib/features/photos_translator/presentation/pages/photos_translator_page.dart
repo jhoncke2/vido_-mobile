@@ -9,7 +9,6 @@ import 'package:vido/features/photos_translator/presentation/widgets/pdf_file_cr
 import 'package:vido/features/photos_translator/presentation/widgets/translations_file_camera_chooser.dart';
 import 'package:vido/features/photos_translator/presentation/widgets/translations_file_creator.dart';
 import 'package:vido/injection_container.dart';
-
 import '../../../../globals.dart';
 import '../widgets/file_type_selector.dart';
 
