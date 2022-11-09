@@ -8,7 +8,6 @@ import 'package:vido/features/photos_translator/domain/failures/photos_translato
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/domain/repository/photos_translator_repository.dart';
 import 'package:vido/features/photos_translator/domain/translations_files_receiver.dart';
-import '../../../../core/domain/file_parent_type.dart';
 import '../../../../core/external/translations_file_parent_folder_getter.dart';
 
 //TODO: Tener en cuenta caso en que celular se apague y la pérdida de información en inCompletingProcessLastFiles
@@ -48,7 +47,6 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
         exception: exception
       ));
     }catch(exception, stackTrace){
-      print(stackTrace);
       return const Left(PhotosTranslatorFailure(
         message: 'Ha ocurrido un error inesperado',
         exception: AppException(null)
@@ -89,18 +87,27 @@ class PhotosTranslatorRepositoryImpl implements PhotosTranslatorRepository {
             await localDataSource.updateTranslation(translFile.id, translationCompleted);
             final accessToken = await userExtraInfoGetter.getAccessToken();
             await remoteDataSource.addTranslation(translFile.id, translationCompleted, accessToken);
-            final createdFile = await localDataSource.getCurrentCreatedFile();
-            final uncompletedFile = await localDataSource.getTranslationsFile(translFile.id);
-            if((createdFile == null || createdFile.id != uncompletedFile.id) && uncompletedFile.translations.every((t) => t.text != null)){
-              await _endFile(uncompletedFile);
-            }
+            await _endCurrentFileIfCompleted(translFile);
             await _translateFirstUncompletedPhoto();
             return;
           }
         }
+        await _endCurrentFileIfCompleted(translFile);
       }
     }
   }
+
+  Future<void> _endCurrentFileIfCompleted(TranslationsFile translFile)async{
+    final createdFile = await localDataSource.getCurrentCreatedFile();
+    final uncompletedFile = await localDataSource.getTranslationsFile(translFile.id);
+    if(_canEndFile(uncompletedFile, createdFile)){
+      await _endFile(uncompletedFile);
+    }
+  }
+
+  bool _canEndFile(TranslationsFile uncompletedFile, TranslationsFile? createdFile) => 
+      (createdFile == null || createdFile.id != uncompletedFile.id) 
+      && uncompletedFile.translations.every((t) => t.text != null);
 
   @override
   Future<Either<PhotosTranslatorFailure, void>> createFolder(String name)async{

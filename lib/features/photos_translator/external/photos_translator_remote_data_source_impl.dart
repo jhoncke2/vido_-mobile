@@ -15,7 +15,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   static const getCompletedPdfFilesUrl = 'list-files';
   static const createTranslationsFileUrl = 'add-file';
   static const addTranslationUrl = 'add-pagine/';
-  static const endTranslationsFileUrl = 'show-file/';
+  static const endTranslationsFileUrl = 'generate_file/';
   static const createFolderPdfUrl = 'add-directory';
   static const userParentType = 'user';
   static const folderParentType = 'directory';

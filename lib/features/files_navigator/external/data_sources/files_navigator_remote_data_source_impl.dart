@@ -16,7 +16,6 @@ import '../../../../core/utils/path_provider.dart';
 
 class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements FilesNavigatorRemoteDataSource{
   static const baseFilesNavigationUrl = 'file-system';
-  static const getGeneratedPdfUrl = 'show-pdf/';
   static const searchUrl = 'search-pdf/';
   static const icrUrl = 'icr';
   final PathProvider pathProvider;

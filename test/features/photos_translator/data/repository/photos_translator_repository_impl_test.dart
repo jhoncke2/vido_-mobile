@@ -100,7 +100,7 @@ void _testTranslatePhotoGroup() {
     tPhotoUrl = 'url_x';
   });
 
-  group('when localDataSource is translating', () {
+  group('when localDataSource is translating', (){
     setUp(() {
       tUncompletedtranslationsFilesInit = const [
         TranslationsFile(id: 0, name: 'f0', completed: false, translations: []),
@@ -226,16 +226,15 @@ void _testTranslatePhotoGroup() {
     late Translation tSecondUncompletedTranslation;
     late Translation tFirstTranslatedTranslation;
     late Translation tSecondTranslatedTranslation;
-    late TranslationsFile tUntranslatedFile1;
-    late TranslationsFile tTranslatedFile1;
-    late TranslationsFile tUntranslatedFile2;
-    late TranslationsFile tTranslatedFile2;
+    late TranslationsFile tFile1Untranslated;
+    late TranslationsFile tFile1Translated;
+    late TranslationsFile tFile2Untranslated;
+    late TranslationsFile tFile2Translated;
     late Translation tFirstTranslationWithRemoteId;
     late Translation tSecondTranslationWithRemoteId;
     late List<TranslationsFile> tUncompletedtranslationsFiles2;
     late List<TranslationsFile> tUncompletedtranslationsFilesFin;
     late PdfFile tCompletedFile;
-    late List<PdfFile> tCompletedFiles;
     setUp(() {
       tAccessToken = 'access_token';
       const tTranslationText1 = 'translation_text_1';
@@ -260,7 +259,7 @@ void _testTranslatePhotoGroup() {
         text: tTranslationText2,
         imgUrl: 'url_2'
       );
-      tUntranslatedFile1 = TranslationsFile(
+      tFile1Untranslated = TranslationsFile(
         id: 1052,
         name: 'tf_1052',
         completed: true,
@@ -269,7 +268,7 @@ void _testTranslatePhotoGroup() {
           tFirstUncompletedTranslation,
         ]
       );
-      tTranslatedFile1 = TranslationsFile(
+      tFile1Translated = TranslationsFile(
         id: 1052,
         name: 'tf_1052',
         completed: true,
@@ -278,13 +277,13 @@ void _testTranslatePhotoGroup() {
           tFirstTranslatedTranslation,
         ]
       );
-      tUntranslatedFile2 = TranslationsFile(
+      tFile2Untranslated = TranslationsFile(
         id: 1053,
         name: 'tf_1053',
         completed: false,
         translations: [tSecondUncompletedTranslation]
       );
-      tTranslatedFile2 = const TranslationsFile(
+      tFile2Translated = const TranslationsFile(
         id: 1053,
         name: 'tf_1053',
         completed: true,
@@ -293,8 +292,8 @@ void _testTranslatePhotoGroup() {
         ]
       );
       tUncompletedtranslationsFilesInit = [
-        tUntranslatedFile1,
-        tUntranslatedFile2
+        tFile1Untranslated,
+        tFile2Untranslated
       ];
       tUncompletedtranslationsFiles2 = [
         const TranslationsFile(
@@ -306,7 +305,7 @@ void _testTranslatePhotoGroup() {
             Translation(id: 2052, text: 'text_xx', imgUrl: 'url_1'),
           ]
         ),
-        tUntranslatedFile2
+        tFile2Untranslated
       ];
       tUncompletedtranslationsFilesFin = [
         const TranslationsFile(
@@ -319,10 +318,7 @@ void _testTranslatePhotoGroup() {
           ]
         ),
       ];
-      tCompletedFile = PdfFile(id: tTranslatedFile2.id, name: tTranslatedFile2.name, url: 'pdf_url', parentId: 100);
-      tCompletedFiles = [
-        tCompletedFile
-      ];
+      tCompletedFile = PdfFile(id: tFile2Translated.id, name: tFile2Translated.name, url: 'pdf_url', parentId: 100);
       tFirstTranslationWithRemoteId = const Translation(
           id: 3052, text: tTranslationText1, imgUrl: 'url_1');
       tSecondTranslationWithRemoteId = const Translation(
@@ -335,11 +331,7 @@ void _testTranslatePhotoGroup() {
       ];
       when(localDataSource.getTranslationsFiles())
           .thenAnswer((_) async => uncompletedTranslFilesResponses.removeAt(0));
-      final currentCreatedFileResponses = [
-        tTranslatedFile1,
-        tTranslatedFile1
-      ];
-      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => currentCreatedFileResponses.removeAt(0));
+      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => tFile1Translated);
       final translateResponses = [
         tFirstTranslatedTranslation,
         tSecondTranslatedTranslation
@@ -352,8 +344,8 @@ void _testTranslatePhotoGroup() {
       ];
       when(remoteDataSource.addTranslation(any, any, any))
           .thenAnswer((_) async => addTranslationResponses.removeAt(0));
-      when(localDataSource.getTranslationsFile(tUntranslatedFile1.id)).thenAnswer((_) async => tTranslatedFile1);
-      when(localDataSource.getTranslationsFile(tUntranslatedFile2.id)).thenAnswer((_) async => tTranslatedFile2);
+      when(localDataSource.getTranslationsFile(tFile1Untranslated.id)).thenAnswer((_) async => tFile1Translated);
+      when(localDataSource.getTranslationsFile(tFile2Untranslated.id)).thenAnswer((_) async => tFile2Translated);
       when(remoteDataSource.endTranslationFile(any, any)).thenAnswer((_) async => tCompletedFile);
       when(userExtraInfoGetter.getAccessToken()).thenAnswer((_) async => tAccessToken);
     });
@@ -365,22 +357,159 @@ void _testTranslatePhotoGroup() {
       verify(localDataSource.getTranslationsFiles()).called(3);
       verify(translationsFilesReceiver.setTranslationsFiles(tUncompletedtranslationsFilesInit));
 
-      verify(localDataSource.translate(tFirstUncompletedTranslation, tUntranslatedFile1.id));
-      verify(localDataSource.updateTranslation(tUntranslatedFile1.id, tFirstTranslatedTranslation));
-      verify(localDataSource.getCurrentCreatedFile()).called(2);
-      verify(localDataSource.getTranslationsFile(tUntranslatedFile1.id));
-      verifyNever(remoteDataSource.endTranslationFile(tUntranslatedFile1.id, tAccessToken));
+      verify(localDataSource.translate(tFirstUncompletedTranslation, tFile1Untranslated.id));
+      verify(localDataSource.updateTranslation(tFile1Untranslated.id, tFirstTranslatedTranslation));
+      verify(localDataSource.getCurrentCreatedFile()).called(4);
+      verify(localDataSource.getTranslationsFile(tFile1Untranslated.id));
+      verifyNever(remoteDataSource.endTranslationFile(tFile1Untranslated.id, tAccessToken));
       verify(translationsFilesReceiver.setTranslationsFiles(tUncompletedtranslationsFiles2));
 
-      verify(localDataSource.translate(tSecondUncompletedTranslation, tUntranslatedFile2.id));
-      verify(localDataSource.updateTranslation(tUntranslatedFile2.id, tSecondTranslatedTranslation));
-      verify(localDataSource.getTranslationsFile(tUntranslatedFile2.id));
-      verify(remoteDataSource.endTranslationFile(tUntranslatedFile2.id, tAccessToken));
-      verify(localDataSource.removeTranslationsFile(tTranslatedFile2));
+      verify(localDataSource.translate(tSecondUncompletedTranslation, tFile2Untranslated.id));
+      verify(localDataSource.updateTranslation(tFile2Untranslated.id, tSecondTranslatedTranslation));
+      verify(localDataSource.getTranslationsFile(tFile2Untranslated.id));
+      verify(remoteDataSource.endTranslationFile(tFile2Untranslated.id, tAccessToken));
+      verify(localDataSource.removeTranslationsFile(tFile2Translated));
       verify(translationsFilesReceiver.setTranslationsFiles(tUncompletedtranslationsFilesFin));
 
-      verify(remoteDataSource.addTranslation(tUntranslatedFile1.id, tFirstTranslatedTranslation, tAccessToken));
-      verify(remoteDataSource.addTranslation(tUntranslatedFile2.id, tSecondTranslatedTranslation, tAccessToken));
+      verify(remoteDataSource.addTranslation(tFile1Untranslated.id, tFirstTranslatedTranslation, tAccessToken));
+      verify(remoteDataSource.addTranslation(tFile2Untranslated.id, tSecondTranslatedTranslation, tAccessToken));
+      verify(userExtraInfoGetter.getAccessToken());
+    });
+
+    test('should return the expected result', () async {
+      final result = await photosTranslatorRepository.translatePhoto(tPhotoUrl);
+      expect(result, const Right(null));
+    });
+  });
+
+  group('when local data source is not translating and there are one uncompleted translations file and one completed translations file', (){
+    late String tAccessToken;
+    late Translation tSecondUncompletedTranslation;
+    late Translation tFirstTranslatedTranslation;
+    late Translation tSecondTranslatedTranslation;
+    late TranslationsFile tFile1Untranslated;
+    late TranslationsFile tFile1Translated;
+    late TranslationsFile tFile2;
+    late Translation tFirstTranslationWithRemoteId;
+    late Translation tSecondTranslationWithRemoteId;
+    late List<TranslationsFile> tTranslationsFilesInit;
+    late List<TranslationsFile> tTranslationsFiles2;
+    late List<TranslationsFile> tTranslationsFilesEnd;
+    late PdfFile tPdfFile1;
+    late PdfFile tPdfFile2;
+    setUp(() {
+      tAccessToken = 'access_token';
+      const tTranslationText1 = 'translation_text_1';
+      const tTranslationText2 = 'translation_text_2';
+      tSecondUncompletedTranslation = const Translation(
+        id: 2053,
+        text: null,
+        imgUrl: 'url_2'
+      );
+      tFirstTranslatedTranslation = const Translation(
+        id: 2052,
+        text: tTranslationText1,
+        imgUrl: 'url_1'
+      );
+      tSecondTranslatedTranslation = const Translation(
+        id: 2053,
+        text: tTranslationText2,
+        imgUrl: 'url_2'
+      );
+      tFile1Untranslated = TranslationsFile(
+        id: 1052,
+        name: 'tf_1052',
+        completed: true,
+        translations: [
+          tFirstTranslatedTranslation,
+          tSecondUncompletedTranslation
+        ]
+      );
+      tFile1Translated = TranslationsFile(
+        id: 1052,
+        name: 'tf_1052',
+        completed: true,
+        translations: [
+          tFirstTranslatedTranslation,
+          tSecondTranslatedTranslation,
+        ]
+      );
+      tFile2 = const TranslationsFile(
+        id: 1053,
+        name: 'tf_1053',
+        completed: false,
+        translations: [
+          Translation(id: 1103, imgUrl: 'img_file_2_url', text: 'the translation text')
+        ]
+      );
+      tTranslationsFilesInit = [
+        tFile1Untranslated,
+        tFile2
+      ];
+      tTranslationsFiles2 = [
+        tFile2
+      ];
+      tTranslationsFilesEnd = [
+
+      ];
+      tPdfFile1 = PdfFile(
+        id: tFile1Translated.id, 
+        name: tFile1Translated.name, 
+        parentId: 103, 
+        url: 'pdf_url_1'
+      );
+      tPdfFile2 = PdfFile(
+        id: tFile2.id, 
+        name: tFile2.name,
+        url: 'pdf_url_2', 
+        parentId: 100
+      );
+      tFirstTranslationWithRemoteId = const Translation(
+          id: 3052, text: tTranslationText1, imgUrl: 'url_1'
+      );
+      tSecondTranslationWithRemoteId = const Translation(
+          id: 3053, text: tTranslationText2, imgUrl: 'url_2'
+      );
+      when(localDataSource.translating).thenReturn(false);
+      final uncompletedTranslFilesResponses = [
+        tTranslationsFilesInit,
+        tTranslationsFiles2,
+        tTranslationsFilesEnd
+      ];
+      when(localDataSource.getTranslationsFiles())
+          .thenAnswer((_) async => uncompletedTranslFilesResponses.removeAt(0));
+      when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => null);
+      when(localDataSource.translate(any, any))
+          .thenAnswer((_) async => tSecondTranslatedTranslation);
+      when(remoteDataSource.addTranslation(any, any, any))
+          .thenAnswer((_) async => tSecondTranslationWithRemoteId.id!);
+      when(localDataSource.getTranslationsFile(tFile1Untranslated.id)).thenAnswer((_) async => tFile1Translated);
+      when(localDataSource.getTranslationsFile(tFile2.id)).thenAnswer((_) async => tFile2);
+      when(remoteDataSource.endTranslationFile(tFile1Translated.id, any)).thenAnswer((_) async => tPdfFile1);
+      when(remoteDataSource.endTranslationFile(tFile2.id, any)).thenAnswer((_) async => tPdfFile2);
+      when(userExtraInfoGetter.getAccessToken()).thenAnswer((_) async => tAccessToken);
+    });
+
+    
+    test('should call the specified methods', () async {
+      await photosTranslatorRepository.translatePhoto(tPhotoUrl);
+      verify(localDataSource.saveUncompletedTranslation(tPhotoUrl));
+      verify(localDataSource.getTranslationsFiles()).called(2);
+      verify(translationsFilesReceiver.setTranslationsFiles(tTranslationsFilesInit));
+      verify(localDataSource.translating).called(2);
+
+      verify(localDataSource.translate(tSecondUncompletedTranslation, tFile1Untranslated.id));
+      verify(localDataSource.updateTranslation(tFile1Untranslated.id, tSecondTranslatedTranslation));
+      verify(localDataSource.getCurrentCreatedFile()).called(2);
+      verify(localDataSource.getTranslationsFile(tFile1Untranslated.id));
+      verify(remoteDataSource.endTranslationFile(tFile1Translated.id, tAccessToken));
+      verify(translationsFilesReceiver.setTranslationsFiles(tTranslationsFiles2));
+
+      verify(localDataSource.getTranslationsFile(tFile2.id));
+      verify(remoteDataSource.endTranslationFile(tFile2.id, tAccessToken));
+      verify(localDataSource.removeTranslationsFile(tFile2));
+
+      verify(remoteDataSource.addTranslation(tFile1Untranslated.id, tSecondTranslatedTranslation, tAccessToken));
       verify(userExtraInfoGetter.getAccessToken());
     });
 

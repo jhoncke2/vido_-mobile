@@ -19,7 +19,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   final AppFilesReceiver appFilesReceiver;
 
   const FilesNavigatorRepositoryImpl({
-    required this.remoteDataSource, 
+    required this.remoteDataSource,
     required this.localDataSource,
     required this.userExtraInfoGetter,
     required this.appFilesReceiver

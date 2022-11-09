@@ -19,8 +19,9 @@ abstract class RemoteDataSource{
 
   Map<String, String> createAuthorizationJsonHeaders(String accessToken){
     return {
-      'Authorization':'Bearer $accessToken',
-      'Content-Type':'application/json'
+      'Authorization': 'Bearer $accessToken',
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
     };
   }
 
@@ -65,7 +66,7 @@ abstract class RemoteDataSource{
       return await function();
     }catch(exception, stackTrace){
       print(stackTrace);
-      throw ServerException(type: ServerExceptionType.NORMAL);
+      throw const ServerException(type: ServerExceptionType.NORMAL);
     }
   }
 }
