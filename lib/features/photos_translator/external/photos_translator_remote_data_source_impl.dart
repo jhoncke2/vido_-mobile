@@ -19,6 +19,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   static const createFolderPdfUrl = 'add-directory';
   static const userParentType = 'user';
   static const folderParentType = 'directory';
+  static const createPdfFileUrl = 'upload-file';
   final http.Client client;
   final PhotosTranslatorRemoteAdapter adapter;
   final PathProvider pathProvider;
@@ -95,7 +96,22 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   
   @override
   Future<void> createPdfFile(String name, File pdf, int parentId, String accessToken)async{
-    // TODO: implement createPdfFile
-    throw UnimplementedError();
+    final headers = super.createAuthorizationMultipartHeaders(accessToken);
+    final fields = {
+      'name': name,
+      'directory_id': '$parentId'
+    };
+    final fileInfo = {
+      'file': pdf,
+      'field_name': 'file'
+    };
+    await super.executeGeneralService( ()async => 
+      await super.executeMultiPartRequestWithOneFile(
+        '${RemoteDataSource.baseApiUncodedPath}${RemoteDataSource.baseAuthorizedAppPath}$createPdfFileUrl', 
+        headers, 
+        fields, 
+        fileInfo
+      )
+    );
   }
 }
