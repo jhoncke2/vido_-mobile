@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../domain/entities/translation.dart';
 import '../../domain/entities/translations_file.dart';
 
@@ -12,4 +14,5 @@ abstract class PhotosTranslatorLocalDataSource {
   Future<TranslationsFile> getTranslationsFile(int fileId);
   Future<TranslationsFile?> getCurrentCreatedFile();
   Future<void> removeTranslationsFile(TranslationsFile file);
+  Future<File> pickPdf();
 }

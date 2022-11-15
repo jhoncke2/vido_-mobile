@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/translations_file_parent_folder_getter.dart';
 import 'package:vido/core/external/user_extra_info_getter.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_local_data_source.dart';
@@ -11,6 +12,7 @@ import 'package:vido/features/photos_translator/data/repository/photos_translato
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
+import 'package:vido/features/photos_translator/domain/failures/photos_translator_failure.dart';
 import 'package:vido/features/photos_translator/domain/translations_files_receiver.dart';
 import 'photos_translator_repository_impl_test.mocks.dart';
 
@@ -49,6 +51,8 @@ void main() {
   group('translate photo', _testTranslatePhotoGroup);
   group('create folder', _testCreateFolderGroup);
   group('init pending translations', _testInitPendingTranslations);
+  group('pick pdf', _testPickPdfGroup);
+  group('create pdf file', _testCreatePdfFileGroup);
 }
 
 void _testCreatetranslatorsFileGroup() {
@@ -664,5 +668,116 @@ void _testInitPendingTranslations(){
       final result = await photosTranslatorRepository.initPendingTranslations();
       expect(result, const Right(null));
     });
+  });
+}
+
+void _testPickPdfGroup(){
+  late String tAccessToken;
+  setUp((){
+    tAccessToken = 'access_token';
+    when(userExtraInfoGetter.getAccessToken())
+        .thenAnswer((_) async => tAccessToken);
+  });
+
+  group('when all goes good', (){
+    late MockFile tPdf;
+    setUp((){
+      tPdf = MockFile();
+      when(tPdf.path)
+          .thenReturn('pdf_path');
+      when(localDataSource.pickPdf())
+          .thenAnswer((_) async => tPdf);
+    });
+    test('should call the specified methods', ()async{
+      await photosTranslatorRepository.pickFile();
+      verify(localDataSource.pickPdf());
+    });
+
+    test('should return the expected result', ()async{
+      final result = await photosTranslatorRepository.pickFile();
+      expect(result, Right(tPdf));
+    });
+  });
+
+  test('should return the expected result when there is an AppException', ()async{
+    const errorMessage = 'error_message';
+    const exception = StorageException(
+      type: StorageExceptionType.EMPTYDATA,
+      message: errorMessage
+    );
+    when(localDataSource.pickPdf())
+        .thenThrow(exception);
+    final result = await photosTranslatorRepository.pickFile();
+    expect(result, const Left(PhotosTranslatorFailure(
+      exception: exception,
+      message: errorMessage
+    )));
+  });
+
+  test('should return the expected result when there is another Exception', ()async{
+    when(localDataSource.pickPdf())
+        .thenThrow(Exception());
+    final result = await photosTranslatorRepository.pickFile();
+    expect(result, const Left(PhotosTranslatorFailure(
+      exception: AppException(''),
+      message: ''
+    )));
+  });
+}
+
+void _testCreatePdfFileGroup(){
+  late String tName;
+  late MockFile tPdf;
+  late int tParentId;
+  late String tAccessToken;
+  
+  setUp((){
+    tName = 'file_name';
+    tPdf = MockFile();
+    tParentId = 1000;
+    tAccessToken = 'access_token';
+    when(tPdf.path)
+        .thenReturn('pdf_path');
+    when(translFileParentFolderGetter.getCurrentFileId())
+        .thenAnswer((_) async => tParentId);
+    when(userExtraInfoGetter.getAccessToken())
+        .thenAnswer((_) async => tAccessToken);
+  });
+
+  test('should call the specified methods', ()async{
+    await photosTranslatorRepository.createPdfFile(tName, tPdf);
+    verify(translFileParentFolderGetter.getCurrentFileId());
+    verify(userExtraInfoGetter.getAccessToken());
+    verify(remoteDataSource.createPdfFile(tName, tPdf, tParentId, tAccessToken));
+  });
+
+  test('should return the expected result when all goes good', ()async{
+    final result = await photosTranslatorRepository.createPdfFile(tName, tPdf);
+    expect(result, const Right(null));
+  });
+
+  test('should return the expected result when there is an AppException', ()async{
+    const errorMessage = 'error_message';
+    const exception = StorageException(
+      type: StorageExceptionType.EMPTYDATA,
+      message: errorMessage
+    );
+    when(remoteDataSource.createPdfFile(any, any, any, any))
+        .thenThrow(exception);
+    final result = await photosTranslatorRepository.createPdfFile(tName, tPdf);
+    expect(result, const Left(PhotosTranslatorFailure(
+      exception: exception,
+      message: errorMessage
+    )));
+  });
+
+  test('should return the expected result when there is another Exception', ()async{
+    when(remoteDataSource.createPdfFile(any, any, any, any))
+        .thenThrow(Exception());
+    final result = await photosTranslatorRepository.createPdfFile(tName, tPdf);
+    expect(result, const Left(PhotosTranslatorFailure(
+      exception: AppException(''),
+      message: ''
+    )));
   });
 }

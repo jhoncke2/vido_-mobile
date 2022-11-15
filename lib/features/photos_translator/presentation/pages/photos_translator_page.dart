@@ -5,10 +5,10 @@ import 'package:vido/app_theme.dart';
 import 'package:vido/features/authentication/presentation/bloc/authentication_bloc.dart';
 import 'package:vido/features/photos_translator/presentation/bloc/photos_translator_bloc.dart';
 import 'package:vido/features/photos_translator/presentation/widgets/file_namer.dart';
+import 'package:vido/features/photos_translator/presentation/widgets/pdf_file_creator.dart';
 import 'package:vido/features/photos_translator/presentation/widgets/translations_file_camera_chooser.dart';
 import 'package:vido/features/photos_translator/presentation/widgets/translations_file_creator.dart';
 import 'package:vido/injection_container.dart';
-
 import '../../../../globals.dart';
 import '../widgets/file_type_selector.dart';
 
@@ -47,6 +47,8 @@ class PhotosTranslatorPage extends StatelessWidget {
                         }
                       }else if(state is OnCreatingFolder){
                         return FileNamer(canEnd: state.canEnd);
+                      }else if(state is OnCreatingPdfFile){
+                        return PdfFileCreator();
                       }else if(state is OnLoadingTranslationsError){
                         return Center(
                           child: Padding(

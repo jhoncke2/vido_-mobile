@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'dart:async';
 import 'package:vido/core/external/persistence.dart';
@@ -11,7 +12,6 @@ import 'package:vido/features/photos_translator/domain/entities/translations_fil
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_local_adapter.dart';
-import '../../../../core/domain/file_parent_type.dart';
 import '../../../files_navigator/external/data_sources/fake/tree.dart';
 
 class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPartRequests implements PhotosTranslatorRemoteDataSource{
@@ -43,7 +43,6 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
     final translationsFileJson = await persistenceManager.querySingleOne(translFilesTableName, id);
     final translationsFile = adapter.getTranslationsFileFromJson(translationsFileJson, []);
     final pdfFile = PdfFile(id: Random().nextInt(99999999), name: translationsFile.name, url: _examplePdfUrl, parentId: 100);
-    
     return pdfFile;
   }
   
@@ -55,4 +54,14 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
     filesTree.addAt(parentId, newFolder);
   }
 
+  @override
+  Future<void> createPdfFile(String name, File pdf, int parentId, String accessToken)async{
+    final pdfFile = PdfFile(
+      id: Random().nextInt(9999999),
+      name: name,
+      url: pdf.path,
+      parentId: parentId
+    );
+    filesTree.addAt(parentId, pdfFile);
+  }
 }

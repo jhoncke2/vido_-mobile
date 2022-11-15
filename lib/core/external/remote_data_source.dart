@@ -34,7 +34,8 @@ abstract class RemoteDataSource{
   Map<String, String> createAuthorizationMultipartHeaders(String accessToken){
     return {
       'Authorization':'Bearer $accessToken',
-      'Content-Type':'application/x-www-form-urlencoded'
+      'Content-Type':'application/x-www-form-urlencoded',
+      'Accept': 'application/json'
     }; 
   }
 
@@ -49,6 +50,7 @@ abstract class RemoteDataSource{
       } else if(statusCode == 401) {
         throw const ServerException(type: ServerExceptionType.UNHAUTORAIZED);
       } else {
+        print(response.body);
         throw Exception();
       }
     }on ServerException{ 

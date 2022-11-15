@@ -4,10 +4,14 @@ part of 'photos_translator_bloc.dart';
 abstract class PhotosTranslatorState extends Equatable{
   const PhotosTranslatorState();
   @override
-  List<Object> get props => [runtimeType];
+  List<Object?> get props => [runtimeType];
 }
 
 class OnPhotosTranslatorInitial extends PhotosTranslatorState {}
+
+abstract class OnError{
+  String get message;
+}
 
 class OnSelectingFileType extends PhotosTranslatorState{
   
@@ -21,7 +25,7 @@ class OnLoadingTranslationsError extends PhotosTranslatorState {
     required this.error
   });
   @override
-  List<Object> get props => [...super.props, error];
+  List<Object?> get props => [...super.props, error];
 }
 
 class OnSelectingCamera extends PhotosTranslatorState{
@@ -36,7 +40,7 @@ abstract class OnCreatingAppFile extends PhotosTranslatorState{
     required this.canEnd
   });
   @override
-  List<Object> get props => [...super.props, name, canEnd];
+  List<Object?> get props => [...super.props, name, canEnd];
 }
 
 class OnCreatingTranslationsFile extends OnCreatingAppFile{
@@ -48,7 +52,7 @@ class OnCreatingTranslationsFile extends OnCreatingAppFile{
     canEnd: canEnd
   );
   @override
-  List<Object> get props => [...super.props, name, canEnd];
+  List<Object?> get props => [...super.props, name, canEnd];
 }
 
 class OnNamingTranslationsFile extends OnCreatingTranslationsFile{
@@ -76,7 +80,7 @@ class OnInitializingTranslations extends OnCreatingTranslationsFile{
     canEnd: canEnd
   );
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
     ...super.props, 
     id,
     canTranslate,
@@ -95,5 +99,51 @@ class OnCreatingFolder extends OnCreatingAppFile{
   const OnCreatingFolder({
     required String name, 
     required bool canEnd
-  }) : super(name: name, canEnd: canEnd);
+  }) : super(
+    name: name, 
+    canEnd: canEnd
+  );
+}
+
+abstract class OnCreatingPdfFile extends OnCreatingAppFile{
+  final File? pdf;
+  const OnCreatingPdfFile({
+    required String name,
+    required bool canEnd,
+    required this.pdf
+  }): super(
+    name: name,
+    canEnd: canEnd
+  );
+  @override
+  List<Object?> get props => [...super.props, pdf?.path];
+}
+
+class OnCreatingPdfFileSuccess extends OnCreatingPdfFile{
+  const OnCreatingPdfFileSuccess({
+    required String name,
+    required bool canEnd,
+    required File? pdf
+  }): super(
+    name: name,
+    canEnd: canEnd,
+    pdf: pdf
+  );
+}
+
+class OnCreatingPdfFileError extends OnCreatingPdfFile implements OnError{
+  @override
+  final String message;
+  const OnCreatingPdfFileError({
+    required String name,
+    required bool canEnd,
+    required File? pdf,
+    required this.message
+  }): super(
+    name: name,
+    canEnd: canEnd,
+    pdf: pdf
+  );
+  @override
+  List<Object?> get props => [...super.props, message];
 }

@@ -4,12 +4,16 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
+import 'package:vido/features/photos_translator/domain/failures/photos_translator_failure.dart';
 import 'package:vido/features/photos_translator/presentation/bloc/photos_translator_bloc.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
+import 'package:vido/features/photos_translator/presentation/use_cases/create_pdf_file.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_translations_file.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/end_photos_translations_file.dart';
+import 'package:vido/features/photos_translator/presentation/use_cases/pick_pdf.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/translate_photo.dart';
 import 'photos_translator_bloc_test.mocks.dart';
 
@@ -18,7 +22,8 @@ late MockCreateTranslationsFile createTranslationsFile;
 late MockTranslatePhoto translatePhoto;
 late MockEndPhotosTranslationsFile endPhotosTranslation;
 late MockCreateFolder createFolder;
-
+late MockPickPdf pickPdf;
+late MockCreatePdfFile createPdfFile;
 late List<CameraDescription> tCameras;
 late MockCameraController tCameraController;
 
@@ -27,6 +32,8 @@ late MockCameraController tCameraController;
   TranslatePhoto,
   EndPhotosTranslationsFile,
   CreateFolder,
+  PickPdf,
+  CreatePdfFile,
   CameraController,
   File
 ])
@@ -43,6 +50,8 @@ void main() {
           lensDirection: CameraLensDirection.back,
           sensorOrientation: 1)
     ];
+    createPdfFile = MockCreatePdfFile();
+    pickPdf = MockPickPdf();
     createFolder = MockCreateFolder();
     endPhotosTranslation = MockEndPhotosTranslationsFile();
     translatePhoto = MockTranslatePhoto();
@@ -52,6 +61,8 @@ void main() {
         translatePhoto: translatePhoto,
         endPhotosTranslation: endPhotosTranslation,
         createFolder: createFolder,
+        pickPdf: pickPdf,
+        createPdfFile: createPdfFile,
         cameras: tCameras,
         getNewCameraController: (CameraDescription camera) =>
             tCameraController);
@@ -63,11 +74,15 @@ void main() {
   group('init file type selection', _testInitFileTypeSelectionGroup);
   group('init translations file creation', _testInitTranslationsFileCreationGroup);
   group('init folder creation', _testInitFolderCreationGroup);
+  group('init pdf file creation', _testInitPdfFileCreationGroup);
   group('choose camera', _testChooseCameraGroup);
   group('change file name', _testChangeFileNameGroup);
   group('save file name', _testSaveFileNameGroup);
   group('add photo translation', _testAddPhotoTranslationGroup);
   group('end translations file creation', _testEndTranslationsFileCreationGroup);
+  group('pick pdf', _testPickPdfGroup);
+  //TODO: Implementar
+  group('end pdf file creation', _testEndPdfFileCreationGroup);
 }
 
 void _testInitFileTypeSelectionGroup(){
@@ -117,10 +132,22 @@ void _testInitFolderCreationGroup(){
   });
 }
 
+void _testInitPdfFileCreationGroup(){
+  test('should emit the expected ordered states', ()async{
+    const expectedOrderedStates = [
+      OnCreatingPdfFileSuccess(
+        name: '', 
+        canEnd: false, 
+        pdf: null
+      )
+    ];
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    photosTranslatorBloc.add(InitPdfFileCreationEvent());
+  });
+}
+
 void _testChooseCameraGroup() {
-  late int tFileId;
   setUp(() {
-    tFileId = 1001;
     when(tCameraController.cameraId).thenReturn(0);
     when(tCameraController.enableAudio).thenReturn(false);
     when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
@@ -309,13 +336,7 @@ void _testChangeFileNameGroup() {
     });
   });
 
-  group('when the state is OnCreatingTranslationsFile', (){
-    setUp(() {
-      when(tCameraController.cameraId).thenReturn(0);
-      when(tCameraController.resolutionPreset).thenReturn(ResolutionPreset.max);
-      when(tCameraController.enableAudio).thenReturn(false);
-      when(tCameraController.imageFormatGroup).thenReturn(ImageFormatGroup.jpeg);
-    });
+  group('when the state is OnCreatingFolder', (){
 
     test('should yield the expected ordered states when file could end and now it cant', () {
       photosTranslatorBloc.emit(const OnCreatingFolder(name: 'n', canEnd: true));
@@ -333,6 +354,42 @@ void _testChangeFileNameGroup() {
       tNewName = 'new_name_x';
       final expectedOrderedStates = [
         OnCreatingFolder(name: tNewName, canEnd: true)
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
+    });
+  });
+
+  group('when the state is OnCreatingPdfFile', (){
+    test('should emit the expected ordered states when the file could not end but now it can', ()async{
+      final pdf = MockFile();
+      when(pdf.path).thenReturn('pdf_path');
+      photosTranslatorBloc.emit(OnCreatingPdfFileSuccess(name: '', pdf: pdf, canEnd: false));
+      tNewName = 'new_name_x';
+      final expectedOrderedStates = [
+        OnCreatingPdfFileSuccess(name: tNewName, pdf: pdf, canEnd: true)
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
+    });
+
+    test('should emit the expected ordered states when the file could end but now it can not', ()async{
+      final pdf = MockFile();
+      when(pdf.path).thenReturn('pdf_path');
+      photosTranslatorBloc.emit(OnCreatingPdfFileSuccess(name: 'name', pdf: pdf, canEnd: true));
+      tNewName = '';
+      final expectedOrderedStates = [
+        OnCreatingPdfFileSuccess(name: tNewName, pdf: pdf, canEnd: false)
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
+    });
+
+    test('should emit the expected ordered states when new name is not empty but pdf is null', ()async{
+      photosTranslatorBloc.emit(const OnCreatingPdfFileSuccess(name: '', pdf: null, canEnd: true));
+      tNewName = 'new_name';
+      final expectedOrderedStates = [
+        OnCreatingPdfFileSuccess(name: tNewName, pdf: null, canEnd: false)
       ];
       expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
       photosTranslatorBloc.add(ChangeFileNameEvent(tNewName));
@@ -452,5 +509,225 @@ void _testEndTranslationsFileCreationGroup() {
     ];
     expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
     photosTranslatorBloc.add(EndTranslationsFileEvent());
+  });
+}
+
+void _testPickPdfGroup(){
+  late String tName;
+  group('when all goes good', (){
+    late MockFile tNewPdf;
+    setUp((){
+      tNewPdf = MockFile();
+      when(tNewPdf.path)
+          .thenReturn('file_path');
+      when(pickPdf())
+          .thenAnswer((_) async => Right(tNewPdf));
+    });
+    test('should call the specified methods', ()async{
+      tName = '';
+      photosTranslatorBloc.emit(OnCreatingPdfFileSuccess(
+        name: tName, 
+        canEnd: false,
+        pdf: null
+      ));
+      photosTranslatorBloc.add(PickPdfEvent());
+      await untilCalled(pickPdf());
+      verify(pickPdf());
+    });
+
+    test('should emit the expected ordered states when name is not empty', ()async{
+      tName = 'name';
+      photosTranslatorBloc.emit(OnCreatingPdfFileSuccess(
+        name: tName, 
+        canEnd: false,
+        pdf: null
+      ));
+      final expectedOrderedStates = [
+        OnLoadingTranslations(),
+        OnCreatingPdfFileSuccess(
+          name: tName,
+          canEnd: true, 
+          pdf: tNewPdf
+        )
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(PickPdfEvent());
+    });
+
+    test('should emit the expected ordered states when name is empty', ()async{
+      tName = '';
+      photosTranslatorBloc.emit(OnCreatingPdfFileSuccess(
+        name: tName, 
+        canEnd: false,
+        pdf: null
+      ));
+      final expectedOrderedStates = [
+        OnLoadingTranslations(),
+        OnCreatingPdfFileSuccess(
+          name: tName,
+          canEnd: false, 
+          pdf: tNewPdf
+        )
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(PickPdfEvent());
+    });
+  });
+
+  test('should emit the expected ordered states when usecase returns Left Failure with message', ()async{
+    tName = '';
+    photosTranslatorBloc.emit(OnCreatingPdfFileSuccess(
+      name: tName, 
+      canEnd: false,
+      pdf: null
+    ));
+    const errorMessage = 'the_error_message';
+    when(pickPdf())
+        .thenAnswer((_) async => const Left(PhotosTranslatorFailure(
+          message: errorMessage, 
+          exception: StorageException(
+            message: errorMessage, 
+            type: StorageExceptionType.EMPTYDATA
+          )
+        )));
+    final expectedOrderedStates = [
+      OnLoadingTranslations(),
+      OnCreatingPdfFileError(
+        name: tName, 
+        canEnd: false, 
+        pdf: null,
+        message: errorMessage
+      )
+    ];
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    photosTranslatorBloc.add(PickPdfEvent());
+  });
+
+  test('should emit the expected ordered states when usecase returns Left Failure withOut message', ()async{
+    tName = 'message';
+    final currentFile = MockFile();
+    when(currentFile.path).thenReturn('current_file_path');
+    photosTranslatorBloc.emit(OnCreatingPdfFileSuccess(
+      name: tName,
+      canEnd: true,
+      pdf: currentFile
+    ));
+    when(pickPdf())
+        .thenAnswer((_) async => const Left(PhotosTranslatorFailure(
+          message: '',
+          exception: StorageException(
+            message: '',
+            type: StorageExceptionType.EMPTYDATA
+          )
+        )));
+    final expectedOrderedStates = [
+      OnLoadingTranslations(),
+      OnCreatingPdfFileError(
+        name: tName,
+        canEnd: true,
+        pdf: currentFile,
+        message: PhotosTranslatorBloc.generalErrorMessage
+      )
+    ];
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    photosTranslatorBloc.add(PickPdfEvent());
+  });
+}
+
+void _testEndPdfFileCreationGroup(){
+  late String tName;
+  late MockFile tPdf;
+  setUp((){
+    tName = 'file_name';
+    tPdf = MockFile();
+    when(tPdf.path).thenReturn('pdf_path');
+    photosTranslatorBloc.emit(OnCreatingPdfFileSuccess(
+      name: tName, 
+      canEnd: true, 
+      pdf: tPdf
+    ));
+  });
+
+  group('when all goes good', (){
+    setUp((){
+      when(createPdfFile(any, any))
+          .thenAnswer((_) async => const Right(null));
+    });
+
+    test('should call the specified methods', ()async{
+      photosTranslatorBloc.add(EndPdfFileCreationEvent());
+      await untilCalled(createPdfFile(any, any));
+      verify(createPdfFile(tName, tPdf));
+    });
+
+    test('should emit the expected ordered states', ()async{
+      final expectedOrderedStates = [
+        OnLoadingTranslations(),
+        OnAppFileCreationEnded()
+      ];
+      expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      photosTranslatorBloc.add(EndPdfFileCreationEvent());
+    });
+  });
+
+  test('should emit the expected ordered states when usecase returns Left Failure with message', ()async{
+    tName = '';
+    final currentFile = MockFile();
+    when(currentFile.path).thenReturn('current_file_path');
+    photosTranslatorBloc.emit(OnCreatingPdfFileSuccess(
+      name: tName, 
+      canEnd: true,
+      pdf: currentFile
+    ));
+    const errorMessage = 'the_error_message';
+    when(createPdfFile(any, any))
+        .thenAnswer((_) async => const Left(PhotosTranslatorFailure(
+          message: errorMessage, 
+          exception: StorageException(
+            message: errorMessage, 
+            type: StorageExceptionType.EMPTYDATA
+          )
+        )));
+    final expectedOrderedStates = [
+      OnLoadingTranslations(),
+      OnCreatingPdfFileError(
+        name: tName, 
+        canEnd: true, 
+        pdf: currentFile,
+        message: errorMessage
+      )
+    ];
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    photosTranslatorBloc.add(EndPdfFileCreationEvent());
+  });
+
+  test('should emit the expected ordered states when usecase returns Left Failure withOut message', ()async{
+    tName = 'message';
+    final currentFile = MockFile();
+    when(currentFile.path).thenReturn('current_file_path');
+    photosTranslatorBloc.emit(OnCreatingPdfFileSuccess(
+      name: tName,
+      canEnd: true,
+      pdf: currentFile
+    ));
+    when(createPdfFile(any, any))
+        .thenAnswer((_) async => const Left(PhotosTranslatorFailure(
+          message: '',
+          exception: StorageException(
+            message: '',
+            type: StorageExceptionType.EMPTYDATA
+          )
+        )));
+    final expectedOrderedStates = [
+      OnLoadingTranslations(),
+      OnCreatingPdfFileError(
+        name: tName,
+        canEnd: true,
+        pdf: currentFile,
+        message: PhotosTranslatorBloc.generalErrorMessage
+      )
+    ];
+    expectLater(photosTranslatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    photosTranslatorBloc.add(EndPdfFileCreationEvent());
   });
 }

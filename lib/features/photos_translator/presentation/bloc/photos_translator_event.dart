@@ -15,6 +15,10 @@ class InitFolderCreationEvent extends PhotosTranslatorEvent{
   
 }
 
+class InitPdfFileCreationEvent extends PhotosTranslatorEvent{
+
+}
+
 class ChooseCameraEvent extends PhotosTranslatorEvent{
   final CameraDescription camera;
   ChooseCameraEvent({
@@ -41,4 +45,12 @@ class EndTranslationsFileEvent extends PhotosTranslatorEvent{
 
 class UpdateCompletedTranslationsFilesEvent extends PhotosTranslatorEvent{
   
+}
+
+class PickPdfEvent extends PhotosTranslatorEvent{
+  
+}
+
+class EndPdfFileCreationEvent extends PhotosTranslatorEvent{
+
 }
