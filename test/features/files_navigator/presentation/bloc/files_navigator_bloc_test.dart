@@ -114,7 +114,15 @@ void _testSelectAppFileGroup(){
       setUp((){
         tPdf = MockFile();
         when(tPdf.path).thenReturn('pdf_url_1');
-        tAppFile = const PdfFile(id: 0, name: 'file_1', url: 'pdf_url_1', parentId: 100);
+        tAppFile = const PdfFile(
+          id: 0, 
+          name: 'file_1', 
+          url: 'pdf_url_1', 
+          parentId: 100,
+          canBeRead: true,
+          canBeEdited: true,
+          canBeDeleted: false
+        );
       });
 
       test('should call the specified methods', ()async{
@@ -152,7 +160,16 @@ void _testSelectAppFileGroup(){
 
     group('when the AppFile is Folder', (){
       setUp((){
-        tAppFile = const Folder(id: 0, name: 'file_1', parentId: 100, children: []);
+        tAppFile = const Folder(
+          id: 0, 
+          name: 'file_1', 
+          parentId: 100, 
+          children: [],
+          canBeRead: true,
+          canBeEdited: true,
+          canBeDeleted: false,
+          canCreateOnIt: true
+        );
         when(loadFolderChildren(any)).thenAnswer((_) async => const Right(null));
       });
 
@@ -182,7 +199,15 @@ void _testSelectAppFileGroup(){
       });
 
       test('should yield the expected ordered states when the selected file is PdfFile with id Not on the tFilesIds', ()async{
-        tAppFile = const PdfFile(id: 3, name: 'file_3', parentId: 1000, url: 'url_3');
+        tAppFile = const PdfFile(
+          id: 3, 
+          name: 'file_3', 
+          parentId: 1000, 
+          url: 'url_3',
+          canBeRead: true,
+          canBeEdited: true,
+          canBeDeleted: false
+        );
         final expectedOrderedStates = [
           OnIcrFilesSelection(filesIds: [...tFilesIdsInit, tAppFile.id])
         ];
@@ -191,7 +216,15 @@ void _testSelectAppFileGroup(){
       });
 
       test('should yield the expected ordered states when the selected file is PdfFile with id indeed the first tFilesIds id', ()async{
-        tAppFile = PdfFile(id: tFilesIdsInit.first, name: 'file_3', parentId: 1000, url: 'url_3');
+        tAppFile = PdfFile(
+          id: tFilesIdsInit.first, 
+          name: 'file_3', 
+          parentId: 1000, 
+          url: 'url_3',
+          canBeRead: true,
+          canBeEdited: true,
+          canBeDeleted: false
+        );
         final expectedOrderedStates = [
           OnIcrFilesSelection(filesIds: tFilesIdsInit.sublist(1, tFilesIdsInit.length))
         ];
@@ -200,7 +233,15 @@ void _testSelectAppFileGroup(){
       });
 
       test('should yield the expected ordered states when the selected file is PdfFile with id indeed the second tFilesIds id', ()async{
-        tAppFile = PdfFile(id: tFilesIdsInit[1], name: 'file_3', parentId: 1000, url: 'url_3');
+        tAppFile = PdfFile(
+          id: tFilesIdsInit[1], 
+          name: 'file_3', 
+          parentId: 1000, 
+          url: 'url_3',
+          canBeRead: true,
+          canBeEdited: true,
+          canBeDeleted: false
+        );
         final expectedOrderedStates = [
           OnIcrFilesSelection(filesIds: [tFilesIdsInit[0], ...tFilesIdsInit.sublist(2, tFilesIdsInit.length)])
         ];
@@ -209,7 +250,16 @@ void _testSelectAppFileGroup(){
       });
 
       test('should yield the expected ordered states when the selected file is Folder', ()async{
-        tAppFile = const Folder(id: 100, name: 'folder_1', parentId: 230, children: []);
+        tAppFile = const Folder(
+          id: 100, 
+          name: 'folder_1', 
+          parentId: 230, 
+          children: [],
+          canBeRead: true,
+          canBeEdited: true,
+          canBeDeleted: false,
+          canCreateOnIt: true
+        );
         expectLater(filesNavigatorBloc.stream, emitsInOrder(const []));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
       });
@@ -220,7 +270,15 @@ void _testSelectAppFileGroup(){
         filesNavigatorBloc.emit(OnIcrFilesSelection(filesIds: tFilesIdsInit));
       });
       test('should yield the expected ordered states when the selected file is PdfFile and its id is the id on the list', ()async{
-        tAppFile = PdfFile(id: tFilesIdsInit.first, name: 'file_first', parentId: 1000, url: 'url_first');
+        tAppFile = PdfFile(
+          id: tFilesIdsInit.first, 
+          name: 'file_first', 
+          parentId: 1000, 
+          url: 'url_first',
+          canBeRead: true,
+          canBeEdited: true,
+          canBeDeleted: false,
+        );
         final expectedOrderedStates = [
           OnAppFilesSuccess()
         ];
@@ -229,7 +287,15 @@ void _testSelectAppFileGroup(){
       });
 
       test('should yield the expected ordered states when the selected file is PdfFile and its id is Not the id on the list', ()async{
-        tAppFile = const PdfFile(id: 23, name: 'file_23', parentId: 1000, url: 'url_23');
+        tAppFile = const PdfFile(
+          id: 23, 
+          name: 'file_23', 
+          parentId: 1000, 
+          url: 'url_23',
+          canBeRead: true,
+          canBeEdited: true,
+          canBeDeleted: false
+        );
         final expectedOrderedStates = [
           OnIcrFilesSelection(filesIds: [...tFilesIdsInit, tAppFile.id])
         ];
@@ -238,7 +304,16 @@ void _testSelectAppFileGroup(){
       });
 
       test('should yield the expected ordered states when the selected file is Folder', ()async{
-        tAppFile = const Folder(id: 100, name: 'folder_1', parentId: 230, children: []);
+        tAppFile = const Folder(
+          id: 100, 
+          name: 'folder_1', 
+          parentId: 230, 
+          children: [],
+          canBeRead: true,
+          canBeEdited: true,
+          canBeDeleted: false,
+          canCreateOnIt: true
+        );
         expectLater(filesNavigatorBloc.stream, emitsInOrder(const []));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
       });
@@ -569,7 +644,15 @@ void _testInitIcrFilesSelectionGroup(){
     });
 
     test('should yield the expected ordered states when the file id is 0', ()async{
-      tFile = const PdfFile(id: 0, name: 'file', parentId: 100, url: 'f_url');
+      tFile = const PdfFile(
+        id: 0, 
+        name: 'file', 
+        parentId: 100, 
+        url: 'f_url',
+        canBeRead: true,
+        canBeEdited: true,
+        canBeDeleted: false
+      );
       final expectedOrderedStates = [
         OnIcrFilesSelection(
           filesIds: [tFile.id]
@@ -580,7 +663,15 @@ void _testInitIcrFilesSelectionGroup(){
     });
 
     test('should yield the expected ordered states when the file id is 1', ()async{
-      tFile = const PdfFile(id: 1, name: 'file', parentId: 100, url: 'f_url');
+      tFile = const PdfFile(
+        id: 1, 
+        name: 'file', 
+        parentId: 100, 
+        url: 'f_url',
+        canBeRead: true,
+        canBeEdited: true,
+        canBeDeleted: false
+      );
       final expectedOrderedStates = [
         OnIcrFilesSelection(
           filesIds: [tFile.id]

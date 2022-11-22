@@ -12,7 +12,7 @@ import 'package:vido/features/photos_translator/domain/entities/translations_fil
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_local_adapter.dart';
-import '../../../files_navigator/external/data_sources/fake/tree.dart';
+import '../../../files_navigator/external/fake/tree.dart';
 
 class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPartRequests implements PhotosTranslatorRemoteDataSource{
   static const _examplePdfUrl = 'www.africau.edu/images/default/sample.pdf';
@@ -42,13 +42,30 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
   Future<PdfFile> endTranslationFile(int id, String accessToken)async{
     final translationsFileJson = await persistenceManager.querySingleOne(translFilesTableName, id);
     final translationsFile = adapter.getTranslationsFileFromJson(translationsFileJson, []);
-    final pdfFile = PdfFile(id: Random().nextInt(99999999), name: translationsFile.name, url: _examplePdfUrl, parentId: 100);
+    final pdfFile = PdfFile(
+      id: Random().nextInt(99999999), 
+      name: translationsFile.name, 
+      url: _examplePdfUrl, 
+      parentId: 100,
+      canBeRead: true,
+      canBeDeleted: true,
+      canBeEdited: true
+    );
     return pdfFile;
   }
   
   @override
   Future<void> createFolder(String name, int parentId, String accessToken)async{
-    final newFolder = Folder(id: Random().nextInt(999999999), name: name, parentId: parentId, children: []);
+    final newFolder = Folder(
+      id: Random().nextInt(999999999), 
+      name: name,
+      parentId: parentId, 
+      children: [],
+      canBeRead: true,
+      canBeDeleted: true,
+      canBeEdited: true,
+      canCreateOnIt: true
+    );
     final parentFolder = filesTree.getAt(parentId);
     (parentFolder as Folder).children.add(newFolder);
     filesTree.addAt(parentId, newFolder);
@@ -60,7 +77,10 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
       id: Random().nextInt(9999999),
       name: name,
       url: pdf.path,
-      parentId: parentId
+      parentId: parentId,
+      canBeRead: true,
+      canBeDeleted: true,
+      canBeEdited: true
     );
     filesTree.addAt(parentId, pdfFile);
   }

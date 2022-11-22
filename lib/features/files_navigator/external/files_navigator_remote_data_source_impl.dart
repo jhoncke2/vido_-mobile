@@ -8,11 +8,12 @@ import 'package:vido/core/external/app_files_remote_adapter.dart';
 import 'package:vido/core/external/remote_data_source.dart';
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_remote_data_source.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
+import 'package:vido/features/files_navigator/external/files_navigator_remote_adapter.dart';
 import 'package:vido/features/photos_translator/domain/entities/folder.dart';
 import 'package:http/http.dart' as http;
-import '../../../../core/domain/exceptions.dart';
-import '../../../../core/utils/http_responses_manager.dart';
-import '../../../../core/utils/path_provider.dart';
+import '../../../core/domain/exceptions.dart';
+import '../../../core/utils/http_responses_manager.dart';
+import '../../../core/utils/path_provider.dart';
 
 class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements FilesNavigatorRemoteDataSource{
   static const baseFilesNavigationUrl = 'file-system';
@@ -21,7 +22,7 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
   final PathProvider pathProvider;
   final HttpResponsesManager httpResponsesManager;
   final http.Client client;
-  final AppFilesRemoteAdapter adapter;
+  final FilesNavigatorRemoteAdapterImpl adapter;
   FilesNavigatorRemoteDataSourceImpl({
     required this.pathProvider,
     required this.httpResponsesManager,

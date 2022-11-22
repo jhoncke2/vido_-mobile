@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:vido/core/external/app_files_remote_adapter.dart';
 import 'package:vido/core/external/storage_pdf_picker.dart';
 import 'package:vido/features/files_navigator/domain/user_cases/generate_icr_impl.dart';
+import 'package:vido/features/files_navigator/external/files_navigator_remote_adapter.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/generate_icr.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
@@ -38,9 +39,9 @@ import 'package:vido/features/files_navigator/data/data_sources/files_navigator_
 import 'package:vido/features/files_navigator/data/repository/files_navigator_repository_impl.dart';
 import 'package:vido/features/files_navigator/domain/app_files_transmitter_impl.dart';
 import 'package:vido/features/files_navigator/domain/repository/files_navigator_repository.dart';
-import 'package:vido/features/files_navigator/external/data_sources/fake/files_navigator_remote_data_source_fake.dart';
-import 'package:vido/features/files_navigator/external/data_sources/files_navigator_local_data_source_impl.dart';
-import 'package:vido/features/files_navigator/external/data_sources/files_navigator_remote_data_source_impl.dart';
+import 'package:vido/features/files_navigator/external/fake/files_navigator_remote_data_source_fake.dart';
+import 'package:vido/features/files_navigator/external/files_navigator_local_data_source_impl.dart';
+import 'package:vido/features/files_navigator/external/files_navigator_remote_data_source_impl.dart';
 import 'package:vido/features/files_navigator/presentation/bloc/files_navigator_bloc.dart';
 import 'package:vido/features/files_navigator/presentation/files_transmitter/files_transmitter.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_folder_brothers.dart';
@@ -77,7 +78,7 @@ import 'features/photos_translator/domain/use_cases/pick_pdf_impl.dart';
 import 'features/photos_translator/external/fake/photos_translator_remote_data_source_fake.dart';
 import 'features/photos_translator/external/photos_translator_local_adapter.dart';
 import 'features/photos_translator/external/photos_translator_remote_data_source_impl.dart';
-import 'features/files_navigator/external/data_sources/fake/files_tree.dart' as files_tree;
+import 'features/files_navigator/external/fake/files_tree.dart' as files_tree;
 
 final sl = GetIt.instance;
 bool useRealData = true;
@@ -156,7 +157,12 @@ Future<void> init() async {
     )
   );
   sl.registerLazySingleton<FilesNavigatorLocalDataSource>(
-    () => FilesNavigatorLocalDataSourceImpl(sharedPreferencesManager: sl<SharedPreferencesManager>())
+    () => FilesNavigatorLocalDataSourceImpl(
+      sharedPreferencesManager: sl<SharedPreferencesManager>()
+    )
+  );
+  sl.registerLazySingleton<FilesNavigatorRemoteAdapterImpl>(
+    () => FilesNavigatorRemoteAdapterImpl()
   );
   sl.registerLazySingleton<FilesNavigatorRemoteDataSource>(
     () => _implementRealOrFake(
@@ -164,7 +170,7 @@ Future<void> init() async {
         pathProvider: sl<PathProvider>(),
         httpResponsesManager: sl<HttpResponsesManager>(),
         client: sl<http.Client>(),
-        adapter: sl<AppFilesRemoteAdapter>()
+        adapter: sl<FilesNavigatorRemoteAdapterImpl>()
       ), 
       fakeImpl: FilesNavigatorRemoteDataSourceFake(
         pathProvider: sl<PathProvider>(),
@@ -232,7 +238,7 @@ Future<void> init() async {
   );
 
   // *************************************** Photos translator
-  sl.registerLazySingleton<PhotosTranslatorRemoteAdapter>(() => PhotosTranslatorRemoteAdapterImpl());
+  sl.registerLazySingleton<PhotosTranslatorRemoteAdapterImpl>(() => PhotosTranslatorRemoteAdapterImpl());
   sl.registerLazySingleton<PhotosTranslatorLocalAdapter>(() => PhotosTranslatorLocalAdapterImpl());
   
   sl.registerLazySingleton<PathProvider>(() => PathProviderImpl());
@@ -242,7 +248,7 @@ Future<void> init() async {
     () => _implementRealOrFake<PhotosTranslatorRemoteDataSource>(
       realImpl: PhotosTranslatorRemoteDataSourceImpl(
         client: sl<http.Client>(),
-        adapter: sl<PhotosTranslatorRemoteAdapter>(),
+        adapter: sl<PhotosTranslatorRemoteAdapterImpl>(),
         pathProvider: sl<PathProvider>(),
         httpResponsesManager: sl<HttpResponsesManager>()
       ),

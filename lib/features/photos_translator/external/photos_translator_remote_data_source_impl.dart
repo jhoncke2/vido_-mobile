@@ -21,7 +21,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   static const folderParentType = 'directory';
   static const createPdfFileUrl = 'upload-file';
   final http.Client client;
-  final PhotosTranslatorRemoteAdapter adapter;
+  final PhotosTranslatorRemoteAdapterImpl adapter;
   final PathProvider pathProvider;
   final HttpResponsesManager httpResponsesManager;
   

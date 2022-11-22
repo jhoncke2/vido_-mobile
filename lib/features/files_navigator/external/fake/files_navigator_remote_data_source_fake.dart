@@ -5,12 +5,12 @@ import 'dart:async';
 import 'package:vido/core/domain/file_parent_type.dart';
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_remote_data_source.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
-import 'package:vido/features/files_navigator/external/data_sources/fake/tree.dart';
+import 'package:vido/features/files_navigator/external/fake/tree.dart';
 import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/folder.dart';
-import '../../../../../core/domain/exceptions.dart';
-import '../../../../../core/utils/http_responses_manager.dart';
-import '../../../../../core/utils/path_provider.dart';
+import '../../../../core/domain/exceptions.dart';
+import '../../../../core/utils/http_responses_manager.dart';
+import '../../../../core/utils/path_provider.dart';
 
 class FilesNavigatorRemoteDataSourceFake implements FilesNavigatorRemoteDataSource{
   static const _examplePdfUrl = 'www.africau.edu/images/default/sample.pdf';

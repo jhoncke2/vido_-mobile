@@ -4,7 +4,7 @@ import 'package:mockito/mockito.dart';
 import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/shared_preferences_manager.dart';
 import 'package:vido/features/files_navigator/domain/entities/files_acommodation.dart';
-import 'package:vido/features/files_navigator/external/data_sources/files_navigator_local_data_source_impl.dart';
+import 'package:vido/features/files_navigator/external/files_navigator_local_data_source_impl.dart';
 import 'files_navigator_local_data_source_impl_test.mocks.dart';
 
 late FilesNavigatorLocalDataSourceImpl localDataSource;

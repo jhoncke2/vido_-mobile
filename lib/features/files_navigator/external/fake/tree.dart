@@ -1,4 +1,4 @@
-import 'package:vido/features/files_navigator/external/data_sources/fake/tree_node.dart';
+import 'package:vido/features/files_navigator/external/fake/tree_node.dart';
 
 class Tree<K, V>{
   final TreeNode<K, V> root;

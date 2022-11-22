@@ -170,7 +170,15 @@ void _testTranslatePhotoGroup() {
         completed: true,
         translations: [tTranslationWithRemoteId]
       );
-      tPdfFile = const PdfFile(id: fileId, name: fileName, url: 'pdf_url', parentId: 100);
+      tPdfFile = const PdfFile(
+        id: fileId, 
+        name: fileName, 
+        url: 'pdf_url', 
+        parentId: 100,
+        canBeRead: true,
+        canBeEdited: true,
+        canBeDeleted: false
+      );
       when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => tUntranslatedFile);
       tUncompletedtranslationsFilesInit = [
         tUntranslatedFile
@@ -322,7 +330,15 @@ void _testTranslatePhotoGroup() {
           ]
         ),
       ];
-      tCompletedFile = PdfFile(id: tFile2Translated.id, name: tFile2Translated.name, url: 'pdf_url', parentId: 100);
+      tCompletedFile = PdfFile(
+        id: tFile2Translated.id, 
+        name: tFile2Translated.name, 
+        url: 'pdf_url', 
+        parentId: 100,
+        canBeRead: true,
+        canBeEdited: true,
+        canBeDeleted: false
+      );
       tFirstTranslationWithRemoteId = const Translation(
           id: 3052, text: tTranslationText1, imgUrl: 'url_1');
       tSecondTranslationWithRemoteId = const Translation(
@@ -460,13 +476,19 @@ void _testTranslatePhotoGroup() {
         id: tFile1Translated.id, 
         name: tFile1Translated.name, 
         parentId: 103, 
-        url: 'pdf_url_1'
+        url: 'pdf_url_1',
+        canBeRead: true,
+        canBeEdited: true,
+        canBeDeleted: false
       );
       tPdfFile2 = PdfFile(
         id: tFile2.id, 
         name: tFile2.name,
         url: 'pdf_url_2', 
-        parentId: 100
+        parentId: 100,
+        canBeRead: true,
+          canBeEdited: true,
+          canBeDeleted: false
       );
       tFirstTranslationWithRemoteId = const Translation(
           id: 3052, text: tTranslationText1, imgUrl: 'url_1'
@@ -617,7 +639,15 @@ void _testInitPendingTranslations(){
         completed: true,
         translations: [tTranslationWithRemoteId]
       );
-      tPdfFile = const PdfFile(id: fileId, name: fileName, url: 'pdf_url', parentId: 100);
+      tPdfFile = const PdfFile(
+        id: fileId, 
+        name: fileName, 
+        url: 'pdf_url', 
+        parentId: 100,
+        canBeRead: true,
+        canBeEdited: true,
+        canBeDeleted: false
+      );
       when(localDataSource.getCurrentCreatedFile()).thenAnswer((_) async => tUntranslatedFile);
       tUncompletedtranslationsFilesInit = [
         tUntranslatedFile

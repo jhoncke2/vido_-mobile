@@ -69,11 +69,49 @@ void _testLoadFolderChildrenGroup(){
         name: 'f_0', 
         parentId: 1001, 
         children: [
-          Folder(id: 0, name: 'fol_1', children: [], parentId: 100),
-          PdfFile(id: 0, name: 'pdff_1', url: 'url_1', parentId: 100),
-          PdfFile(id: 1, name: 'pdf_2', url: 'url_2', parentId: 100),
-          Folder(id: 1, name: 'fol_2', children: [], parentId: 100)
-        ]
+          Folder(
+            id: 0,
+            name: 'fol_1',
+            children: [],
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false,
+            canCreateOnIt: true
+          ),
+          PdfFile(
+            id: 0, 
+            name: 'pdff_1', 
+            url: 'url_1', 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false,
+          ),
+          PdfFile(
+            id: 1, 
+            name: 'pdf_2', 
+            url: 'url_2', 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false,
+          ),
+          Folder(
+            id: 1, 
+            name: 'fol_2', 
+            children: [], 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false,
+            canCreateOnIt: true
+          )
+        ],
+        canBeRead: true,
+        canBeEdited: true,
+        canBeDeleted: false,
+        canCreateOnIt: true
       );
     });
 
@@ -218,12 +256,55 @@ void _testLoadFolderChildrenGroup(){
     late int tFilesTreeLvlUpdated;
     setUp((){
       tId = 1002;
-      tFolder = const Folder(id: 100, name: 'f_0', parentId: 1002, children: [
-        Folder(id: 0, name: 'fol_1', children: [], parentId: 100),
-        PdfFile(id: 0, name: 'pdff_1', url: 'url_1', parentId: 100),
-        PdfFile(id: 1, name: 'pdf_2', url: 'url_2', parentId: 100),
-        Folder(id: 1, name: 'fol_2', children: [], parentId: 100)
-      ]);
+      tFolder = const Folder(
+        id: 100, 
+        name: 'f_0', 
+        parentId: 1002, 
+        children: [
+          Folder(
+            id: 0, 
+            name: 'fol_1', 
+            children: [], 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false,
+            canCreateOnIt: true
+          ),
+          PdfFile(
+            id: 0, 
+            name: 'pdff_1', 
+            url: 'url_1', 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false
+          ),
+          PdfFile(
+            id: 1, 
+            name: 'pdf_2', 
+            url: 'url_2', 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false
+          ),
+          Folder(
+            id: 1, 
+            name: 'fol_2', 
+            children: [],
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false,
+            canCreateOnIt: true
+          )
+        ],
+        canBeRead: true,
+        canBeEdited: true,
+        canBeDeleted: false,
+        canCreateOnIt: true
+      );
       tFilesTreeLvlInit = 2;
       tFilesTreeLvlUpdated = 3;
       when(localDataSource.getFilesTreeLevel())
@@ -287,11 +368,49 @@ void _testLoadFolderBrothersGroup(){
         name: 'Parent',
         parentId: 1070,
         children: [
-          Folder(id: 0, name: 'fol_1', children: [], parentId: 100),
-          PdfFile(id: 0, name: 'pdff_1', url: 'url_1', parentId: 100),
-          PdfFile(id: 1, name: 'pdf_2', url: 'url_2', parentId: 100),
-          Folder(id: 1, name: 'fol_2', children: [], parentId: 100)
-        ]
+          Folder(
+            id: 0, 
+            name: 'fol_1', 
+            children: [], 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false,
+            canCreateOnIt: true
+          ),
+          PdfFile(
+            id: 0, 
+            name: 'pdff_1', 
+            url: 'url_1', 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false
+          ),
+          PdfFile(
+            id: 1, 
+            name: 'pdf_2', 
+            url: 'url_2', 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false
+          ),
+          Folder(
+            id: 1, 
+            name: 'fol_2', 
+            children: [], 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false,
+            canCreateOnIt: true
+          )
+        ],
+        canBeRead: true,
+        canBeEdited: true,
+        canBeDeleted: false,
+        canCreateOnIt: true
       );
       when(localDataSource.getCurrentFileId())
           .thenAnswer((_) async => tCurrentFolderId);
@@ -352,11 +471,49 @@ void _testLoadFolderBrothersGroup(){
         name: 'Parent',
         parentId: 1070,
         children: [
-          Folder(id: 0, name: 'fol_1', children: [], parentId: 100),
-          PdfFile(id: 0, name: 'pdff_1', url: 'url_1', parentId: 100),
-          PdfFile(id: 1, name: 'pdf_2', url: 'url_2', parentId: 100),
-          Folder(id: 1, name: 'fol_2', children: [], parentId: 100)
-        ]
+          Folder(
+            id: 0,
+            name: 'fol_1',
+            children: [],
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false,
+            canCreateOnIt: true
+          ),
+          PdfFile(
+            id: 0, 
+            name: 'pdff_1', 
+            url: 'url_1', 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false
+          ),
+          PdfFile(
+            id: 1, 
+            name: 'pdf_2', 
+            url: 'url_2', 
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false
+          ),
+          Folder(
+            id: 1,
+            name: 'fol_2',
+            children: [],
+            parentId: 100,
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: false,
+            canCreateOnIt: true
+          )
+        ],
+        canBeRead: true,
+        canBeEdited: true,
+        canBeDeleted: false,
+        canCreateOnIt: true
       );
       when(localDataSource.getCurrentFileId())
           .thenAnswer((_) async => tCurrentFolderId);
@@ -432,7 +589,15 @@ void _testLoadFilePdfGroup(){
   late int tTreeLvlUpdated;
   setUp((){
     tAccessToken = 'access_token';
-    tFile = const PdfFile(id: 0, name: 'file_0', url: 'url_0', parentId: null);
+    tFile = const PdfFile(
+      id: 0,
+      name: 'file_0',
+      url: 'url_0',
+      parentId: null,
+      canBeRead: true,
+      canBeEdited: true,
+      canBeDeleted: false
+    );
     tPdf = MockFile();
     tNewParentId = 10;
     tTreeLvlInit = 2;
