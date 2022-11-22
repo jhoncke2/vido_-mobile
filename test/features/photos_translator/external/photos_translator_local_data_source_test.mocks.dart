@@ -13,7 +13,7 @@ import 'package:vido/core/external/persistence.dart' as _i7;
 import 'package:vido/core/external/photos_translator.dart' as _i9;
 import 'package:vido/core/external/storage_pdf_picker.dart' as _i11;
 import 'package:vido/core/utils/image_rotation_fixer.dart' as _i10;
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart'
+import 'package:vido/core/domain/entities/pdf_file.dart'
     as _i5;
 import 'package:vido/features/photos_translator/domain/entities/translation.dart'
     as _i6;

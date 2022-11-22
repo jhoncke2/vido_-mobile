@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
-import 'package:vido/core/external/app_files_remote_adapter.dart';
 import 'package:vido/core/external/storage_pdf_picker.dart';
 import 'package:vido/features/files_navigator/domain/user_cases/generate_icr_impl.dart';
 import 'package:vido/features/files_navigator/external/files_navigator_remote_adapter.dart';
@@ -52,7 +51,7 @@ import 'package:vido/features/init/presentation/use_cases/there_is_authenticatio
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_local_data_source.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_remote_data_source.dart';
 import 'package:vido/features/photos_translator/data/repository/photos_translator_repository_impl.dart';
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
+import 'package:vido/core/domain/entities/app_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/domain/repository/photos_translator_repository.dart';
 import 'package:vido/features/photos_translator/domain/use_cases/create_translators_file_impl.dart';
@@ -98,9 +97,6 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<UseCaseErrorHandler>(
     () => UseCaseErrorHandlerImpl(authenticationFixer: sl<AuthenticationRepository>())
-  );
-  sl.registerLazySingleton<AppFilesRemoteAdapter>(
-    () => AppFilesRemoteAdapterImpl()
   );
   sl.registerLazySingleton<StoragePdfPicker>(
     () => StoragePdfPickerImpl()
@@ -161,8 +157,8 @@ Future<void> init() async {
       sharedPreferencesManager: sl<SharedPreferencesManager>()
     )
   );
-  sl.registerLazySingleton<FilesNavigatorRemoteAdapterImpl>(
-    () => FilesNavigatorRemoteAdapterImpl()
+  sl.registerLazySingleton<FilesNavigatorRemoteAdapter>(
+    () => FilesNavigatorRemoteAdapter()
   );
   sl.registerLazySingleton<FilesNavigatorRemoteDataSource>(
     () => _implementRealOrFake(
@@ -170,7 +166,7 @@ Future<void> init() async {
         pathProvider: sl<PathProvider>(),
         httpResponsesManager: sl<HttpResponsesManager>(),
         client: sl<http.Client>(),
-        adapter: sl<FilesNavigatorRemoteAdapterImpl>()
+        adapter: sl<FilesNavigatorRemoteAdapter>()
       ), 
       fakeImpl: FilesNavigatorRemoteDataSourceFake(
         pathProvider: sl<PathProvider>(),
@@ -238,7 +234,7 @@ Future<void> init() async {
   );
 
   // *************************************** Photos translator
-  sl.registerLazySingleton<PhotosTranslatorRemoteAdapterImpl>(() => PhotosTranslatorRemoteAdapterImpl());
+  sl.registerLazySingleton<PhotosTranslatorRemoteAdapter>(() => PhotosTranslatorRemoteAdapter());
   sl.registerLazySingleton<PhotosTranslatorLocalAdapter>(() => PhotosTranslatorLocalAdapterImpl());
   
   sl.registerLazySingleton<PathProvider>(() => PathProviderImpl());
@@ -248,7 +244,7 @@ Future<void> init() async {
     () => _implementRealOrFake<PhotosTranslatorRemoteDataSource>(
       realImpl: PhotosTranslatorRemoteDataSourceImpl(
         client: sl<http.Client>(),
-        adapter: sl<PhotosTranslatorRemoteAdapterImpl>(),
+        adapter: sl<PhotosTranslatorRemoteAdapter>(),
         pathProvider: sl<PathProvider>(),
         httpResponsesManager: sl<HttpResponsesManager>()
       ),

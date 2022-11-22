@@ -21,9 +21,9 @@ import 'package:vido/features/files_navigator/domain/entities/files_acommodation
     as _i9;
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart'
     as _i7;
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart'
+import 'package:vido/core/domain/entities/app_file.dart'
     as _i12;
-import 'package:vido/features/photos_translator/domain/entities/folder.dart'
+import 'package:vido/core/domain/entities/folder.dart'
     as _i2;
 
 // ignore_for_file: type=lint

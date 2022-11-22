@@ -1,5 +1,5 @@
 import 'package:vido/core/external/persistence.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
+import 'package:vido/core/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import '../domain/entities/translation.dart';
 

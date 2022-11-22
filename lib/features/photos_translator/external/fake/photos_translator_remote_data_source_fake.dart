@@ -6,11 +6,11 @@ import 'package:vido/core/external/remote_data_source.dart';
 import 'package:vido/core/utils/http_responses_manager.dart';
 import 'package:vido/core/utils/path_provider.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_remote_data_source.dart';
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
-import 'package:vido/features/photos_translator/domain/entities/folder.dart';
+import 'package:vido/core/domain/entities/app_file.dart';
+import 'package:vido/core/domain/entities/folder.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
+import 'package:vido/core/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_local_adapter.dart';
 import '../../../files_navigator/external/fake/tree.dart';
 
@@ -64,7 +64,7 @@ class PhotosTranslatorRemoteDataSourceFake extends RemoteDataSourceWithMultiPart
       canBeRead: true,
       canBeDeleted: true,
       canBeEdited: true,
-      canCreateOnIt: true
+      canBeCreatedOnIt: true
     );
     final parentFolder = filesTree.getAt(parentId);
     (parentFolder as Folder).children.add(newFolder);

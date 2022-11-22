@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
+import 'package:vido/core/domain/entities/pdf_file.dart';
 import '../../domain/entities/translation.dart';
 import '../../domain/entities/translations_file.dart';
 

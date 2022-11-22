@@ -9,7 +9,7 @@ import 'package:vido/core/external/user_extra_info_getter.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_local_data_source.dart';
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_remote_data_source.dart';
 import 'package:vido/features/photos_translator/data/repository/photos_translator_repository_impl.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
+import 'package:vido/core/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 import 'package:vido/features/photos_translator/domain/failures/photos_translator_failure.dart';

@@ -16,9 +16,9 @@ import 'package:vido/features/files_navigator/presentation/use_cases/load_appear
 import 'package:vido/features/files_navigator/presentation/use_cases/load_folder_brothers.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_folder_children.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart';
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
-import 'package:vido/features/photos_translator/domain/entities/folder.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
+import 'package:vido/core/domain/entities/app_file.dart';
+import 'package:vido/core/domain/entities/folder.dart';
+import 'package:vido/core/domain/entities/pdf_file.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_file_pdf.dart';
 import 'files_navigator_bloc_test.mocks.dart';
 
@@ -168,7 +168,7 @@ void _testSelectAppFileGroup(){
           canBeRead: true,
           canBeEdited: true,
           canBeDeleted: false,
-          canCreateOnIt: true
+          canBeCreatedOnIt: true
         );
         when(loadFolderChildren(any)).thenAnswer((_) async => const Right(null));
       });
@@ -258,7 +258,7 @@ void _testSelectAppFileGroup(){
           canBeRead: true,
           canBeEdited: true,
           canBeDeleted: false,
-          canCreateOnIt: true
+          canBeCreatedOnIt: true
         );
         expectLater(filesNavigatorBloc.stream, emitsInOrder(const []));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
@@ -312,7 +312,7 @@ void _testSelectAppFileGroup(){
           canBeRead: true,
           canBeEdited: true,
           canBeDeleted: false,
-          canCreateOnIt: true
+          canBeCreatedOnIt: true
         );
         expectLater(filesNavigatorBloc.stream, emitsInOrder(const []));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));

@@ -1,14 +1,14 @@
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
+import 'package:vido/core/domain/entities/app_file.dart';
 
 class Folder extends AppFile{
   final List<AppFile> children;
-  final bool canCreateOnIt;
+  final bool canBeCreatedOnIt;
   const Folder({
     required int id,
     required String name,
     required int? parentId,
     required this.children,
-    required this.canCreateOnIt,
+    required this.canBeCreatedOnIt,
     required bool canBeRead,
     required bool canBeEdited,
     required bool canBeDeleted,
@@ -23,7 +23,7 @@ class Folder extends AppFile{
   @override
   List<Object?> get props => [
     ...super.props, 
-    canCreateOnIt, 
+    canBeCreatedOnIt, 
     children
   ];
 }

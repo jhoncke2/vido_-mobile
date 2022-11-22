@@ -7,9 +7,9 @@ import 'package:vido/features/files_navigator/data/data_sources/files_navigator_
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_remote_data_source.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
 import 'package:vido/features/files_navigator/domain/repository/files_navigator_repository.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
+import 'package:vido/core/domain/entities/pdf_file.dart';
 import '../../../../core/domain/file_parent_type.dart';
-import '../../../photos_translator/domain/entities/folder.dart';
+import '../../../../core/domain/entities/folder.dart';
 import '../../domain/failures/files_navigation_failure.dart';
 
 class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
@@ -33,28 +33,43 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
       final treeLvl = await localDataSource.getFilesTreeLevel();
       if(id == null){
         if(treeLvl == null || treeLvl == 0){
-          final userId = await userExtraInfoGetter.getId();
-          folder = await remoteDataSource.getFolder(userId, FileParentType.user, accessToken);
-          await localDataSource.setCurrentFileId(folder.id);
+          folder = await _saveUserRootFolder(accessToken);
         }else{
-          final folderId = await localDataSource.getCurrentFileId();
-          folder = await remoteDataSource.getFolder(folderId, FileParentType.folder, accessToken);
-          await localDataSource.setParentId(folder.parentId!);
+          folder = await _saveNullIdFolder(accessToken);
         }
         if(treeLvl == null){
           await localDataSource.setFilesTreeLvl(0);
         }
       }else{
-        folder = await remoteDataSource.getFolder(id, FileParentType.folder, accessToken);
-        await localDataSource.setCurrentFileId(id);
-        await localDataSource.setFilesTreeLvl(treeLvl! + 1);
-        await localDataSource.setParentId(folder.parentId!);
+        folder = await _saveFolderWithIdAndTreeLvl(id, accessToken, treeLvl!);
       }
       await appFilesReceiver.setAppFiles(folder.children);
-      
       return const Right(null);
     });
   }
+
+  Future<Folder> _saveUserRootFolder(String accessToken)async{
+    final userId = await userExtraInfoGetter.getId();
+    final folder = await remoteDataSource.getFolder(userId, FileParentType.user, accessToken);
+    await localDataSource.setCurrentFileId(folder.id);
+    return folder;
+  }
+
+  Future<Folder> _saveNullIdFolder(String accessToken)async{
+    final folderId = await localDataSource.getCurrentFileId();
+    final folder = await remoteDataSource.getFolder(folderId, FileParentType.folder, accessToken);
+    await localDataSource.setParentId(folder.parentId!);
+    return folder;
+  }
+
+  Future<Folder> _saveFolderWithIdAndTreeLvl(int id, String accessToken, int treeLvl)async{
+    final folder = await remoteDataSource.getFolder(id, FileParentType.folder, accessToken);
+    await localDataSource.setCurrentFileId(id);
+    await localDataSource.setFilesTreeLvl(treeLvl + 1);
+    await localDataSource.setParentId(folder.parentId!);
+    return folder;
+  }
+
   
   Future<Either<FilesNavigationFailure, T>> _manageFunctionExceptions<T>(
     Future<Either<FilesNavigationFailure, T>> Function() function

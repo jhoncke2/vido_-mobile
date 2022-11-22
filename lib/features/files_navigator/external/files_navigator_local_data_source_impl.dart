@@ -1,3 +1,4 @@
+import 'package:vido/core/domain/entities/app_file.dart';
 import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/shared_preferences_manager.dart';
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_local_data_source.dart';
@@ -78,5 +79,11 @@ class FilesNavigatorLocalDataSourceImpl implements FilesNavigatorLocalDataSource
         rethrow;
       }
     }
+  }
+
+  @override
+  Future<void> setCurrentFile(AppFile file)async{
+    // TODO: implement setCurrentFile
+    throw UnimplementedError();
   }
 }

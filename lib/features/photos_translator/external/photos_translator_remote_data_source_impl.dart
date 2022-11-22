@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:vido/core/external/remote_data_source.dart';
 import 'package:vido/core/utils/http_responses_manager.dart';
 import 'package:vido/core/utils/path_provider.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
+import 'package:vido/core/domain/entities/pdf_file.dart';
 import 'package:vido/features/photos_translator/external/photos_translator_remote_adapter.dart';
 import '../data/data_sources/photos_translator_remote_data_source.dart';
 import 'package:http/http.dart' as http;
@@ -21,7 +21,7 @@ class PhotosTranslatorRemoteDataSourceImpl extends RemoteDataSourceWithMultiPart
   static const folderParentType = 'directory';
   static const createPdfFileUrl = 'upload-file';
   final http.Client client;
-  final PhotosTranslatorRemoteAdapterImpl adapter;
+  final PhotosTranslatorRemoteAdapter adapter;
   final PathProvider pathProvider;
   final HttpResponsesManager httpResponsesManager;
   

@@ -16,7 +16,7 @@ import 'package:vido/features/photos_translator/data/data_sources/photos_transla
     as _i8;
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_remote_data_source.dart'
     as _i6;
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart'
+import 'package:vido/core/domain/entities/pdf_file.dart'
     as _i3;
 import 'package:vido/features/photos_translator/domain/entities/translation.dart'
     as _i4;

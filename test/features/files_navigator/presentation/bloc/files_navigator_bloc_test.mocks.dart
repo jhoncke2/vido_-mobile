@@ -35,9 +35,9 @@ import 'package:vido/features/files_navigator/presentation/use_cases/load_folder
     as _i7;
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart'
     as _i15;
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart'
+import 'package:vido/core/domain/entities/app_file.dart'
     as _i18;
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart'
+import 'package:vido/core/domain/entities/pdf_file.dart'
     as _i12;
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart'
     as _i20;

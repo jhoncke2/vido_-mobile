@@ -1,4 +1,4 @@
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
+import 'package:vido/core/domain/entities/app_file.dart';
 
 class PdfFile extends AppFile{
   final String url;

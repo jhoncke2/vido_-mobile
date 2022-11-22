@@ -2,7 +2,7 @@ import 'package:vido/core/external/app_files_remote_adapter.dart';
 import 'package:vido/features/photos_translator/domain/entities/translation.dart';
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart';
 
-class PhotosTranslatorRemoteAdapterImpl extends AppFilesRemoteAdapterImpl{
+class PhotosTranslatorRemoteAdapter extends AppFilesRemoteAdapter{
 
   TranslationsFile getTranslationsFileFromJson(Map<String, dynamic> json) => 
     TranslationsFile(

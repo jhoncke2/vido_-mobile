@@ -1,8 +1,8 @@
 import 'package:vido/features/files_navigator/external/fake/tree.dart';
 import 'package:vido/features/files_navigator/external/fake/tree_node.dart';
-import '../../../photos_translator/domain/entities/app_file.dart';
-import '../../../photos_translator/domain/entities/folder.dart';
-import '../../../photos_translator/domain/entities/pdf_file.dart';
+import '../../../../core/domain/entities/app_file.dart';
+import '../../../../core/domain/entities/folder.dart';
+import '../../../../core/domain/entities/pdf_file.dart';
 
 final appFiles = Tree<int, AppFile>(
   root: TreeNode(
@@ -15,7 +15,7 @@ final appFiles = Tree<int, AppFile>(
       canBeRead: true,
       canBeEdited: true,
       canBeDeleted: false,
-      canCreateOnIt: true
+      canBeCreatedOnIt: true
     ), 
     children: [
       TreeNode(
@@ -28,7 +28,7 @@ final appFiles = Tree<int, AppFile>(
           canBeRead: true,
           canBeEdited: true,
           canBeDeleted: false,
-          canCreateOnIt: true
+          canBeCreatedOnIt: true
         ), 
         children: [
           TreeNode(
@@ -103,7 +103,7 @@ final appFiles = Tree<int, AppFile>(
           canBeRead: true,
           canBeEdited: true,
           canBeDeleted: false,
-          canCreateOnIt: true
+          canBeCreatedOnIt: true
         ), 
         children: [
           TreeNode(
@@ -116,7 +116,7 @@ final appFiles = Tree<int, AppFile>(
               canBeRead: true,
               canBeEdited: true,
               canBeDeleted: false,
-              canCreateOnIt: true
+              canBeCreatedOnIt: true
             ), 
             children: [
               TreeNode(
@@ -178,7 +178,7 @@ final appFiles = Tree<int, AppFile>(
           canBeRead: true,
           canBeEdited: true,
           canBeDeleted: false,
-          canCreateOnIt: true
+          canBeCreatedOnIt: true
         ), 
         children: [
 
@@ -194,7 +194,7 @@ final appFiles = Tree<int, AppFile>(
           canBeRead: true,
           canBeEdited: true,
           canBeDeleted: false,
-          canCreateOnIt: true
+          canBeCreatedOnIt: true
         ), 
         children: [
 

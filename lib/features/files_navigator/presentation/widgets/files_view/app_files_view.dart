@@ -5,8 +5,8 @@ import 'package:vido/app_theme.dart';
 import 'package:vido/core/presentation/widgets/error_panel.dart';
 import 'package:vido/features/files_navigator/presentation/bloc/files_navigator_bloc.dart';
 import 'package:vido/features/files_navigator/presentation/widgets/files_view/file_item.dart';
-import 'package:vido/features/photos_translator/domain/entities/app_file.dart';
-import '../../../../photos_translator/domain/entities/folder.dart';
+import 'package:vido/core/domain/entities/app_file.dart';
+import '../../../../../core/domain/entities/folder.dart';
 
 class AppFilesView extends StatelessWidget{
   final scrollController = ScrollController();

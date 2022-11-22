@@ -9,7 +9,7 @@ import 'package:vido/core/external/remote_data_source.dart';
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_remote_data_source.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
 import 'package:vido/features/files_navigator/external/files_navigator_remote_adapter.dart';
-import 'package:vido/features/photos_translator/domain/entities/folder.dart';
+import 'package:vido/core/domain/entities/folder.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/domain/exceptions.dart';
 import '../../../core/utils/http_responses_manager.dart';
@@ -22,7 +22,7 @@ class FilesNavigatorRemoteDataSourceImpl extends RemoteDataSource implements Fil
   final PathProvider pathProvider;
   final HttpResponsesManager httpResponsesManager;
   final http.Client client;
-  final FilesNavigatorRemoteAdapterImpl adapter;
+  final FilesNavigatorRemoteAdapter adapter;
   FilesNavigatorRemoteDataSourceImpl({
     required this.pathProvider,
     required this.httpResponsesManager,

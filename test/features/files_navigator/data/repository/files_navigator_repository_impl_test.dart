@@ -12,8 +12,8 @@ import 'package:vido/features/files_navigator/data/data_sources/files_navigator_
 import 'package:vido/features/files_navigator/data/repository/files_navigator_repository_impl.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
 import 'package:vido/features/files_navigator/domain/failures/files_navigation_failure.dart';
-import 'package:vido/features/photos_translator/domain/entities/folder.dart';
-import 'package:vido/features/photos_translator/domain/entities/pdf_file.dart';
+import 'package:vido/core/domain/entities/folder.dart';
+import 'package:vido/core/domain/entities/pdf_file.dart';
 import 'files_navigator_repository_impl_test.mocks.dart';
 
 late FilesNavigatorRepositoryImpl filesNavigatorRepository;
@@ -77,7 +77,7 @@ void _testLoadFolderChildrenGroup(){
             canBeRead: true,
             canBeEdited: true,
             canBeDeleted: false,
-            canCreateOnIt: true
+            canBeCreatedOnIt: true
           ),
           PdfFile(
             id: 0, 
@@ -105,13 +105,13 @@ void _testLoadFolderChildrenGroup(){
             canBeRead: true,
             canBeEdited: true,
             canBeDeleted: false,
-            canCreateOnIt: true
+            canBeCreatedOnIt: true
           )
         ],
         canBeRead: true,
         canBeEdited: true,
         canBeDeleted: false,
-        canCreateOnIt: true
+        canBeCreatedOnIt: true
       );
     });
 
@@ -269,7 +269,7 @@ void _testLoadFolderChildrenGroup(){
             canBeRead: true,
             canBeEdited: true,
             canBeDeleted: false,
-            canCreateOnIt: true
+            canBeCreatedOnIt: true
           ),
           PdfFile(
             id: 0, 
@@ -297,13 +297,13 @@ void _testLoadFolderChildrenGroup(){
             canBeRead: true,
             canBeEdited: true,
             canBeDeleted: false,
-            canCreateOnIt: true
+            canBeCreatedOnIt: true
           )
         ],
         canBeRead: true,
         canBeEdited: true,
         canBeDeleted: false,
-        canCreateOnIt: true
+        canBeCreatedOnIt: true
       );
       tFilesTreeLvlInit = 2;
       tFilesTreeLvlUpdated = 3;
@@ -376,7 +376,7 @@ void _testLoadFolderBrothersGroup(){
             canBeRead: true,
             canBeEdited: true,
             canBeDeleted: false,
-            canCreateOnIt: true
+            canBeCreatedOnIt: true
           ),
           PdfFile(
             id: 0, 
@@ -404,13 +404,13 @@ void _testLoadFolderBrothersGroup(){
             canBeRead: true,
             canBeEdited: true,
             canBeDeleted: false,
-            canCreateOnIt: true
+            canBeCreatedOnIt: true
           )
         ],
         canBeRead: true,
         canBeEdited: true,
         canBeDeleted: false,
-        canCreateOnIt: true
+        canBeCreatedOnIt: true
       );
       when(localDataSource.getCurrentFileId())
           .thenAnswer((_) async => tCurrentFolderId);
@@ -479,7 +479,7 @@ void _testLoadFolderBrothersGroup(){
             canBeRead: true,
             canBeEdited: true,
             canBeDeleted: false,
-            canCreateOnIt: true
+            canBeCreatedOnIt: true
           ),
           PdfFile(
             id: 0, 
@@ -507,13 +507,13 @@ void _testLoadFolderBrothersGroup(){
             canBeRead: true,
             canBeEdited: true,
             canBeDeleted: false,
-            canCreateOnIt: true
+            canBeCreatedOnIt: true
           )
         ],
         canBeRead: true,
         canBeEdited: true,
         canBeDeleted: false,
-        canCreateOnIt: true
+        canBeCreatedOnIt: true
       );
       when(localDataSource.getCurrentFileId())
           .thenAnswer((_) async => tCurrentFolderId);
