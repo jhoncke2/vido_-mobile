@@ -9,6 +9,7 @@ import 'dart:io' as _i5;
 import 'dart:typed_data' as _i13;
 
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:vido/core/domain/entities/pdf_file.dart' as _i3;
 import 'package:vido/core/external/translations_file_parent_folder_getter.dart'
     as _i10;
 import 'package:vido/core/external/user_extra_info_getter.dart' as _i11;
@@ -16,8 +17,6 @@ import 'package:vido/features/photos_translator/data/data_sources/photos_transla
     as _i8;
 import 'package:vido/features/photos_translator/data/data_sources/photos_translator_remote_data_source.dart'
     as _i6;
-import 'package:vido/core/domain/entities/pdf_file.dart'
-    as _i3;
 import 'package:vido/features/photos_translator/domain/entities/translation.dart'
     as _i4;
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart'

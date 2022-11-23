@@ -9,4 +9,5 @@ abstract class FilesNavigatorLocalDataSource implements TranslationsFileParentFo
   Future<void> setFilesAcommodation(FilesAcommodation acommodation);
   Future<FilesAcommodation> getFilesAcommodation();
   Future<void> setCurrentFile(AppFile file);
+  Future<AppFile> getCurrentFile();
 }

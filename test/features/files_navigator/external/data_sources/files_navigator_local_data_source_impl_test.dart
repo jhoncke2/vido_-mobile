@@ -1,22 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:vido/core/domain/entities/app_file.dart';
+import 'package:vido/core/domain/entities/folder.dart';
 import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/shared_preferences_manager.dart';
 import 'package:vido/features/files_navigator/domain/entities/files_acommodation.dart';
+import 'package:vido/features/files_navigator/external/files_navigator_local_adapter.dart';
 import 'package:vido/features/files_navigator/external/files_navigator_local_data_source_impl.dart';
 import 'files_navigator_local_data_source_impl_test.mocks.dart';
 
 late FilesNavigatorLocalDataSourceImpl localDataSource;
 late MockSharedPreferencesManager sharedPreferencesManager;
+late MockFilesNavigatorLocalAdapter adapter;
 
 @GenerateMocks([
-  SharedPreferencesManager
+  SharedPreferencesManager,
+  FilesNavigatorLocalAdapter
 ])
 void main(){
   setUp((){
+    adapter = MockFilesNavigatorLocalAdapter();
     sharedPreferencesManager = MockSharedPreferencesManager();
-    localDataSource = FilesNavigatorLocalDataSourceImpl(sharedPreferencesManager: sharedPreferencesManager);
+    localDataSource = FilesNavigatorLocalDataSourceImpl(
+      sharedPreferencesManager: sharedPreferencesManager,
+      adapter: adapter
+    );
   });
 
   group('get current parent folder id', _testGetCurrentParentFolderIdGroup);
@@ -27,6 +36,8 @@ void main(){
   group('set parent id', _testSetParentIdGroup);
   group('set files acommodation', _testSetFilesAcommodationGroup);
   group('get files acommodation', _testGetFilesAcommodationGroup);
+  group('set current file', _testSetCurrentFileGroup);
+  group('get current file', _testGetCurrentFileGroup);
 }
 
 void _testGetCurrentParentFolderIdGroup(){
@@ -188,5 +199,64 @@ void _testGetFilesAcommodationGroup(){
     when(sharedPreferencesManager.getString(any)).thenThrow(const StorageException(message: 'empty data', type: StorageExceptionType.EMPTYDATA));
     final result = await localDataSource.getFilesAcommodation();
     expect(result, FilesAcommodation.cells);
+  });
+}
+
+void _testSetCurrentFileGroup(){
+  late AppFile tFile;
+  late String tFileString;
+  setUp((){
+    tFile = const Folder(
+      id: 100,
+      name: 'f_100',
+      parentId: 99,
+      children: [],
+      canBeCreatedOnIt: false,
+      canBeRead: false,
+      canBeEdited: true,
+      canBeDeleted: true
+    );
+    tFileString = '{...}';
+    when(adapter.getJsonStringFromFile(any))
+        .thenReturn(tFileString);
+  });
+
+  test('should call the specified methods', ()async{
+    await localDataSource.setCurrentFile(tFile);
+    verify(adapter.getJsonStringFromFile(tFile));
+    verify(sharedPreferencesManager.setString(FilesNavigatorLocalDataSourceImpl.currentFileKey, tFileString));
+  });
+}
+  
+void _testGetCurrentFileGroup(){
+  late String tFileString;
+  late AppFile tFile;
+  setUp((){
+    tFileString = '{...}';
+    tFile = const Folder(
+      id: 100,
+      name: 'f_100',
+      parentId: 99,
+      children: [],
+      canBeCreatedOnIt: false,
+      canBeRead: false,
+      canBeEdited: true,
+      canBeDeleted: true
+    );
+    when(sharedPreferencesManager.getString(any))
+        .thenAnswer((_) async => tFileString);
+    when(adapter.getFileFromJsonString(any))
+        .thenReturn(tFile);
+  });
+
+  test('should call the specified methods', ()async{
+    await localDataSource.getCurrentFile();
+    verify(sharedPreferencesManager.getString(FilesNavigatorLocalDataSourceImpl.currentFileKey));
+    verify(adapter.getFileFromJsonString(tFileString));
+  });
+
+  test('should return the expected result', ()async{
+    final result = await localDataSource.getCurrentFile();
+    expect(result, tFile);
   });
 }

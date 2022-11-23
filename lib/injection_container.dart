@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:vido/core/external/storage_pdf_picker.dart';
 import 'package:vido/features/files_navigator/domain/user_cases/generate_icr_impl.dart';
+import 'package:vido/features/files_navigator/external/files_navigator_local_adapter.dart';
 import 'package:vido/features/files_navigator/external/files_navigator_remote_adapter.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/generate_icr.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/get_current_file.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_pdf_file.dart';
@@ -65,6 +67,7 @@ import 'package:vido/features/photos_translator/presentation/use_cases/end_photo
 import 'package:vido/features/files_navigator/presentation/use_cases/load_file_pdf.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/translate_photo.dart';
 import 'features/authentication/domain/use_cases/logout.dart';
+import 'features/files_navigator/domain/user_cases/get_current_file_impl.dart';
 import 'features/files_navigator/domain/user_cases/load_appearance_pdf_impl.dart';
 import 'features/files_navigator/domain/user_cases/load_file_pdf_impl.dart';
 import 'features/files_navigator/domain/user_cases/load_folder_brothers_impl.dart';
@@ -152,9 +155,13 @@ Future<void> init() async {
       streamController: StreamController<List<AppFile>>()
     )
   );
+  sl.registerLazySingleton<FilesNavigatorLocalAdapter>(
+    () => FilesNavigatorLocalAdapterImpl()
+  );
   sl.registerLazySingleton<FilesNavigatorLocalDataSource>(
     () => FilesNavigatorLocalDataSourceImpl(
-      sharedPreferencesManager: sl<SharedPreferencesManager>()
+      sharedPreferencesManager: sl<SharedPreferencesManager>(),
+      adapter: sl<FilesNavigatorLocalAdapter>()
     )
   );
   sl.registerLazySingleton<FilesNavigatorRemoteAdapter>(
@@ -219,15 +226,22 @@ Future<void> init() async {
       errorHandler: sl<UseCaseErrorHandler>()
     )
   );
+  sl.registerLazySingleton<GetCurrentFile>(
+    () => GetCurrentFileImpl(
+      repository: sl<FilesNavigatorRepository>(),
+      errorHandler: sl<UseCaseErrorHandler>()
+    )
+  );
   sl.registerFactory<FilesNavigatorBloc>(
     () => FilesNavigatorBloc(
-      loadFolderChildren: sl<LoadFolderChildren>(), 
-      loadFolderBrothers: sl<LoadFolderBrothers>(), 
+      loadFolderChildren: sl<LoadFolderChildren>(),
+      loadFolderBrothers: sl<LoadFolderBrothers>(),
       loadFilePdf: sl<LoadFilePdf>(),
       loadAppearancePdf: sl<LoadAppearancePdf>(),
       search: sl<Search>(),
       generateIcr: sl<GenerateIcr>(),
-      appFilesTransmitter: sl<AppFilesTransmitter>(), 
+      getCurrentFile: sl<GetCurrentFile>(),
+      appFilesTransmitter: sl<AppFilesTransmitter>(),
       translationsFilesTransmitter: sl<TranslationsFilesTransmitter>(),
       searchController: TextEditingController(text: '')
     )

@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:vido/core/domain/entities/app_file.dart';
 import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/domain/file_parent_type.dart';
 import 'package:vido/core/external/user_extra_info_getter.dart';
@@ -50,6 +51,7 @@ void main(){
   group('load appearance pdf', _testLoadAppearancePdfGroup);
   group('search', _testSearchGroup);
   group('generate icr', _testGenerateIcrGroup);
+  group('get current file', _testGetCurrentFileGroup);
 }
 
 void _testLoadFolderChildrenGroup(){
@@ -137,6 +139,7 @@ void _testLoadFolderChildrenGroup(){
         verify(appFilesReceiver.setAppFiles(tFolder.children));
         verify(localDataSource.setFilesTreeLvl(0));
         verify(localDataSource.setCurrentFileId(tFolder.id));
+        verify(localDataSource.setCurrentFile(tFolder));
         verifyNever(localDataSource.setParentId(any));
       });
 
@@ -156,7 +159,7 @@ void _testLoadFolderChildrenGroup(){
       test('should return the expected result when there is another Exception', ()async{
         when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
         final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
       });
     });
 
@@ -181,6 +184,7 @@ void _testLoadFolderChildrenGroup(){
         verify(remoteDataSource.getFolder(tUserId, FileParentType.user, tAccessToken));
         verify(appFilesReceiver.setAppFiles(tFolder.children));
         verify(localDataSource.setCurrentFileId(tFolder.id));
+        verify(localDataSource.setCurrentFile(tFolder));
         verifyNever(localDataSource.setParentId(any));
         verifyNever(localDataSource.setFilesTreeLvl(any));
       });
@@ -201,7 +205,7 @@ void _testLoadFolderChildrenGroup(){
       test('should return the expected result when there is another Exception', ()async{
         when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
         final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
       });
     });
     
@@ -245,7 +249,7 @@ void _testLoadFolderChildrenGroup(){
       test('should return the expected result when there is another Exception', ()async{
         when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
         final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
       });
     });
   });
@@ -321,6 +325,7 @@ void _testLoadFolderChildrenGroup(){
       verify(localDataSource.getFilesTreeLevel());
       verify(localDataSource.setFilesTreeLvl(tFilesTreeLvlUpdated));
       verify(localDataSource.setCurrentFileId(tId));
+      verify(localDataSource.setCurrentFile(tFolder));
       verifyNever(userExtraInfoGetter.getId());
     });
 
@@ -340,7 +345,7 @@ void _testLoadFolderChildrenGroup(){
     test('should return the expected result when there is another Exception', ()async{
       when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
       final result = await filesNavigatorRepository.loadFolderChildren(tId);
-      expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+      expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
     });
   });
 }
@@ -432,6 +437,7 @@ void _testLoadFolderBrothersGroup(){
       verify(appFilesReceiver.setAppFiles(tFolder.children));
       verify(localDataSource.setFilesTreeLvl(tFilesTreeLvlUpdated));
       verify(localDataSource.setCurrentFileId(tFolder.id));
+      verify(localDataSource.setCurrentFile(tFolder));
       verify(localDataSource.setParentId(tFolder.parentId));
     });
 
@@ -451,7 +457,7 @@ void _testLoadFolderBrothersGroup(){
     test('should return the expected result when there is another Exception', ()async{
       when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
       final result = await filesNavigatorRepository.loadFolderBrothers();
-      expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+      expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
     });
   });
   group('when initial files tree level is 1', (){
@@ -534,6 +540,7 @@ void _testLoadFolderBrothersGroup(){
       verify(appFilesReceiver.setAppFiles(tFolder.children));
       verify(localDataSource.setFilesTreeLvl(tFilesTreeLvlUpdated));
       verify(localDataSource.setCurrentFileId(tFolder.id));
+      verify(localDataSource.setCurrentFile(tFolder));
       verifyNever(localDataSource.setParentId(any));
     });
 
@@ -553,7 +560,7 @@ void _testLoadFolderBrothersGroup(){
     test('should return the expected result when there is another Exception', ()async{
       when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
       final result = await filesNavigatorRepository.loadFolderBrothers();
-      expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+      expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
     });
   });
 
@@ -616,6 +623,7 @@ void _testLoadFilePdfGroup(){
     verify(localDataSource.getCurrentFileId());
     verify(localDataSource.setParentId(tNewParentId));
     verify(localDataSource.setCurrentFileId(tFile.id));
+    verify(localDataSource.setCurrentFile(tFile));
     verify(localDataSource.getFilesTreeLevel());
     verify(localDataSource.setFilesTreeLvl(tTreeLvlUpdated));
   });
@@ -635,7 +643,7 @@ void _testLoadFilePdfGroup(){
   test('should return the expected result when there is another Exception', ()async{
     when(remoteDataSource.getGeneratedPdf(any, any)).thenThrow(Exception());
     final result = await filesNavigatorRepository.loadFilePdf(tFile);
-    expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+    expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
   });
 }
 
@@ -683,7 +691,7 @@ void _testLoadAppearancePdfGroup(){
     when(remoteDataSource.getGeneratedPdf(any, any))
         .thenThrow(Exception());
     final result = await filesNavigatorRepository.loadAppearancePdf(tAppearance);
-    expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+    expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
   });
 }
 
@@ -726,7 +734,7 @@ void _testSearchGroup(){
   test('should return the expected result when there is another Exception', ()async{
     when(remoteDataSource.search(any, any)).thenThrow(Exception());
     final result = await filesNavigatorRepository.search(tText);
-    expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: 'Ha ocurrido un error inesperado')));
+    expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
   });
 }
 
@@ -788,7 +796,80 @@ void _testGenerateIcrGroup(){
     final result = await filesNavigatorRepository.generateIcr(tFilesIds);
     expect(result, const Left(FilesNavigationFailure(
       exception: AppException(''),
-      message: 'Ha ocurrido un error inesperado'
+      message: ''
+    )));
+  });
+}
+
+void _testGetCurrentFileGroup(){
+  group('when all goes good', (){
+    late AppFile tFile;
+    
+    group('when current file is folder', (){
+      setUp((){
+        tFile = const Folder(
+          id: 10,
+          name: 'f_10',
+          parentId: 9,
+          children: [],
+          canBeCreatedOnIt: false,
+          canBeRead: false,
+          canBeEdited: true,
+          canBeDeleted: true
+        );
+        when(localDataSource.getCurrentFile())
+            .thenAnswer((_) async => tFile);
+      });
+
+      test('should call the specified methods', ()async{
+        await filesNavigatorRepository.getCurrentFile();
+        verify(localDataSource.getCurrentFile());
+      });
+
+      test('should return the expected result when current file is folder', ()async{
+        final result = await filesNavigatorRepository.getCurrentFile();
+        expect(result, Right(tFile));
+      });
+    });
+
+    test('should return the expected result when current file is PdfFile', ()async{
+      tFile = const PdfFile(
+          id: 10,
+          name: 'f_10',
+          parentId: 9,
+          canBeRead: false,
+          canBeEdited: true,
+          canBeDeleted: true,
+          url: 'url_10'
+        );
+        when(localDataSource.getCurrentFile())
+            .thenAnswer((_) async => tFile);
+        final result = await filesNavigatorRepository.getCurrentFile();
+        expect(result, Right(tFile));   
+    });
+  });
+
+  test('should return the expected result when remoteDataSource throws an AppException', ()async{
+    const errorMessage = 'error_message';
+    const exception = StorageException(
+      type: StorageExceptionType.NORMAL,
+      message: errorMessage
+    );
+    when(localDataSource.getCurrentFile())
+        .thenThrow(exception);
+    final result = await filesNavigatorRepository.getCurrentFile();
+    expect(result, const Left(FilesNavigationFailure(
+      exception: exception,
+      message: errorMessage
+    )));
+  });
+
+  test('should return the expected result when remoteDataSource throws another Exception', ()async{
+    when(localDataSource.getCurrentFile()).thenThrow(Exception());
+    final result = await filesNavigatorRepository.getCurrentFile();
+    expect(result, const Left(FilesNavigationFailure(
+      exception: AppException(''),
+      message: ''
     )));
   });
 }

@@ -29,7 +29,12 @@ abstract class OnError extends OnAppFiles{
 }
 
 class OnAppFilesSuccess extends OnAppFiles{
-  
+  late bool parentFileCanBeCreatedOn;
+  OnAppFilesSuccess();
+  @override
+  List<Object> get props => [
+    ...super.props, 
+  ];
 }
 
 class OnAppFilesError extends OnAppFiles implements OnError{

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
+import 'package:vido/core/domain/entities/app_file.dart';
 import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/user_extra_info_getter.dart';
 import 'package:vido/features/files_navigator/data/app_files_receiver.dart';
@@ -52,6 +53,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
     final userId = await userExtraInfoGetter.getId();
     final folder = await remoteDataSource.getFolder(userId, FileParentType.user, accessToken);
     await localDataSource.setCurrentFileId(folder.id);
+    await localDataSource.setCurrentFile(folder);
     return folder;
   }
 
@@ -67,6 +69,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
     await localDataSource.setCurrentFileId(id);
     await localDataSource.setFilesTreeLvl(treeLvl + 1);
     await localDataSource.setParentId(folder.parentId!);
+    await localDataSource.setCurrentFile(folder);
     return folder;
   }
 
@@ -78,12 +81,12 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
       return await function();
     }on AppException catch(exception){
       return Left(FilesNavigationFailure(
-        message: exception.message??'Ha ocurrido un error inesperado',
+        message: exception.message??'',
         exception: exception
       ));
     }catch(exception){
       return const Left(FilesNavigationFailure(
-        message: 'Ha ocurrido un error inesperado',
+        message: '',
         exception: AppException('')
       ));
     }
@@ -109,6 +112,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
         final filesTreeLevelUpdated = filesTreeLvlInit - 1;
         await localDataSource.setFilesTreeLvl(filesTreeLevelUpdated);
         await localDataSource.setCurrentFileId(folder.id);
+        await localDataSource.setCurrentFile(folder);
         if(filesTreeLevelUpdated > 0){
           await localDataSource.setParentId(folder.parentId!);
         }
@@ -125,6 +129,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
       final newParentId = await localDataSource.getCurrentFileId();
       await localDataSource.setParentId(newParentId);
       await localDataSource.setCurrentFileId(file.id);
+      await localDataSource.setCurrentFile(file);
       final treeLvl = (await localDataSource.getFilesTreeLevel())!;
       await localDataSource.setFilesTreeLvl(treeLvl + 1);
       return Right(pdf);
@@ -155,6 +160,14 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
       final accessToken = await userExtraInfoGetter.getAccessToken();
       final icr = await remoteDataSource.generateIcr(ids, accessToken);
       return Right(icr);
+    });
+  }
+
+  @override
+  Future<Either<FilesNavigationFailure, AppFile>> getCurrentFile()async{
+    return await _manageFunctionExceptions(()async{
+      final file = await localDataSource.getCurrentFile();
+      return Right(file);
     });
   }
 }

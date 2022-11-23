@@ -4,27 +4,31 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i8;
-import 'dart:convert' as _i24;
+import 'dart:convert' as _i25;
 import 'dart:io' as _i6;
-import 'dart:typed_data' as _i25;
-import 'dart:ui' as _i23;
+import 'dart:typed_data' as _i26;
+import 'dart:ui' as _i24;
 
 import 'package:dartz/dartz.dart' as _i2;
 import 'package:flutter/foundation.dart' as _i5;
 import 'package:flutter/rendering.dart' as _i3;
 import 'package:flutter/services.dart' as _i4;
-import 'package:flutter/src/widgets/editable_text.dart' as _i21;
-import 'package:flutter/src/widgets/framework.dart' as _i22;
+import 'package:flutter/src/widgets/editable_text.dart' as _i22;
+import 'package:flutter/src/widgets/framework.dart' as _i23;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:vido/core/domain/translations_transmitter.dart' as _i19;
+import 'package:vido/core/domain/entities/app_file.dart' as _i18;
+import 'package:vido/core/domain/entities/pdf_file.dart' as _i12;
+import 'package:vido/core/domain/translations_transmitter.dart' as _i20;
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart'
     as _i14;
 import 'package:vido/features/files_navigator/domain/failures/files_navigation_failure.dart'
     as _i9;
 import 'package:vido/features/files_navigator/presentation/files_transmitter/files_transmitter.dart'
-    as _i17;
+    as _i19;
 import 'package:vido/features/files_navigator/presentation/use_cases/generate_icr.dart'
     as _i16;
+import 'package:vido/features/files_navigator/presentation/use_cases/get_current_file.dart'
+    as _i17;
 import 'package:vido/features/files_navigator/presentation/use_cases/load_appearance_pdf.dart'
     as _i13;
 import 'package:vido/features/files_navigator/presentation/use_cases/load_file_pdf.dart'
@@ -35,12 +39,8 @@ import 'package:vido/features/files_navigator/presentation/use_cases/load_folder
     as _i7;
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart'
     as _i15;
-import 'package:vido/core/domain/entities/app_file.dart'
-    as _i18;
-import 'package:vido/core/domain/entities/pdf_file.dart'
-    as _i12;
 import 'package:vido/features/photos_translator/domain/entities/translations_file.dart'
-    as _i20;
+    as _i21;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -234,11 +234,29 @@ class MockGenerateIcr extends _i1.Mock implements _i16.GenerateIcr {
           .Future<_i2.Either<_i9.FilesNavigationFailure, List<Map<String, dynamic>>>>);
 }
 
+/// A class which mocks [GetCurrentFile].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetCurrentFile extends _i1.Mock implements _i17.GetCurrentFile {
+  MockGetCurrentFile() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i8.Future<_i2.Either<_i9.FilesNavigationFailure, _i18.AppFile>> call() =>
+      (super.noSuchMethod(Invocation.method(#call, []),
+          returnValue:
+              _i8.Future<_i2.Either<_i9.FilesNavigationFailure, _i18.AppFile>>.value(
+                  _FakeEither_0<_i9.FilesNavigationFailure, _i18.AppFile>(
+                      this, Invocation.method(#call, [])))) as _i8
+          .Future<_i2.Either<_i9.FilesNavigationFailure, _i18.AppFile>>);
+}
+
 /// A class which mocks [AppFilesTransmitter].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAppFilesTransmitter extends _i1.Mock
-    implements _i17.AppFilesTransmitter {
+    implements _i19.AppFilesTransmitter {
   MockAppFilesTransmitter() {
     _i1.throwOnMissingStub(this);
   }
@@ -260,18 +278,18 @@ class MockAppFilesTransmitter extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockTranslationsFilesTransmitter extends _i1.Mock
-    implements _i19.TranslationsFilesTransmitter {
+    implements _i20.TranslationsFilesTransmitter {
   MockTranslationsFilesTransmitter() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i8.Stream<List<_i20.TranslationsFile>> get translationsFiles =>
+  _i8.Stream<List<_i21.TranslationsFile>> get translationsFiles =>
       (super.noSuchMethod(Invocation.getter(#translationsFiles),
-              returnValue: _i8.Stream<List<_i20.TranslationsFile>>.empty())
-          as _i8.Stream<List<_i20.TranslationsFile>>);
+              returnValue: _i8.Stream<List<_i21.TranslationsFile>>.empty())
+          as _i8.Stream<List<_i21.TranslationsFile>>);
   @override
-  _i8.Future<void> setTranslationsFiles(List<_i20.TranslationsFile>? files) =>
+  _i8.Future<void> setTranslationsFiles(List<_i21.TranslationsFile>? files) =>
       (super.noSuchMethod(Invocation.method(#setTranslationsFiles, [files]),
               returnValue: _i8.Future<void>.value(),
               returnValueForMissingStub: _i8.Future<void>.value())
@@ -282,7 +300,7 @@ class MockTranslationsFilesTransmitter extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockTextEditingController extends _i1.Mock
-    implements _i21.TextEditingController {
+    implements _i22.TextEditingController {
   MockTextEditingController() {
     _i1.throwOnMissingStub(this);
   }
@@ -319,7 +337,7 @@ class MockTextEditingController extends _i1.Mock
           as bool);
   @override
   _i3.TextSpan buildTextSpan(
-          {_i22.BuildContext? context,
+          {_i23.BuildContext? context,
           _i3.TextStyle? style,
           bool? withComposing}) =>
       (super.noSuchMethod(
@@ -348,11 +366,11 @@ class MockTextEditingController extends _i1.Mock
           Invocation.method(#isSelectionWithinTextBounds, [selection]),
           returnValue: false) as bool);
   @override
-  void addListener(_i23.VoidCallback? listener) =>
+  void addListener(_i24.VoidCallback? listener) =>
       super.noSuchMethod(Invocation.method(#addListener, [listener]),
           returnValueForMissingStub: null);
   @override
-  void removeListener(_i23.VoidCallback? listener) =>
+  void removeListener(_i24.VoidCallback? listener) =>
       super.noSuchMethod(Invocation.method(#removeListener, [listener]),
           returnValueForMissingStub: null);
   @override
@@ -493,7 +511,7 @@ class MockFile extends _i1.Mock implements _i6.File {
   @override
   _i6.IOSink openWrite(
           {_i6.FileMode? mode = _i6.FileMode.write,
-          _i24.Encoding? encoding = const _i24.Utf8Codec()}) =>
+          _i25.Encoding? encoding = const _i25.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#openWrite, [], {#mode: mode, #encoding: encoding}),
           returnValue: _FakeIOSink_9(
@@ -502,35 +520,35 @@ class MockFile extends _i1.Mock implements _i6.File {
                   #openWrite, [], {#mode: mode, #encoding: encoding}))) as _i6
           .IOSink);
   @override
-  _i8.Future<_i25.Uint8List> readAsBytes() =>
+  _i8.Future<_i26.Uint8List> readAsBytes() =>
       (super.noSuchMethod(Invocation.method(#readAsBytes, []),
-              returnValue: _i8.Future<_i25.Uint8List>.value(_i25.Uint8List(0)))
-          as _i8.Future<_i25.Uint8List>);
+              returnValue: _i8.Future<_i26.Uint8List>.value(_i26.Uint8List(0)))
+          as _i8.Future<_i26.Uint8List>);
   @override
-  _i25.Uint8List readAsBytesSync() =>
+  _i26.Uint8List readAsBytesSync() =>
       (super.noSuchMethod(Invocation.method(#readAsBytesSync, []),
-          returnValue: _i25.Uint8List(0)) as _i25.Uint8List);
+          returnValue: _i26.Uint8List(0)) as _i26.Uint8List);
   @override
   _i8.Future<String> readAsString(
-          {_i24.Encoding? encoding = const _i24.Utf8Codec()}) =>
+          {_i25.Encoding? encoding = const _i25.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#readAsString, [], {#encoding: encoding}),
           returnValue: _i8.Future<String>.value('')) as _i8.Future<String>);
   @override
-  String readAsStringSync({_i24.Encoding? encoding = const _i24.Utf8Codec()}) =>
+  String readAsStringSync({_i25.Encoding? encoding = const _i25.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#readAsStringSync, [], {#encoding: encoding}),
           returnValue: '') as String);
   @override
   _i8.Future<List<String>> readAsLines(
-          {_i24.Encoding? encoding = const _i24.Utf8Codec()}) =>
+          {_i25.Encoding? encoding = const _i25.Utf8Codec()}) =>
       (super.noSuchMethod(
               Invocation.method(#readAsLines, [], {#encoding: encoding}),
               returnValue: _i8.Future<List<String>>.value(<String>[]))
           as _i8.Future<List<String>>);
   @override
   List<String> readAsLinesSync(
-          {_i24.Encoding? encoding = const _i24.Utf8Codec()}) =>
+          {_i25.Encoding? encoding = const _i25.Utf8Codec()}) =>
       (super.noSuchMethod(
           Invocation.method(#readAsLinesSync, [], {#encoding: encoding}),
           returnValue: <String>[]) as List<String>);
@@ -553,7 +571,7 @@ class MockFile extends _i1.Mock implements _i6.File {
   @override
   _i8.Future<_i6.File> writeAsString(String? contents,
           {_i6.FileMode? mode = _i6.FileMode.write,
-          _i24.Encoding? encoding = const _i24.Utf8Codec(),
+          _i25.Encoding? encoding = const _i25.Utf8Codec(),
           bool? flush = false}) =>
       (super
           .noSuchMethod(Invocation.method(#writeAsString, [contents], {#mode: mode, #encoding: encoding, #flush: flush}),
@@ -569,7 +587,7 @@ class MockFile extends _i1.Mock implements _i6.File {
   @override
   void writeAsStringSync(String? contents,
           {_i6.FileMode? mode = _i6.FileMode.write,
-          _i24.Encoding? encoding = const _i24.Utf8Codec(),
+          _i25.Encoding? encoding = const _i25.Utf8Codec(),
           bool? flush = false}) =>
       super.noSuchMethod(
           Invocation.method(#writeAsStringSync, [contents],

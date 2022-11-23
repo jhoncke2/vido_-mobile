@@ -3,6 +3,7 @@ import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/external/shared_preferences_manager.dart';
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_local_data_source.dart';
 import 'package:vido/features/files_navigator/domain/entities/files_acommodation.dart';
+import 'package:vido/features/files_navigator/external/files_navigator_local_adapter.dart';
 
 class FilesNavigatorLocalDataSourceImpl implements FilesNavigatorLocalDataSource{
   static const currentParentFolderIdKey = 'current_parent_folder_id';
@@ -11,10 +12,13 @@ class FilesNavigatorLocalDataSourceImpl implements FilesNavigatorLocalDataSource
   static const filesAcommodationKey = 'files_acommodation';
   static const filesAcommodationCellsValue = 'cells';
   static const filesAcommodationVerticalListValue = 'vertical_list';
+  static const currentFileKey = 'current_file';
 
   final SharedPreferencesManager sharedPreferencesManager;
+  final FilesNavigatorLocalAdapter adapter;
   const FilesNavigatorLocalDataSourceImpl({
-    required this.sharedPreferencesManager
+    required this.sharedPreferencesManager,
+    required this.adapter
   });
   @override
   Future<int> getCurrentFileId()async{
@@ -83,7 +87,13 @@ class FilesNavigatorLocalDataSourceImpl implements FilesNavigatorLocalDataSource
 
   @override
   Future<void> setCurrentFile(AppFile file)async{
-    // TODO: implement setCurrentFile
-    throw UnimplementedError();
+    final stringFile = adapter.getJsonStringFromFile(file);
+    await sharedPreferencesManager.setString(currentFileKey, stringFile);
+  }
+  
+  @override
+  Future<AppFile> getCurrentFile()async{
+    final stringFile = await sharedPreferencesManager.getString(currentFileKey);
+    return adapter.getFileFromJsonString(stringFile);
   }
 }

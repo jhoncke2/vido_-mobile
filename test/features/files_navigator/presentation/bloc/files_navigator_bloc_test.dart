@@ -12,6 +12,7 @@ import 'package:vido/features/files_navigator/domain/failures/files_navigation_f
 import 'package:vido/features/files_navigator/presentation/bloc/files_navigator_bloc.dart';
 import 'package:vido/features/files_navigator/presentation/files_transmitter/files_transmitter.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/generate_icr.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/get_current_file.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_appearance_pdf.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_folder_brothers.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_folder_children.dart';
@@ -29,6 +30,7 @@ late MockLoadFilePdf loadFilePdf;
 late MockLoadAppearancePdf loadAppearancePdf;
 late MockSearch search;
 late MockGenerateIcr generateIcr;
+late MockGetCurrentFile getCurrentFile;
 late MockAppFilesTransmitter appFilesTransmitter;
 late MockTranslationsFilesTransmitter translationsFilesTransmitter;
 late MockTextEditingController searchController;
@@ -40,6 +42,7 @@ late MockTextEditingController searchController;
   LoadAppearancePdf,
   Search,
   GenerateIcr,
+  GetCurrentFile,
   AppFilesTransmitter,
   TranslationsFilesTransmitter,
   TextEditingController,
@@ -50,6 +53,7 @@ void main() {
     searchController = MockTextEditingController();
     translationsFilesTransmitter = MockTranslationsFilesTransmitter();
     appFilesTransmitter = MockAppFilesTransmitter();
+    getCurrentFile = MockGetCurrentFile();
     generateIcr = MockGenerateIcr();
     search = MockSearch();
     loadAppearancePdf = MockLoadAppearancePdf();
@@ -66,6 +70,7 @@ void main() {
       loadAppearancePdf: loadAppearancePdf,
       search: search,
       generateIcr: generateIcr,
+      getCurrentFile: getCurrentFile,
       appFilesTransmitter: appFilesTransmitter,
       translationsFilesTransmitter: translationsFilesTransmitter,
       searchController: searchController 
@@ -84,18 +89,80 @@ void main() {
 }
 
 void _testLoadInitialAppFilesGroup(){
-  test('should call the specified methods', ()async{
+  setUp((){
     when(loadFolderChildren(any)).thenAnswer((_) async => const Right(null));
-    filesNavigatorBloc.add(LoadInitialAppFilesEvent());
-    await untilCalled(loadFolderChildren(any));
-    verify(loadFolderChildren(null));
+  });
+  group('when all goes good', (){
+    late AppFile tCurrentFile;
+    setUp((){
+      tCurrentFile = const Folder(
+        id: 100, 
+        name: 'f_100', 
+        parentId: 99, 
+        children: [], 
+        canBeCreatedOnIt: false, 
+        canBeRead: true, 
+        canBeEdited: false, 
+        canBeDeleted: true
+      );
+      when(getCurrentFile())
+          .thenAnswer((_) async => Right(tCurrentFile));
+    });
+
+    test('should call the specified methods', ()async{
+      filesNavigatorBloc.add(LoadInitialAppFilesEvent());
+      await untilCalled(loadFolderChildren(any));
+      verify(loadFolderChildren(null));
+      await untilCalled(getCurrentFile());
+      verify(getCurrentFile());
+    });
+
+    test('should emit the expected ordered states when all goes good', ()async{
+      final expectedOrderedStates = [
+        OnLoadingAppFiles(),
+        OnAppFilesSuccess()
+      ];
+      expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      filesNavigatorBloc.add(LoadInitialAppFilesEvent());
+    });
   });
 
-  test('should emit the expected ordered states when all goes good', ()async{
-    when(loadFolderChildren(any)).thenAnswer((_) async => const Right(null));
+  test('should emit the expected ordered states when there is a Failure with message', ()async{
+    const errorMessage = 'the_error_message';
+    when(getCurrentFile())
+        .thenAnswer(
+          (_) async => const Left(FilesNavigationFailure(
+            message: errorMessage, 
+            exception: ServerException(
+              type: ServerExceptionType.NORMAL,
+              message: errorMessage
+            )
+      )));
     final expectedOrderedStates = [
       OnLoadingAppFiles(),
-      OnAppFilesSuccess()
+      const OnLoadingAppFilesError(
+        message: errorMessage
+      )
+    ];
+    expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    filesNavigatorBloc.add(LoadInitialAppFilesEvent());
+  });
+
+  test('should emit the expected ordered states when there is a Failure withOut message', ()async{
+    when(getCurrentFile())
+      .thenAnswer(
+        (_) async => const Left(FilesNavigationFailure(
+          message: '', 
+          exception: ServerException(
+            type: ServerExceptionType.NORMAL,
+            message: ''
+          )
+      )));
+    final expectedOrderedStates = [
+      OnLoadingAppFiles(),
+      const OnLoadingAppFilesError(
+        message: FilesNavigatorBloc.generalErrorMessage
+      )
     ];
     expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
     filesNavigatorBloc.add(LoadInitialAppFilesEvent());
@@ -173,16 +240,77 @@ void _testSelectAppFileGroup(){
         when(loadFolderChildren(any)).thenAnswer((_) async => const Right(null));
       });
 
-      test('should call the specified methods', ()async{
-        filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
-        await (untilCalled(loadFolderChildren(any)));
-        verify(loadFolderChildren(tAppFile.id));
+      group('when all goes good', (){
+        late AppFile tCurrentFile;
+        setUp((){
+          tCurrentFile = const Folder(
+            id: 100, 
+            name: 'f_100', 
+            parentId: 99, 
+            children: [], 
+            canBeCreatedOnIt: false, 
+            canBeRead: true, 
+            canBeEdited: false, 
+            canBeDeleted: true
+          );
+          when(getCurrentFile())
+              .thenAnswer((_) async => Right(tCurrentFile));
+        });
+
+        test('should call the specified methods', ()async{
+          filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+          await untilCalled(loadFolderChildren(any));
+          verify(loadFolderChildren(tAppFile.id));
+          await untilCalled(getCurrentFile());
+          verify(getCurrentFile());
+        });
+
+        test('should emit the expected ordered states', ()async{
+          final expectedOrderedStates = [
+            OnLoadingAppFiles(),
+            OnAppFilesSuccess()
+          ];
+          expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+          filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+        });
       });
 
-      test('should emit the expected ordered states', ()async{
+      test('should emit the expected ordered states when there is a Failure with message', ()async{
+        const errorMessage = 'the_error_message';
+        when(getCurrentFile())
+            .thenAnswer(
+              (_) async => const Left(FilesNavigationFailure(
+                message: errorMessage, 
+                exception: ServerException(
+                  type: ServerExceptionType.NORMAL,
+                  message: errorMessage
+                )
+          )));
         final expectedOrderedStates = [
           OnLoadingAppFiles(),
-          OnAppFilesSuccess()
+          OnAppFilesError(
+            message: errorMessage
+          )
+        ];
+        expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+        filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+      });
+
+      test('should emit the expected ordered states when there is a Failure withOut message', ()async{
+        when(getCurrentFile())
+          .thenAnswer(
+            (_) async => const Left(FilesNavigationFailure(
+              message: '', 
+              exception: ServerException(
+                type: ServerExceptionType.NORMAL,
+                message: ''
+              )
+          )));
+        final expectedOrderedStates = [
+          OnLoadingAppFiles(),
+          OnAppFilesError(
+            message: FilesNavigatorBloc.generalErrorMessage
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
@@ -322,20 +450,81 @@ void _testSelectAppFileGroup(){
 }
 
 void _testSelectFilesParentGroup(){
-  test('should call the specified methods', ()async{
+  setUp((){
     when(loadFolderBrothers())
-        .thenAnswer((_) async => const Right(null));
-    filesNavigatorBloc.add(SelectFilesParentEvent());
-    await untilCalled(loadFolderBrothers());
-    verify(loadFolderBrothers());
+          .thenAnswer((_) async => const Right(null));
+  });
+  group('when all goes good', (){
+    late AppFile tCurrentFile;
+    setUp((){
+      tCurrentFile = const Folder(
+        id: 100, 
+        name: 'f_100', 
+        parentId: 99, 
+        children: [], 
+        canBeCreatedOnIt: false, 
+        canBeRead: true, 
+        canBeEdited: false, 
+        canBeDeleted: true
+      );
+      when(getCurrentFile())
+          .thenAnswer((_) async => Right(tCurrentFile));
+    });
+
+    test('should call the specified methods', ()async{
+      filesNavigatorBloc.add(SelectFilesParentEvent());
+      await untilCalled(loadFolderBrothers());
+      verify(loadFolderBrothers());
+      await untilCalled(getCurrentFile());
+      verify(getCurrentFile());
+    });
+
+    test('should call the expected ordered states when all goes good', ()async{
+      final expectedOrderedStates = [
+        OnLoadingAppFiles(),
+        OnAppFilesSuccess()
+      ];
+      expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+      filesNavigatorBloc.add(SelectFilesParentEvent());
+    });
   });
 
-  test('should call the expected ordered states when all goes good', ()async{
-    when(loadFolderBrothers())
-        .thenAnswer((_) async => const Right(null));
+  test('should emit the expected ordered states when there is a Failure with message', ()async{
+    const errorMessage = 'the_error_message';
+    when(getCurrentFile())
+        .thenAnswer(
+          (_) async => const Left(FilesNavigationFailure(
+            message: errorMessage, 
+            exception: ServerException(
+              type: ServerExceptionType.NORMAL,
+              message: errorMessage
+            )
+      )));
     final expectedOrderedStates = [
       OnLoadingAppFiles(),
-      OnAppFilesSuccess()
+      OnAppFilesError(
+        message: errorMessage
+      )
+    ];
+    expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+    filesNavigatorBloc.add(SelectFilesParentEvent());
+  });
+
+  test('should emit the expected ordered states when there is a Failure withOut message', ()async{
+    when(getCurrentFile())
+      .thenAnswer(
+        (_) async => const Left(FilesNavigationFailure(
+          message: '', 
+          exception: ServerException(
+            type: ServerExceptionType.NORMAL,
+            message: ''
+          )
+      )));
+    final expectedOrderedStates = [
+      OnLoadingAppFiles(),
+      OnAppFilesError(
+        message: FilesNavigatorBloc.generalErrorMessage
+      )
     ];
     expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
     filesNavigatorBloc.add(SelectFilesParentEvent());

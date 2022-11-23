@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:vido/core/domain/translations_transmitter.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
 import 'package:vido/features/files_navigator/presentation/files_transmitter/files_transmitter.dart';
+import 'package:vido/features/files_navigator/presentation/use_cases/get_current_file.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_appearance_pdf.dart';
 import 'package:vido/core/domain/entities/app_file.dart';
 import 'package:vido/core/domain/entities/pdf_file.dart';
@@ -27,6 +28,7 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
   final LoadAppearancePdf loadAppearancePdf;
   final Search search;
   final GenerateIcr generateIcr;
+  final GetCurrentFile getCurrentFile;
   late List<AppFile> _lastAppFiles;
   final AppFilesTransmitter appFilesTransmitter;
   final TranslationsFilesTransmitter translationsFilesTransmitter;
@@ -39,6 +41,7 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
     required this.loadAppearancePdf,
     required this.search,
     required this.generateIcr,
+    required this.getCurrentFile,
     required this.appFilesTransmitter,
     required this.translationsFilesTransmitter,
     required this.searchController
@@ -73,11 +76,18 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
   Future<void> _loadInitiapAppFiles(Emitter<FilesNavigatorState> emit)async{
     emit(OnLoadingAppFiles());
     await loadFolderChildren(null);
-    emit(OnAppFilesSuccess());
+    final currentFileResult = await getCurrentFile();
+    currentFileResult.fold((failure){
+      final errorMessage = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
+      emit(OnLoadingAppFilesError(
+        message: errorMessage
+      ));
+    }, (currentFile){
+      emit(OnAppFilesSuccess());
+    });
   }
 
   Future<void> _selectAppFile(Emitter<FilesNavigatorState> emit, SelectAppFileEvent event)async{
-    
     final appFile = event.appFile;
     if(appFile is PdfFile){
       if(state is OnAppFilesSuccess){
@@ -101,7 +111,6 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
               ..remove(appFile.id);
             emit(OnIcrFilesSelection(filesIds: newList));
           }
-          
         }else{
           emit(OnIcrFilesSelection(filesIds: [...filesIds, event.appFile.id]));
         }
@@ -109,14 +118,30 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
     }else if(state is OnAppFilesSuccess){
       emit(OnLoadingAppFiles());
       await loadFolderChildren(event.appFile.id);
-      emit(OnAppFilesSuccess());
+      final currentFileResult = await getCurrentFile();
+      currentFileResult.fold((failure){
+        final errorMessage = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
+        emit(OnAppFilesError(
+          message: errorMessage
+        ));
+      }, (currentFile){
+        emit(OnAppFilesSuccess());
+      });
     }
   }
   
   Future<void> _selectFilesParent(Emitter<FilesNavigatorState> emit)async{
     emit(OnLoadingAppFiles());
     await loadFolderBrothers();
-    emit(OnAppFilesSuccess());
+    final currentFileResult = await getCurrentFile();
+    currentFileResult.fold((failure){
+      final errorMessage = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
+      emit(OnAppFilesError(
+        message: errorMessage
+      ));
+    }, (currentFile){
+      emit(OnAppFilesSuccess());
+    });
   }
 
   Future<void> _search(Emitter<FilesNavigatorState> emit, SearchEvent event)async{

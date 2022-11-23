@@ -3,10 +3,13 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i3;
+import 'dart:async' as _i4;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:vido/core/external/shared_preferences_manager.dart' as _i2;
+import 'package:vido/core/domain/entities/app_file.dart' as _i2;
+import 'package:vido/core/external/shared_preferences_manager.dart' as _i3;
+import 'package:vido/features/files_navigator/external/files_navigator_local_adapter.dart'
+    as _i5;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -19,31 +22,57 @@ import 'package:vido/core/external/shared_preferences_manager.dart' as _i2;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
+class _FakeAppFile_0 extends _i1.SmartFake implements _i2.AppFile {
+  _FakeAppFile_0(Object parent, Invocation parentInvocation)
+      : super(parent, parentInvocation);
+}
+
 /// A class which mocks [SharedPreferencesManager].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockSharedPreferencesManager extends _i1.Mock
-    implements _i2.SharedPreferencesManager {
+    implements _i3.SharedPreferencesManager {
   MockSharedPreferencesManager() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<String> getString(String? key) =>
+  _i4.Future<String> getString(String? key) =>
       (super.noSuchMethod(Invocation.method(#getString, [key]),
-          returnValue: _i3.Future<String>.value('')) as _i3.Future<String>);
+          returnValue: _i4.Future<String>.value('')) as _i4.Future<String>);
   @override
-  _i3.Future<void> setString(String? key, String? value) => (super.noSuchMethod(
+  _i4.Future<void> setString(String? key, String? value) => (super.noSuchMethod(
       Invocation.method(#setString, [key, value]),
-      returnValue: _i3.Future<void>.value(),
-      returnValueForMissingStub: _i3.Future<void>.value()) as _i3.Future<void>);
+      returnValue: _i4.Future<void>.value(),
+      returnValueForMissingStub: _i4.Future<void>.value()) as _i4.Future<void>);
   @override
-  _i3.Future<void> remove(String? key) => (super.noSuchMethod(
+  _i4.Future<void> remove(String? key) => (super.noSuchMethod(
       Invocation.method(#remove, [key]),
-      returnValue: _i3.Future<void>.value(),
-      returnValueForMissingStub: _i3.Future<void>.value()) as _i3.Future<void>);
+      returnValue: _i4.Future<void>.value(),
+      returnValueForMissingStub: _i4.Future<void>.value()) as _i4.Future<void>);
   @override
-  _i3.Future<void> clear() => (super.noSuchMethod(Invocation.method(#clear, []),
-      returnValue: _i3.Future<void>.value(),
-      returnValueForMissingStub: _i3.Future<void>.value()) as _i3.Future<void>);
+  _i4.Future<void> clear() => (super.noSuchMethod(Invocation.method(#clear, []),
+      returnValue: _i4.Future<void>.value(),
+      returnValueForMissingStub: _i4.Future<void>.value()) as _i4.Future<void>);
+}
+
+/// A class which mocks [FilesNavigatorLocalAdapter].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockFilesNavigatorLocalAdapter extends _i1.Mock
+    implements _i5.FilesNavigatorLocalAdapter {
+  MockFilesNavigatorLocalAdapter() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  String getJsonStringFromFile(_i2.AppFile? file) =>
+      (super.noSuchMethod(Invocation.method(#getJsonStringFromFile, [file]),
+          returnValue: '') as String);
+  @override
+  _i2.AppFile getFileFromJsonString(String? jsonString) => (super.noSuchMethod(
+          Invocation.method(#getFileFromJsonString, [jsonString]),
+          returnValue: _FakeAppFile_0(
+              this, Invocation.method(#getFileFromJsonString, [jsonString])))
+      as _i2.AppFile);
 }
