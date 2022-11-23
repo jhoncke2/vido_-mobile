@@ -1,4 +1,4 @@
-import 'package:vido/features/files_navigator/domain/failures/files_navigation_failure.dart';
+import 'package:vido/features/files_navigator/domain/failures/files_navigator_failure.dart';
 import 'package:dartz/dartz.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_folder_brothers.dart';
 import '../../../../core/domain/use_case_error_handler.dart';
@@ -12,7 +12,7 @@ class LoadFolderBrothersImpl implements LoadFolderBrothers{
     required this.errorHandler
   });
   @override
-  Future<Either<FilesNavigationFailure, void>> call()async{
+  Future<Either<FilesNavigatorFailure, void>> call()async{
     return await errorHandler.executeFunction(
       () => repository.loadFolderBrothers()
     );

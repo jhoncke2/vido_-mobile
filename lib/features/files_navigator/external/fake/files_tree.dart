@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:vido/features/files_navigator/external/fake/tree.dart';
 import 'package:vido/features/files_navigator/external/fake/tree_node.dart';
 import '../../../../core/domain/entities/app_file.dart';
@@ -7,7 +9,7 @@ import '../../../../core/domain/entities/pdf_file.dart';
 final appFiles = Tree<int, AppFile>(
   root: TreeNode(
     key: 0, 
-    value: const Folder(
+    value: Folder(
       id: 0, 
       name: 'root', 
       parentId: -1, 
@@ -20,7 +22,7 @@ final appFiles = Tree<int, AppFile>(
     children: [
       TreeNode(
         key: 1, 
-        value: const Folder(
+        value: Folder(
           id: 1, 
           name: 'facturas', 
           parentId: 0, 
@@ -108,7 +110,7 @@ final appFiles = Tree<int, AppFile>(
         children: [
           TreeNode(
             key: 7, 
-            value: const Folder(
+            value: Folder(
               id: 7, 
               name: 'viajes antiguos', 
               parentId: 0, 
@@ -170,7 +172,7 @@ final appFiles = Tree<int, AppFile>(
       ),
       TreeNode(
         key: 11, 
-        value: const Folder(
+        value: Folder(
           id: 11, 
           name: 'reuniones', 
           parentId: 0, 
@@ -178,7 +180,7 @@ final appFiles = Tree<int, AppFile>(
           canBeRead: true,
           canBeEdited: true,
           canBeDeleted: false,
-          canBeCreatedOnIt: true
+          canBeCreatedOnIt: false
         ), 
         children: [
 
@@ -186,7 +188,7 @@ final appFiles = Tree<int, AppFile>(
       ),
       TreeNode(
         key: 12, 
-        value: const Folder(
+        value: Folder(
           id: 12, 
           name: 'salidas', 
           parentId: 0, 

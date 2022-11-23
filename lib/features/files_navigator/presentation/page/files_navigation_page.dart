@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vido/core/presentation/widgets/error_panel.dart';
 import 'package:vido/features/authentication/presentation/bloc/authentication_bloc.dart';
 import 'package:vido/features/files_navigator/presentation/bloc/files_navigator_bloc.dart';
 import 'package:vido/features/files_navigator/presentation/widgets/files_view/app_files_view.dart';
@@ -26,25 +26,54 @@ class FilesNavigationPage extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              FilesNavigatorAppBar(),
               BlocBuilder<FilesNavigatorBloc, FilesNavigatorState>(
                 builder: (blocContext, state){
                   _managePostFrameCallback(blocContext, state);
-                  if(state is OnAppFiles){
-                    return AppFilesView();
-                  }else if(state is OnPdf){
-                    return PdfFileView();
-                  }else if(state is OnSearchAppearances){
-                    return SearchAppearancesView();
-                  }else if(state is OnIcrTable){
-                    return IcrReportView(headers: state.colsHeads, rows: state.rows);
-                  }else{
-                    return Expanded(
-                      child: Center(
-                        child: CircularProgressIndicator()
+                  return Expanded(
+                    child: WillPopScope(
+                      onWillPop: ()async{
+                        if(state is OnShowingAppFiles || state is OnPdfFile || state is SearchAppearancesView){
+                          BlocProvider.of<FilesNavigatorBloc>(blocContext).add(SelectFilesParentEvent());
+                        }else if(state is OnSearchAppearancesPdf){
+                          BlocProvider.of<FilesNavigatorBloc>(blocContext).add(BackToSearchAppearancesEvent());
+                        }else if(state is OnIcrTable){
+                          BlocProvider.of<FilesNavigatorBloc>(blocContext).add(LoadInitialAppFilesEvent());
+                        }
+                        return false;
+                      },
+                      child: Column(
+                        children: [
+                          FilesNavigatorAppBar(),
+                          (
+                            (state is OnShowingAppFiles)?
+                              AppFilesView():
+                              (state is OnPdf)?
+                                PdfFileView():
+                                (state is OnSearchAppearances)?
+                                  SearchAppearancesView():
+                                    (state is OnIcrTable)?
+                                      IcrReportView(
+                                        headers: state.colsHeads, 
+                                        rows: state.rows
+                                      ):
+                                      Expanded(
+                                        child: Center(
+                                          child: CircularProgressIndicator()
+                                        )
+                                      )
+                          ),
+                          (
+                            (state is OnError)?
+                              ErrorPanel(
+                                visible: true, 
+                                errorTitle: 'Ha ocurrido un error', 
+                                errorContent: state.message
+                              ): Container()
+                          )
+                        ],
                       ),
-                    );
-                  }
+                    ),
+                  );
                 }
               ),
               TranslationsFilesView()

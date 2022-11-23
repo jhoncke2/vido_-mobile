@@ -21,7 +21,7 @@ import 'package:vido/core/domain/entities/pdf_file.dart' as _i12;
 import 'package:vido/core/domain/translations_transmitter.dart' as _i20;
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart'
     as _i14;
-import 'package:vido/features/files_navigator/domain/failures/files_navigation_failure.dart'
+import 'package:vido/features/files_navigator/domain/failures/files_navigator_failure.dart'
     as _i9;
 import 'package:vido/features/files_navigator/presentation/files_transmitter/files_transmitter.dart'
     as _i19;
@@ -130,13 +130,13 @@ class MockLoadFolderChildren extends _i1.Mock
   }
 
   @override
-  _i8.Future<_i2.Either<_i9.FilesNavigationFailure, void>> call(int? id) =>
+  _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, void>> call(int? id) =>
       (super.noSuchMethod(Invocation.method(#call, [id]),
           returnValue:
-              _i8.Future<_i2.Either<_i9.FilesNavigationFailure, void>>.value(
-                  _FakeEither_0<_i9.FilesNavigationFailure, void>(
+              _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, void>>.value(
+                  _FakeEither_0<_i9.FilesNavigatorFailure, void>(
                       this, Invocation.method(#call, [id])))) as _i8
-          .Future<_i2.Either<_i9.FilesNavigationFailure, void>>);
+          .Future<_i2.Either<_i9.FilesNavigatorFailure, void>>);
 }
 
 /// A class which mocks [LoadFolderBrothers].
@@ -149,13 +149,13 @@ class MockLoadFolderBrothers extends _i1.Mock
   }
 
   @override
-  _i8.Future<_i2.Either<_i9.FilesNavigationFailure, void>> call() =>
+  _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, void>> call() =>
       (super.noSuchMethod(Invocation.method(#call, []),
           returnValue:
-              _i8.Future<_i2.Either<_i9.FilesNavigationFailure, void>>.value(
-                  _FakeEither_0<_i9.FilesNavigationFailure, void>(
+              _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, void>>.value(
+                  _FakeEither_0<_i9.FilesNavigatorFailure, void>(
                       this, Invocation.method(#call, [])))) as _i8
-          .Future<_i2.Either<_i9.FilesNavigationFailure, void>>);
+          .Future<_i2.Either<_i9.FilesNavigatorFailure, void>>);
 }
 
 /// A class which mocks [LoadFilePdf].
@@ -167,14 +167,14 @@ class MockLoadFilePdf extends _i1.Mock implements _i11.LoadFilePdf {
   }
 
   @override
-  _i8.Future<_i2.Either<_i9.FilesNavigationFailure, _i6.File>> call(
+  _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, _i6.File>> call(
           _i12.PdfFile? file) =>
       (super.noSuchMethod(Invocation.method(#call, [file]),
           returnValue:
-              _i8.Future<_i2.Either<_i9.FilesNavigationFailure, _i6.File>>.value(
-                  _FakeEither_0<_i9.FilesNavigationFailure, _i6.File>(
+              _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, _i6.File>>.value(
+                  _FakeEither_0<_i9.FilesNavigatorFailure, _i6.File>(
                       this, Invocation.method(#call, [file])))) as _i8
-          .Future<_i2.Either<_i9.FilesNavigationFailure, _i6.File>>);
+          .Future<_i2.Either<_i9.FilesNavigatorFailure, _i6.File>>);
 }
 
 /// A class which mocks [LoadAppearancePdf].
@@ -186,14 +186,14 @@ class MockLoadAppearancePdf extends _i1.Mock implements _i13.LoadAppearancePdf {
   }
 
   @override
-  _i8.Future<_i2.Either<_i9.FilesNavigationFailure, _i6.File>> call(
+  _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, _i6.File>> call(
           _i14.SearchAppearance? appearance) =>
       (super.noSuchMethod(Invocation.method(#call, [appearance]),
           returnValue:
-              _i8.Future<_i2.Either<_i9.FilesNavigationFailure, _i6.File>>.value(
-                  _FakeEither_0<_i9.FilesNavigationFailure, _i6.File>(
+              _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, _i6.File>>.value(
+                  _FakeEither_0<_i9.FilesNavigatorFailure, _i6.File>(
                       this, Invocation.method(#call, [appearance])))) as _i8
-          .Future<_i2.Either<_i9.FilesNavigationFailure, _i6.File>>);
+          .Future<_i2.Either<_i9.FilesNavigatorFailure, _i6.File>>);
 }
 
 /// A class which mocks [Search].
@@ -205,14 +205,14 @@ class MockSearch extends _i1.Mock implements _i15.Search {
   }
 
   @override
-  _i8.Future<_i2.Either<_i9.FilesNavigationFailure, List<_i14.SearchAppearance>>>
+  _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, List<_i14.SearchAppearance>>>
       call(String? text) => (super.noSuchMethod(
           Invocation.method(#call, [text]),
           returnValue:
-              _i8.Future<_i2.Either<_i9.FilesNavigationFailure, List<_i14.SearchAppearance>>>.value(
-                  _FakeEither_0<_i9.FilesNavigationFailure, List<_i14.SearchAppearance>>(
+              _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, List<_i14.SearchAppearance>>>.value(
+                  _FakeEither_0<_i9.FilesNavigatorFailure, List<_i14.SearchAppearance>>(
                       this, Invocation.method(#call, [text])))) as _i8
-          .Future<_i2.Either<_i9.FilesNavigationFailure, List<_i14.SearchAppearance>>>);
+          .Future<_i2.Either<_i9.FilesNavigatorFailure, List<_i14.SearchAppearance>>>);
 }
 
 /// A class which mocks [GenerateIcr].
@@ -224,14 +224,14 @@ class MockGenerateIcr extends _i1.Mock implements _i16.GenerateIcr {
   }
 
   @override
-  _i8.Future<_i2.Either<_i9.FilesNavigationFailure, List<Map<String, dynamic>>>>
+  _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, List<Map<String, dynamic>>>>
       call(List<int>? filesIds) => (super.noSuchMethod(
           Invocation.method(#call, [filesIds]),
           returnValue:
-              _i8.Future<_i2.Either<_i9.FilesNavigationFailure, List<Map<String, dynamic>>>>.value(
-                  _FakeEither_0<_i9.FilesNavigationFailure, List<Map<String, dynamic>>>(
+              _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, List<Map<String, dynamic>>>>.value(
+                  _FakeEither_0<_i9.FilesNavigatorFailure, List<Map<String, dynamic>>>(
                       this, Invocation.method(#call, [filesIds])))) as _i8
-          .Future<_i2.Either<_i9.FilesNavigationFailure, List<Map<String, dynamic>>>>);
+          .Future<_i2.Either<_i9.FilesNavigatorFailure, List<Map<String, dynamic>>>>);
 }
 
 /// A class which mocks [GetCurrentFile].
@@ -243,13 +243,13 @@ class MockGetCurrentFile extends _i1.Mock implements _i17.GetCurrentFile {
   }
 
   @override
-  _i8.Future<_i2.Either<_i9.FilesNavigationFailure, _i18.AppFile>> call() =>
+  _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, _i18.AppFile>> call() =>
       (super.noSuchMethod(Invocation.method(#call, []),
           returnValue:
-              _i8.Future<_i2.Either<_i9.FilesNavigationFailure, _i18.AppFile>>.value(
-                  _FakeEither_0<_i9.FilesNavigationFailure, _i18.AppFile>(
+              _i8.Future<_i2.Either<_i9.FilesNavigatorFailure, _i18.AppFile>>.value(
+                  _FakeEither_0<_i9.FilesNavigatorFailure, _i18.AppFile>(
                       this, Invocation.method(#call, [])))) as _i8
-          .Future<_i2.Either<_i9.FilesNavigationFailure, _i18.AppFile>>);
+          .Future<_i2.Either<_i9.FilesNavigatorFailure, _i18.AppFile>>);
 }
 
 /// A class which mocks [AppFilesTransmitter].

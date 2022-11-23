@@ -58,15 +58,6 @@ class FilesNavigatorRemoteDataSourceFake implements FilesNavigatorRemoteDataSour
       throw const ServerException(type: ServerExceptionType.NORMAL);
     }
   }
-  
-  @override
-  Future<AppFile> getParentWithBrothers(int folderId, String accessToken)async{
-    final parent = filesTree.getParent(folderId) as Folder;
-    if(parent.children.isEmpty){
-      parent.children.addAll( filesTree.getChildren(parent.id) );
-    }
-    return parent;
-  }
 
   @override
   Future<List<SearchAppearance>> search(String text, String accessToken)async{

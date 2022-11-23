@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import '../../domain/failures/files_navigation_failure.dart';
+import '../../domain/failures/files_navigator_failure.dart';
 
 abstract class LoadFolderChildren{
-  Future<Either<FilesNavigationFailure, void>> call(int? id);
+  Future<Either<FilesNavigatorFailure, void>> call(int? id);
 }

@@ -12,7 +12,7 @@ import 'package:vido/features/files_navigator/data/data_sources/files_navigator_
 import 'package:vido/features/files_navigator/data/data_sources/files_navigator_remote_data_source.dart';
 import 'package:vido/features/files_navigator/data/repository/files_navigator_repository_impl.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
-import 'package:vido/features/files_navigator/domain/failures/files_navigation_failure.dart';
+import 'package:vido/features/files_navigator/domain/failures/files_navigator_failure.dart';
 import 'package:vido/core/domain/entities/folder.dart';
 import 'package:vido/core/domain/entities/pdf_file.dart';
 import 'files_navigator_repository_impl_test.mocks.dart';
@@ -153,13 +153,13 @@ void _testLoadFolderChildrenGroup(){
       test('should return the expected result when there is an AppException', ()async{
         when(remoteDataSource.getFolder(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
         final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+        expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
       });
 
       test('should return the expected result when there is another Exception', ()async{
         when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
         final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
+        expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
       });
     });
 
@@ -199,13 +199,13 @@ void _testLoadFolderChildrenGroup(){
       test('should return the expected result when there is an AppException', ()async{
         when(remoteDataSource.getFolder(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
         final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+        expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
       });
 
       test('should return the expected result when there is another Exception', ()async{
         when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
         final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
+        expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
       });
     });
     
@@ -243,13 +243,13 @@ void _testLoadFolderChildrenGroup(){
       test('should return the expected result when there is an AppException', ()async{
         when(remoteDataSource.getFolder(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
         final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+        expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
       });
 
       test('should return the expected result when there is another Exception', ()async{
         when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
         final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
+        expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
       });
     });
   });
@@ -339,13 +339,13 @@ void _testLoadFolderChildrenGroup(){
     test('should return the expected result when there is an AppException', ()async{
       when(remoteDataSource.getFolder(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
       final result = await filesNavigatorRepository.loadFolderChildren(tId);
-      expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+      expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
     });
 
     test('should return the expected result when there is another Exception', ()async{
       when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
       final result = await filesNavigatorRepository.loadFolderChildren(tId);
-      expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
+      expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
     });
   });
 }
@@ -451,13 +451,13 @@ void _testLoadFolderBrothersGroup(){
     test('should return the expected result when there is an AppException', ()async{
       when(remoteDataSource.getFolder(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
       final result = await filesNavigatorRepository.loadFolderBrothers();
-      expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+      expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
     });
 
     test('should return the expected result when there is another Exception', ()async{
       when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
       final result = await filesNavigatorRepository.loadFolderBrothers();
-      expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
+      expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
     });
   });
   group('when initial files tree level is 1', (){
@@ -554,13 +554,13 @@ void _testLoadFolderBrothersGroup(){
     test('should return the expected result when there is an AppException', ()async{
       when(remoteDataSource.getFolder(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
       final result = await filesNavigatorRepository.loadFolderBrothers();
-      expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+      expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
     });
 
     test('should return the expected result when there is another Exception', ()async{
       when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
       final result = await filesNavigatorRepository.loadFolderBrothers();
-      expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
+      expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
     });
   });
 
@@ -637,13 +637,13 @@ void _testLoadFilePdfGroup(){
   test('should return the expected result when there is an AppException', ()async{
     when(remoteDataSource.getGeneratedPdf(any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
     final result = await filesNavigatorRepository.loadFilePdf(tFile);
-    expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+    expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
   });
 
   test('should return the expected result when there is another Exception', ()async{
     when(remoteDataSource.getGeneratedPdf(any, any)).thenThrow(Exception());
     final result = await filesNavigatorRepository.loadFilePdf(tFile);
-    expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
+    expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
   });
 }
 
@@ -684,14 +684,14 @@ void _testLoadAppearancePdfGroup(){
     when(remoteDataSource.getGeneratedPdf(any, any))
         .thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
     final result = await filesNavigatorRepository.loadAppearancePdf(tAppearance);
-    expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+    expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
   });
 
   test('should return the expected result when there is another Exception', ()async{
     when(remoteDataSource.getGeneratedPdf(any, any))
         .thenThrow(Exception());
     final result = await filesNavigatorRepository.loadAppearancePdf(tAppearance);
-    expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
+    expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
   });
 }
 
@@ -728,13 +728,13 @@ void _testSearchGroup(){
   test('should return the expected result when there is an AppException', ()async{
     when(remoteDataSource.search(any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
     final result = await filesNavigatorRepository.search(tText);
-    expect(result, const Left(FilesNavigationFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+    expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
   });
 
   test('should return the expected result when there is another Exception', ()async{
     when(remoteDataSource.search(any, any)).thenThrow(Exception());
     final result = await filesNavigatorRepository.search(tText);
-    expect(result, const Left(FilesNavigationFailure(exception: AppException(''), message: '')));
+    expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
   });
 }
 
@@ -785,7 +785,7 @@ void _testGenerateIcrGroup(){
   test('should return the expected result when remoteDataSource throws an AppException', ()async{
     when(remoteDataSource.generateIcr(any, any)).thenThrow(const ServerException(type: ServerExceptionType.NORMAL));
     final result = await filesNavigatorRepository.generateIcr(tFilesIds);
-    expect(result, const Left(FilesNavigationFailure(
+    expect(result, const Left(FilesNavigatorFailure(
       exception: ServerException(type: ServerExceptionType.NORMAL),
       message: ''
     )));
@@ -794,7 +794,7 @@ void _testGenerateIcrGroup(){
   test('should return the expected result when remoteDataSource throws another Exception', ()async{
     when(remoteDataSource.generateIcr(any, any)).thenThrow(Exception());
     final result = await filesNavigatorRepository.generateIcr(tFilesIds);
-    expect(result, const Left(FilesNavigationFailure(
+    expect(result, const Left(FilesNavigatorFailure(
       exception: AppException(''),
       message: ''
     )));
@@ -858,7 +858,7 @@ void _testGetCurrentFileGroup(){
     when(localDataSource.getCurrentFile())
         .thenThrow(exception);
     final result = await filesNavigatorRepository.getCurrentFile();
-    expect(result, const Left(FilesNavigationFailure(
+    expect(result, const Left(FilesNavigatorFailure(
       exception: exception,
       message: errorMessage
     )));
@@ -867,7 +867,7 @@ void _testGetCurrentFileGroup(){
   test('should return the expected result when remoteDataSource throws another Exception', ()async{
     when(localDataSource.getCurrentFile()).thenThrow(Exception());
     final result = await filesNavigatorRepository.getCurrentFile();
-    expect(result, const Left(FilesNavigationFailure(
+    expect(result, const Left(FilesNavigatorFailure(
       exception: AppException(''),
       message: ''
     )));

@@ -9,6 +9,7 @@ import 'package:vido/globals.dart';
 class FilesNavigatorAppBar extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
+    final blocState = BlocProvider.of<FilesNavigatorBloc>(context).state; 
     final dimens = AppDimens();
     return Container(
       height: dimens.appBarHeight,
@@ -24,17 +25,20 @@ class FilesNavigatorAppBar extends StatelessWidget{
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          FloatingActionButton(
-            backgroundColor: AppColors.primary,
-            heroTag: 'add_button',
-            mini: true,
-            child: Icon(
-              Icons.add,
-              size: dimens.littleIconSize,
+          Visibility(
+            visible: (blocState is OnAppFiles && blocState.parentFileCanBeCreatedOn),
+            child: FloatingActionButton(
+              backgroundColor: AppColors.primary,
+              heroTag: 'add_button',
+              mini: true,
+              child: Icon(
+                Icons.add,
+                size: dimens.littleIconSize,
+              ),
+              onPressed: (){
+                Navigator.of(context).pushNamed(NavigationRoutes.photosTranslator);
+              },
             ),
-            onPressed: (){
-              Navigator.of(context).pushNamed(NavigationRoutes.photosTranslator);
-            },
           ),
           BlocBuilder<FilesNavigatorBloc, FilesNavigatorState>(
             builder: (_, filesNavState) => SizedBox(

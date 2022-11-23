@@ -8,7 +8,7 @@ import 'package:mockito/mockito.dart';
 import 'package:vido/core/domain/exceptions.dart';
 import 'package:vido/core/domain/translations_transmitter.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
-import 'package:vido/features/files_navigator/domain/failures/files_navigation_failure.dart';
+import 'package:vido/features/files_navigator/domain/failures/files_navigator_failure.dart';
 import 'package:vido/features/files_navigator/presentation/bloc/files_navigator_bloc.dart';
 import 'package:vido/features/files_navigator/presentation/files_transmitter/files_transmitter.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/generate_icr.dart';
@@ -120,7 +120,9 @@ void _testLoadInitialAppFilesGroup(){
     test('should emit the expected ordered states when all goes good', ()async{
       final expectedOrderedStates = [
         OnLoadingAppFiles(),
-        OnAppFilesSuccess()
+        OnAppFilesSuccess(
+          parentFileCanBeCreatedOn: (tCurrentFile as Folder).canBeCreatedOnIt
+        )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
       filesNavigatorBloc.add(LoadInitialAppFilesEvent());
@@ -131,7 +133,7 @@ void _testLoadInitialAppFilesGroup(){
     const errorMessage = 'the_error_message';
     when(getCurrentFile())
         .thenAnswer(
-          (_) async => const Left(FilesNavigationFailure(
+          (_) async => const Left(FilesNavigatorFailure(
             message: errorMessage, 
             exception: ServerException(
               type: ServerExceptionType.NORMAL,
@@ -151,7 +153,7 @@ void _testLoadInitialAppFilesGroup(){
   test('should emit the expected ordered states when there is a Failure withOut message', ()async{
     when(getCurrentFile())
       .thenAnswer(
-        (_) async => const Left(FilesNavigationFailure(
+        (_) async => const Left(FilesNavigatorFailure(
           message: '', 
           exception: ServerException(
             type: ServerExceptionType.NORMAL,
@@ -171,10 +173,14 @@ void _testLoadInitialAppFilesGroup(){
 
 void _testSelectAppFileGroup(){
   late AppFile tAppFile;
+  late bool tCanBeCreatedOnItInitial;
 
   group('when the current state is OnAppFiles', (){
     setUp((){
-      filesNavigatorBloc.emit(OnAppFilesSuccess());
+      tCanBeCreatedOnItInitial = false;
+      filesNavigatorBloc.emit(OnAppFilesSuccess(
+        parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+      ));
     });
     group('when the AppFile is PdfFile', (){
       late MockFile tPdf;
@@ -203,7 +209,11 @@ void _testSelectAppFileGroup(){
         when(loadFilePdf(any)).thenAnswer((_) async => Right(tPdf));
         final expectedOrderedStates = [
           OnLoadingAppFiles(),
-          OnPdfFileLoaded(file: tAppFile as PdfFile, pdf: tPdf)
+          OnPdfFileLoaded(
+            file: tAppFile as PdfFile, 
+            pdf: tPdf,
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
@@ -211,13 +221,17 @@ void _testSelectAppFileGroup(){
 
       test('should emit the expected ordered states when there is a Failure response', ()async{
         when(loadFilePdf(any))
-            .thenAnswer((_) async => const Left(FilesNavigationFailure(
+            .thenAnswer((_) async => const Left(FilesNavigatorFailure(
               exception: ServerException(type: ServerExceptionType.NORMAL, message: 'exception message'), 
               message: 'exception message')
             ));
         final expectedOrderedStates = [
           OnLoadingAppFiles(),
-          OnPdfFileError(message: 'exception message', file: tAppFile as PdfFile)
+          OnPdfFileError(
+            message: 'exception message',
+            file: tAppFile as PdfFile,
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
@@ -268,7 +282,9 @@ void _testSelectAppFileGroup(){
         test('should emit the expected ordered states', ()async{
           final expectedOrderedStates = [
             OnLoadingAppFiles(),
-            OnAppFilesSuccess()
+            OnAppFilesSuccess(
+              parentFileCanBeCreatedOn: (tCurrentFile as Folder).canBeCreatedOnIt
+            )
           ];
           expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
           filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
@@ -279,7 +295,7 @@ void _testSelectAppFileGroup(){
         const errorMessage = 'the_error_message';
         when(getCurrentFile())
             .thenAnswer(
-              (_) async => const Left(FilesNavigationFailure(
+              (_) async => const Left(FilesNavigatorFailure(
                 message: errorMessage, 
                 exception: ServerException(
                   type: ServerExceptionType.NORMAL,
@@ -289,7 +305,8 @@ void _testSelectAppFileGroup(){
         final expectedOrderedStates = [
           OnLoadingAppFiles(),
           OnAppFilesError(
-            message: errorMessage
+            message: errorMessage,
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
           )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
@@ -299,7 +316,7 @@ void _testSelectAppFileGroup(){
       test('should emit the expected ordered states when there is a Failure withOut message', ()async{
         when(getCurrentFile())
           .thenAnswer(
-            (_) async => const Left(FilesNavigationFailure(
+            (_) async => const Left(FilesNavigatorFailure(
               message: '', 
               exception: ServerException(
                 type: ServerExceptionType.NORMAL,
@@ -309,7 +326,8 @@ void _testSelectAppFileGroup(){
         final expectedOrderedStates = [
           OnLoadingAppFiles(),
           OnAppFilesError(
-            message: FilesNavigatorBloc.generalErrorMessage
+            message: FilesNavigatorBloc.generalErrorMessage,
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
           )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
@@ -319,11 +337,17 @@ void _testSelectAppFileGroup(){
   });
   group('when the current state is OnIcrFilesSelection', (){
     late List<int> tFilesIdsInit;
+    setUp((){
+      tCanBeCreatedOnItInitial = true;
+    });
 
     group('when the files ids list has more than 1 item', (){
       setUp((){
         tFilesIdsInit = [0, 1, 2];
-        filesNavigatorBloc.emit(OnIcrFilesSelection(filesIds: tFilesIdsInit));
+        filesNavigatorBloc.emit(OnIcrFilesSelection(
+          filesIds: tFilesIdsInit,
+          parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+        ));
       });
 
       test('should yield the expected ordered states when the selected file is PdfFile with id Not on the tFilesIds', ()async{
@@ -337,7 +361,10 @@ void _testSelectAppFileGroup(){
           canBeDeleted: false
         );
         final expectedOrderedStates = [
-          OnIcrFilesSelection(filesIds: [...tFilesIdsInit, tAppFile.id])
+          OnIcrFilesSelection(
+            filesIds: [...tFilesIdsInit, tAppFile.id],
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
@@ -354,7 +381,10 @@ void _testSelectAppFileGroup(){
           canBeDeleted: false
         );
         final expectedOrderedStates = [
-          OnIcrFilesSelection(filesIds: tFilesIdsInit.sublist(1, tFilesIdsInit.length))
+          OnIcrFilesSelection(
+            filesIds: tFilesIdsInit.sublist(1, tFilesIdsInit.length),
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
@@ -371,7 +401,10 @@ void _testSelectAppFileGroup(){
           canBeDeleted: false
         );
         final expectedOrderedStates = [
-          OnIcrFilesSelection(filesIds: [tFilesIdsInit[0], ...tFilesIdsInit.sublist(2, tFilesIdsInit.length)])
+          OnIcrFilesSelection(
+            filesIds: [tFilesIdsInit[0], ...tFilesIdsInit.sublist(2, tFilesIdsInit.length)],
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
@@ -395,7 +428,10 @@ void _testSelectAppFileGroup(){
     group('when the files ids list has only 1 item', (){
       setUp((){
         tFilesIdsInit = [100];
-        filesNavigatorBloc.emit(OnIcrFilesSelection(filesIds: tFilesIdsInit));
+        filesNavigatorBloc.emit(OnIcrFilesSelection(
+          filesIds: tFilesIdsInit,
+          parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+        ));
       });
       test('should yield the expected ordered states when the selected file is PdfFile and its id is the id on the list', ()async{
         tAppFile = PdfFile(
@@ -408,7 +444,9 @@ void _testSelectAppFileGroup(){
           canBeDeleted: false,
         );
         final expectedOrderedStates = [
-          OnAppFilesSuccess()
+          OnAppFilesSuccess(
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
@@ -425,7 +463,10 @@ void _testSelectAppFileGroup(){
           canBeDeleted: false
         );
         final expectedOrderedStates = [
-          OnIcrFilesSelection(filesIds: [...tFilesIdsInit, tAppFile.id])
+          OnIcrFilesSelection(
+            filesIds: [...tFilesIdsInit, tAppFile.id],
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
@@ -450,7 +491,12 @@ void _testSelectAppFileGroup(){
 }
 
 void _testSelectFilesParentGroup(){
+  late bool tCanBeCreatedOnItInitial;
   setUp((){
+    tCanBeCreatedOnItInitial = false;
+    filesNavigatorBloc.emit(OnAppFilesSuccess(
+      parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+    ));
     when(loadFolderBrothers())
           .thenAnswer((_) async => const Right(null));
   });
@@ -458,13 +504,13 @@ void _testSelectFilesParentGroup(){
     late AppFile tCurrentFile;
     setUp((){
       tCurrentFile = const Folder(
-        id: 100, 
-        name: 'f_100', 
-        parentId: 99, 
-        children: [], 
-        canBeCreatedOnIt: false, 
-        canBeRead: true, 
-        canBeEdited: false, 
+        id: 100,
+        name: 'f_100',
+        parentId: 99,
+        children: [],
+        canBeCreatedOnIt: false,
+        canBeRead: true,
+        canBeEdited: false,
         canBeDeleted: true
       );
       when(getCurrentFile())
@@ -482,7 +528,9 @@ void _testSelectFilesParentGroup(){
     test('should call the expected ordered states when all goes good', ()async{
       final expectedOrderedStates = [
         OnLoadingAppFiles(),
-        OnAppFilesSuccess()
+        OnAppFilesSuccess(
+          parentFileCanBeCreatedOn: (tCurrentFile as Folder).canBeCreatedOnIt
+        )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
       filesNavigatorBloc.add(SelectFilesParentEvent());
@@ -493,7 +541,7 @@ void _testSelectFilesParentGroup(){
     const errorMessage = 'the_error_message';
     when(getCurrentFile())
         .thenAnswer(
-          (_) async => const Left(FilesNavigationFailure(
+          (_) async => const Left(FilesNavigatorFailure(
             message: errorMessage, 
             exception: ServerException(
               type: ServerExceptionType.NORMAL,
@@ -503,7 +551,8 @@ void _testSelectFilesParentGroup(){
     final expectedOrderedStates = [
       OnLoadingAppFiles(),
       OnAppFilesError(
-        message: errorMessage
+        message: errorMessage,
+        parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
       )
     ];
     expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
@@ -513,7 +562,7 @@ void _testSelectFilesParentGroup(){
   test('should emit the expected ordered states when there is a Failure withOut message', ()async{
     when(getCurrentFile())
       .thenAnswer(
-        (_) async => const Left(FilesNavigationFailure(
+        (_) async => const Left(FilesNavigatorFailure(
           message: '', 
           exception: ServerException(
             type: ServerExceptionType.NORMAL,
@@ -523,7 +572,8 @@ void _testSelectFilesParentGroup(){
     final expectedOrderedStates = [
       OnLoadingAppFiles(),
       OnAppFilesError(
-        message: FilesNavigatorBloc.generalErrorMessage
+        message: FilesNavigatorBloc.generalErrorMessage,
+        parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
       )
     ];
     expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
@@ -532,7 +582,14 @@ void _testSelectFilesParentGroup(){
 }
 
 void _testSearchGroup(){
+  late bool tCanBeCreatedOnItInitial;
   late String tSearchText;
+  setUp((){
+    tCanBeCreatedOnItInitial = false;
+    filesNavigatorBloc.emit(OnAppFilesSuccess(
+      parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+    ));
+  });
 
   group('when search controller has any text', (){
     setUp((){
@@ -560,7 +617,10 @@ void _testSearchGroup(){
       test('should emit the expected ordered states when search', ()async{
         final expectedOrderedStates = [
           OnLoadingAppFiles(),
-          OnSearchAppearancesSuccessShowing(appearances: tAppearances)
+          OnSearchAppearancesSuccessShowing(
+            appearances: tAppearances,
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SearchEvent());
@@ -573,7 +633,7 @@ void _testSearchGroup(){
       test('should call the specified methods', ()async{
         tFailureMessage = 'failure message';
         when(search(any))
-            .thenAnswer((_) async => Left(FilesNavigationFailure(
+            .thenAnswer((_) async => Left(FilesNavigatorFailure(
               message: tFailureMessage,
               exception: const AppException('')
             )));
@@ -585,13 +645,16 @@ void _testSearchGroup(){
       test('should emit the expected ordered states when failure has message', ()async{
         tFailureMessage = 'failure message';
         when(search(any))
-            .thenAnswer((_) async => Left(FilesNavigationFailure(
+            .thenAnswer((_) async => Left(FilesNavigatorFailure(
               message: tFailureMessage,
               exception: const AppException('')
             )));
         final expectedOrderedStates = [
           OnLoadingAppFiles(),
-          OnSearchAppearancesError(message: tFailureMessage)
+          OnSearchAppearancesError(
+            message: tFailureMessage,
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SearchEvent());
@@ -600,13 +663,16 @@ void _testSearchGroup(){
       test('should emit the expected ordered states when failure has Not message', ()async{
         tFailureMessage = '';
         when(search(any))
-            .thenAnswer((_) async => Left(FilesNavigationFailure(
+            .thenAnswer((_) async => Left(FilesNavigatorFailure(
               message: tFailureMessage,
               exception: const AppException('')
             )));
         final expectedOrderedStates = [
           OnLoadingAppFiles(),
-          OnSearchAppearancesError(message: FilesNavigatorBloc.generalErrorMessage)
+          OnSearchAppearancesError(
+            message: FilesNavigatorBloc.generalErrorMessage,
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SearchEvent());
@@ -634,6 +700,8 @@ void _testSearchGroup(){
 }
 
 void _testRemoveSearchGroup(){
+  late bool tCanBeCreatedOnItInitial;
+
   group('when the current state is success', (){
     late List<SearchAppearance> tAppearances;
     setUp((){
@@ -641,7 +709,11 @@ void _testRemoveSearchGroup(){
         SearchAppearance(title: 'ap_1', text: 'the search text', pdfUrl: 'pdf_url_1', pdfPage: 0),
         SearchAppearance(title: 'ap_2', text: 'text the search', pdfUrl: 'pdf_url_2', pdfPage: 3)
       ];
-      filesNavigatorBloc.emit(OnSearchAppearancesSuccessShowing(appearances: tAppearances));
+      tCanBeCreatedOnItInitial = false;
+      filesNavigatorBloc.emit(OnSearchAppearancesSuccessShowing(
+        appearances: tAppearances,
+        parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+      ));
     });
 
     test('should call the specified methods', ()async{
@@ -652,7 +724,9 @@ void _testRemoveSearchGroup(){
 
     test('should emit the expected ordered states', ()async{
       final expectedOrderedStates = [
-        OnAppFilesSuccess()
+        OnAppFilesSuccess(
+          parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+        )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
       filesNavigatorBloc.add(RemoveSearchEvent());
@@ -662,7 +736,10 @@ void _testRemoveSearchGroup(){
     late String tMessage;
     setUp((){
       tMessage = 'error message';
-      filesNavigatorBloc.emit(OnSearchAppearancesError(message: tMessage));
+      filesNavigatorBloc.emit(OnSearchAppearancesError(
+        message: tMessage,
+        parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+      ));
     });
 
     test('should call the specified methods', ()async{
@@ -673,7 +750,9 @@ void _testRemoveSearchGroup(){
 
     test('should emit the expected ordered states', ()async{
       final expectedOrderedStates = [
-        OnAppFilesSuccess()
+        OnAppFilesSuccess(
+          parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+        )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
       filesNavigatorBloc.add(RemoveSearchEvent());
@@ -684,7 +763,8 @@ void _testRemoveSearchGroup(){
 void _testSelectSearchAppearanceGroup(){
   late SearchAppearance tSelected;
   late List<SearchAppearance> tAppearances;
-  
+  late bool tCanBeCreatedOnItInitial;
+
   setUp((){
     tSelected = const SearchAppearance(
       title: 'ap_2',
@@ -707,7 +787,11 @@ void _testSelectSearchAppearanceGroup(){
         pdfPage: 2
       )
     ];
-    filesNavigatorBloc.emit(OnSearchAppearancesSuccessShowing(appearances: tAppearances));
+    tCanBeCreatedOnItInitial = true;
+    filesNavigatorBloc.emit(OnSearchAppearancesSuccessShowing(
+      appearances: tAppearances,
+      parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+    ));
   });
 
   group('when all goes good', (){
@@ -727,7 +811,12 @@ void _testSelectSearchAppearanceGroup(){
     test('should emit the expected ordered states', ()async{
       final expectedOrderedStates = [
         OnLoadingAppFiles(),
-        OnSearchAppearancesPdfLoaded(pdf: tFile, appearance: tSelected, appearances: tAppearances)
+        OnSearchAppearancesPdfLoaded(
+          pdf: tFile, 
+          appearance: tSelected, 
+          appearances: tAppearances,
+          parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+        )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
       filesNavigatorBloc.add(SelectSearchAppearanceEvent(tSelected));
@@ -740,7 +829,7 @@ void _testSelectSearchAppearanceGroup(){
     test('should emit the expected ordered states when failure has message', ()async{
       tFailureMessage = 'failure message';
       when(loadAppearancePdf(any))
-          .thenAnswer((_) async => Left(FilesNavigationFailure(
+          .thenAnswer((_) async => Left(FilesNavigatorFailure(
             message: tFailureMessage,
             exception: const AppException('')
           )));
@@ -748,7 +837,8 @@ void _testSelectSearchAppearanceGroup(){
         OnLoadingAppFiles(),
         OnSearchAppearancesPdfError(
           message: tFailureMessage,
-          appearances: tAppearances
+          appearances: tAppearances,
+          parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
         )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
@@ -758,7 +848,7 @@ void _testSelectSearchAppearanceGroup(){
     test('should emit the expected ordered states when failure has Not message', ()async{
       tFailureMessage = '';
       when(loadAppearancePdf(any))
-          .thenAnswer((_) async => Left(FilesNavigationFailure(
+          .thenAnswer((_) async => Left(FilesNavigatorFailure(
             message: tFailureMessage,
             exception: const AppException('')
           )));
@@ -766,7 +856,8 @@ void _testSelectSearchAppearanceGroup(){
         OnLoadingAppFiles(),
         OnSearchAppearancesPdfError(
           message: FilesNavigatorBloc.generalErrorMessage,
-          appearances: tAppearances
+          appearances: tAppearances,
+          parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
         )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
@@ -776,8 +867,10 @@ void _testSelectSearchAppearanceGroup(){
 }
 
 void _testBackToSearchAppearancesGroup(){
+  late bool tCanBeCreatedOnItInitial;
   late List<SearchAppearance> tAppearances;
   setUp((){
+    tCanBeCreatedOnItInitial = true;
     tAppearances = [
       const SearchAppearance(
         title: 'ap_1',
@@ -799,11 +892,13 @@ void _testBackToSearchAppearancesGroup(){
     filesNavigatorBloc.emit(OnSearchAppearancesPdfLoaded(
       pdf: pdf,
       appearance: tAppearances.first, 
-      appearances: tAppearances
+      appearances: tAppearances,
+      parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
     ));
     final expectedOrderedStates = [
       OnSearchAppearancesSuccessShowing(
-        appearances: tAppearances
+        appearances: tAppearances,
+        parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
       )
     ];
     expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
@@ -813,11 +908,13 @@ void _testBackToSearchAppearancesGroup(){
   test('should emit the expected ordered states when current state is error', ()async{
     filesNavigatorBloc.emit(OnSearchAppearancesPdfError(
       message: 'error message', 
-      appearances: tAppearances
+      appearances: tAppearances,
+      parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
     ));
     final expectedOrderedStates = [
       OnSearchAppearancesSuccessShowing(
-        appearances: tAppearances
+        appearances: tAppearances,
+        parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
       )
     ];
     expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
@@ -826,10 +923,14 @@ void _testBackToSearchAppearancesGroup(){
 }
 
 void _testInitIcrFilesSelectionGroup(){
+  late bool tCanBeCreatedOnItInitial;
   late AppFile tFile;
   group('when current state is OnAppFiles', (){
     setUp((){
-      filesNavigatorBloc.emit(OnAppFilesSuccess());
+      tCanBeCreatedOnItInitial = false;
+      filesNavigatorBloc.emit(OnAppFilesSuccess(
+        parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+      ));
     });
 
     test('should yield the expected ordered states when the file id is 0', ()async{
@@ -844,7 +945,8 @@ void _testInitIcrFilesSelectionGroup(){
       );
       final expectedOrderedStates = [
         OnIcrFilesSelection(
-          filesIds: [tFile.id]
+          filesIds: [tFile.id],
+          parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
         )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
@@ -863,7 +965,8 @@ void _testInitIcrFilesSelectionGroup(){
       );
       final expectedOrderedStates = [
         OnIcrFilesSelection(
-          filesIds: [tFile.id]
+          filesIds: [tFile.id],
+          parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
         )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
@@ -872,16 +975,25 @@ void _testInitIcrFilesSelectionGroup(){
   });
 
   test('should yield the expected ordered states when tue current state is OnIcrFilesSelection', ()async{
-    filesNavigatorBloc.emit(OnIcrFilesSelection(filesIds: [1,3]));
+    tCanBeCreatedOnItInitial = true;
+    filesNavigatorBloc.emit(OnIcrFilesSelection(
+      filesIds: const [1, 3],
+      parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+    ));
     expectLater(filesNavigatorBloc.stream, emitsInOrder(const []));
   });
 }
 
 void _testGenerateIcrGroup(){
+  late bool tCanBeCreatedOnItInitial;
   late List<int> tFilesIds;
   setUp((){
+    tCanBeCreatedOnItInitial = true;
     tFilesIds = [0, 1, 5, 10];
-    filesNavigatorBloc.emit(OnIcrFilesSelection(filesIds: tFilesIds));
+    filesNavigatorBloc.emit(OnIcrFilesSelection(
+      filesIds: tFilesIds,
+      parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+    ));
   });
 
   group('when all goes good', (){
@@ -924,7 +1036,11 @@ void _testGenerateIcrGroup(){
     test('should yield the expected ordered states', ()async{
       final expectedOrderedStates = [
         OnLoadingAppFiles(),
-        OnIcrTable(colsHeads: tColumnsHeads, rows: tRows)
+        OnIcrTable(
+          colsHeads: tColumnsHeads, 
+          rows: tRows,
+          parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+        )
       ];
       expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
       filesNavigatorBloc.add(GenerateIcrEvent());
@@ -932,26 +1048,34 @@ void _testGenerateIcrGroup(){
   });
 
   test('should yield the expected ordered states when usecase returns failure with message', ()async{
-    when(generateIcr(any)).thenAnswer((_) async => const Left(FilesNavigationFailure(
+    when(generateIcr(any)).thenAnswer((_) async => const Left(FilesNavigatorFailure(
         exception: ServerException(type: ServerExceptionType.NORMAL),
         message: 'Server error message'
     )));
     final expectedOrderedStates = [
       OnLoadingAppFiles(),
-      OnIcrFilesSelectionError(filesIds: tFilesIds, message: 'Server error message')
+      OnIcrFilesSelectionError(
+        filesIds: tFilesIds, 
+        message: 'Server error message',
+        parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+      )
     ];
     expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
     filesNavigatorBloc.add(GenerateIcrEvent());
   });
 
   test('should yield the expected ordered states when usecase returns failure with message', ()async{
-    when(generateIcr(any)).thenAnswer((_) async => const Left(FilesNavigationFailure(
+    when(generateIcr(any)).thenAnswer((_) async => const Left(FilesNavigatorFailure(
         exception: ServerException(type: ServerExceptionType.NORMAL),
         message: ''
     )));
     final expectedOrderedStates = [
       OnLoadingAppFiles(),
-      OnIcrFilesSelectionError(filesIds: tFilesIds, message: FilesNavigatorBloc.generalErrorMessage)
+      OnIcrFilesSelectionError(
+        filesIds: tFilesIds, 
+        message: FilesNavigatorBloc.generalErrorMessage,
+        parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+      )
     ];
     expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
     filesNavigatorBloc.add(GenerateIcrEvent());

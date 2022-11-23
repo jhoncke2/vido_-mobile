@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vido/app_theme.dart';
-import 'package:vido/core/presentation/widgets/error_panel.dart';
 import 'package:vido/features/files_navigator/presentation/bloc/files_navigator_bloc.dart';
 import 'package:vido/features/files_navigator/presentation/widgets/files_view/file_item.dart';
 import 'package:vido/core/domain/entities/app_file.dart';
@@ -45,18 +44,6 @@ class AppFilesView extends StatelessWidget{
                         controller: scrollController,
                         crossAxisCount: 2,
                         children: [
-                          FileItem(
-                            icon: Icons.folder, 
-                            iconColor: AppColors.iconPrimary,
-                            text: '..',
-                            interSpace: 5,
-                            bigText: true,
-                            onTap: (){
-                              BlocProvider.of<FilesNavigatorBloc>(context).add(SelectFilesParentEvent());
-                            },
-                            onLongTap: (){},
-                            isSelected: false,
-                          ),
                           ...files.map(
                             (f) => FileItem(
                               icon: (f is Folder)? Icons.folder : Icons.picture_as_pdf,
@@ -106,11 +93,6 @@ class AppFilesView extends StatelessWidget{
                 ),
               ),
             ),
-          ),
-          ErrorPanel(
-            visible: blocState is OnError, 
-            errorTitle: 'Ha ocurrido un error',
-            errorContent: (blocState is OnError)? blocState.message : ''
           )
         ],
       ),

@@ -11,7 +11,7 @@ import 'package:vido/features/files_navigator/domain/repository/files_navigator_
 import 'package:vido/core/domain/entities/pdf_file.dart';
 import '../../../../core/domain/file_parent_type.dart';
 import '../../../../core/domain/entities/folder.dart';
-import '../../domain/failures/files_navigation_failure.dart';
+import '../../domain/failures/files_navigator_failure.dart';
 
 class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   final FilesNavigatorRemoteDataSource remoteDataSource;
@@ -27,7 +27,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   });
   
   @override
-  Future<Either<FilesNavigationFailure, void>> loadFolderChildren(int? id)async{
+  Future<Either<FilesNavigatorFailure, void>> loadFolderChildren(int? id)async{
     return await _manageFunctionExceptions(()async{
       final accessToken = await userExtraInfoGetter.getAccessToken();
       late Folder folder;
@@ -74,18 +74,18 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   }
 
   
-  Future<Either<FilesNavigationFailure, T>> _manageFunctionExceptions<T>(
-    Future<Either<FilesNavigationFailure, T>> Function() function
+  Future<Either<FilesNavigatorFailure, T>> _manageFunctionExceptions<T>(
+    Future<Either<FilesNavigatorFailure, T>> Function() function
   )async{
     try{
       return await function();
     }on AppException catch(exception){
-      return Left(FilesNavigationFailure(
+      return Left(FilesNavigatorFailure(
         message: exception.message??'',
         exception: exception
       ));
     }catch(exception){
-      return const Left(FilesNavigationFailure(
+      return const Left(FilesNavigatorFailure(
         message: '',
         exception: AppException('')
       ));
@@ -93,7 +93,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   }
 
   @override
-  Future<Either<FilesNavigationFailure, void>> loadFolderBrothers()async{
+  Future<Either<FilesNavigatorFailure, void>> loadFolderBrothers()async{
     return await _manageFunctionExceptions(()async{
       final filesTreeLvlInit = (await localDataSource.getFilesTreeLevel())!;
       if(filesTreeLvlInit > 0){
@@ -122,7 +122,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   }
 
   @override
-  Future<Either<FilesNavigationFailure, File>> loadFilePdf(PdfFile file)async{
+  Future<Either<FilesNavigatorFailure, File>> loadFilePdf(PdfFile file)async{
     return await _manageFunctionExceptions(()async{
       final accessToken = await userExtraInfoGetter.getAccessToken();
       final pdf = await remoteDataSource.getGeneratedPdf(file.url, accessToken);
@@ -137,7 +137,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   }
 
   @override
-  Future<Either<FilesNavigationFailure, List<SearchAppearance>>> search(String text)async{
+  Future<Either<FilesNavigatorFailure, List<SearchAppearance>>> search(String text)async{
     return await _manageFunctionExceptions(()async{
       final accessToken = await userExtraInfoGetter.getAccessToken();
       final result = await remoteDataSource.search(text, accessToken);
@@ -146,7 +146,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   }
   
   @override
-  Future<Either<FilesNavigationFailure, File>> loadAppearancePdf(SearchAppearance appearance)async{
+  Future<Either<FilesNavigatorFailure, File>> loadAppearancePdf(SearchAppearance appearance)async{
     return await _manageFunctionExceptions(()async{
       final accessToken = await userExtraInfoGetter.getAccessToken();
       final pdf = await remoteDataSource.getGeneratedPdf(appearance.pdfUrl, accessToken);
@@ -155,7 +155,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   }
   
   @override
-  Future<Either<FilesNavigationFailure, List<Map<String, dynamic>>>> generateIcr(List<int> ids)async{
+  Future<Either<FilesNavigatorFailure, List<Map<String, dynamic>>>> generateIcr(List<int> ids)async{
     return await _manageFunctionExceptions(()async{
       final accessToken = await userExtraInfoGetter.getAccessToken();
       final icr = await remoteDataSource.generateIcr(ids, accessToken);
@@ -164,7 +164,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
   }
 
   @override
-  Future<Either<FilesNavigationFailure, AppFile>> getCurrentFile()async{
+  Future<Either<FilesNavigatorFailure, AppFile>> getCurrentFile()async{
     return await _manageFunctionExceptions(()async{
       final file = await localDataSource.getCurrentFile();
       return Right(file);

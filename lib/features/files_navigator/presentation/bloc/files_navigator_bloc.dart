@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:vido/core/domain/entities/folder.dart';
 import 'package:vido/core/domain/translations_transmitter.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
 import 'package:vido/features/files_navigator/presentation/files_transmitter/files_transmitter.dart';
@@ -83,12 +84,17 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
         message: errorMessage
       ));
     }, (currentFile){
-      emit(OnAppFilesSuccess());
+      emit(OnAppFilesSuccess(
+        parentFileCanBeCreatedOn: _getCanBeCreatedOnItFromFile(currentFile)
+      ));
     });
   }
 
+  bool _getCanBeCreatedOnItFromFile(AppFile file) => (file is Folder)? file.canBeCreatedOnIt: false;
+
   Future<void> _selectAppFile(Emitter<FilesNavigatorState> emit, SelectAppFileEvent event)async{
     final appFile = event.appFile;
+    final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
     if(appFile is PdfFile){
       if(state is OnAppFilesSuccess){
         emit(OnLoadingAppFiles());
@@ -96,23 +102,36 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
         pdfResult.fold((error){
           emit(OnPdfFileError(
             message: error.message.isNotEmpty? error.message : 'Ha ocurrido un error inesperado',
-            file: appFile
+            file: appFile,
+            parentFileCanBeCreatedOn: parentCanBeCreatedOn
           ));
         }, (pdf){
-          emit(OnPdfFileLoaded(file: appFile, pdf: pdf));
+          emit(OnPdfFileLoaded(
+            file: appFile, 
+            pdf: pdf,
+            parentFileCanBeCreatedOn: parentCanBeCreatedOn
+          ));
         });
       }else{
         final filesIds = (state as OnIcrFilesSelection).filesIds;
         if(filesIds.contains(appFile.id)){
           if(filesIds.length == 1){
-            emit(OnAppFilesSuccess());
+            emit(OnAppFilesSuccess(
+              parentFileCanBeCreatedOn: parentCanBeCreatedOn
+            ));
           }else{
             final newList = List<int>.from(filesIds)
               ..remove(appFile.id);
-            emit(OnIcrFilesSelection(filesIds: newList));
+            emit(OnIcrFilesSelection(
+              filesIds: newList,
+              parentFileCanBeCreatedOn: parentCanBeCreatedOn
+            ));
           }
         }else{
-          emit(OnIcrFilesSelection(filesIds: [...filesIds, event.appFile.id]));
+          emit(OnIcrFilesSelection(
+            filesIds: [...filesIds, event.appFile.id],
+            parentFileCanBeCreatedOn: parentCanBeCreatedOn
+          ));
         }
       }
     }else if(state is OnAppFilesSuccess){
@@ -122,47 +141,65 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
       currentFileResult.fold((failure){
         final errorMessage = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
         emit(OnAppFilesError(
-          message: errorMessage
+          message: errorMessage,
+          parentFileCanBeCreatedOn: parentCanBeCreatedOn
         ));
       }, (currentFile){
-        emit(OnAppFilesSuccess());
+        emit(OnAppFilesSuccess(
+          parentFileCanBeCreatedOn: _getCanBeCreatedOnItFromFile(currentFile)
+        ));
       });
     }
   }
   
   Future<void> _selectFilesParent(Emitter<FilesNavigatorState> emit)async{
+    final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
     emit(OnLoadingAppFiles());
     await loadFolderBrothers();
     final currentFileResult = await getCurrentFile();
     currentFileResult.fold((failure){
       final errorMessage = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
       emit(OnAppFilesError(
-        message: errorMessage
+        message: errorMessage,
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
       ));
     }, (currentFile){
-      emit(OnAppFilesSuccess());
+      emit(OnAppFilesSuccess(
+        parentFileCanBeCreatedOn: _getCanBeCreatedOnItFromFile(currentFile)
+      ));
     });
   }
 
   Future<void> _search(Emitter<FilesNavigatorState> emit, SearchEvent event)async{
+    final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
     if(searchController.text.isNotEmpty){
       emit(OnLoadingAppFiles());
       final appearancesResult = await search(searchController.text);
       appearancesResult.fold((failure){
         final message = failure.message.isNotEmpty? failure.message : generalErrorMessage;
-        emit(OnSearchAppearancesError(message: message));
+        emit(OnSearchAppearancesError(
+          message: message,
+          parentFileCanBeCreatedOn: parentCanBeCreatedOn
+        ));
       }, (appearances){
-        emit(OnSearchAppearancesSuccessShowing(appearances: appearances));
+        emit(OnSearchAppearancesSuccessShowing(
+          appearances: appearances,
+          parentFileCanBeCreatedOn: parentCanBeCreatedOn
+        ));
       });
     }
   }
 
   void _removeSearch(Emitter<FilesNavigatorState> emit){
+    final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
     searchController.clear();
-    emit(OnAppFilesSuccess());
+    emit(OnAppFilesSuccess(
+      parentFileCanBeCreatedOn: parentCanBeCreatedOn
+    ));
   }
 
   Future<void> _selectSearchAppearance(Emitter<FilesNavigatorState> emit, SelectSearchAppearanceEvent event)async{
+    final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
     final appearances = (state as OnSearchAppearancesSuccess).appearances;
     emit(OnLoadingAppFiles());
     final pdfResult = await loadAppearancePdf(event.appearance);
@@ -170,31 +207,50 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
       final message = failure.message.isNotEmpty? failure.message : generalErrorMessage;
       emit(OnSearchAppearancesPdfError(
         message: message,
-        appearances: appearances
+        appearances: appearances,
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
       ));
     }, (pdf){
-      emit(OnSearchAppearancesPdfLoaded(pdf: pdf, appearance: event.appearance, appearances: appearances));
+      emit(OnSearchAppearancesPdfLoaded(
+        pdf: pdf, 
+        appearance: event.appearance, 
+        appearances: appearances,
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
     });
   }
 
   void _backToSearchAppearances(Emitter<FilesNavigatorState> emit){
+    final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
     final appearances = (state as OnSearchAppearancesPdf).appearances;
-    emit(OnSearchAppearancesSuccessShowing(appearances: appearances));
+    emit(OnSearchAppearancesSuccessShowing(
+      parentFileCanBeCreatedOn: parentCanBeCreatedOn,
+      appearances: appearances
+    ));
   }
 
   void _longPressFileEvent(Emitter<FilesNavigatorState> emit, LongPressFileEvent event){
+    final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
     if(state is OnAppFilesSuccess){
-      emit(OnIcrFilesSelection(filesIds: [event.file.id]));
+      emit(OnIcrFilesSelection(
+        filesIds: [event.file.id],
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
     }
   }
 
   Future<void> _generateIcr(Emitter<FilesNavigatorState> emit)async{
+    final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
     final filesIds = (state as OnIcrFilesSelection).filesIds;
     emit(OnLoadingAppFiles());
     final icrResult = await generateIcr(filesIds);
     icrResult.fold((failure){
       final message = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
-      emit(OnIcrFilesSelectionError(filesIds: filesIds, message: message));
+      emit(OnIcrFilesSelectionError(
+        filesIds: filesIds, 
+        message: message,
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
     }, (tableItems){
       final columnsHeads = tableItems.first.keys.toList();
       final List<List<String>> rows = [];
@@ -204,7 +260,11 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
         ).toList();
         rows.add(row);
       }
-      emit(OnIcrTable(colsHeads: columnsHeads, rows: rows));
+      emit(OnIcrTable(
+        colsHeads: columnsHeads, 
+        rows: rows,
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
     });
   }
 
