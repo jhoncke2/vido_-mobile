@@ -4,11 +4,11 @@ import '../../../app_theme.dart';
 class ErrorPanel extends StatelessWidget {
   final bool visible;
   final String errorTitle;
-  final String errorContent;
+  final String? errorContent;
   const ErrorPanel({
     required this.visible,
     required this.errorTitle,
-    required this.errorContent,
+    this.errorContent,
     Key? key
   }) : super(key: key);
 
@@ -42,10 +42,13 @@ class ErrorPanel extends StatelessWidget {
                 fontSize: dimens.normalTextSize
               ),
             ),
-            Text(
-              errorContent,
-              style: TextStyle(
-                fontSize: dimens.littleTextSize
+            Visibility(
+              visible: errorContent != null,
+              child: Text(
+                errorContent??'',
+                style: TextStyle(
+                  fontSize: dimens.littleTextSize
+                ),
               ),
             ),
           ],

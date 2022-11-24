@@ -7,6 +7,7 @@ import 'package:vido/features/files_navigator/external/files_navigator_remote_ad
 import 'package:vido/features/files_navigator/presentation/use_cases/generate_icr.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/get_current_file.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/search.dart';
+import 'package:vido/features/files_navigator/presentation/utils/waiter.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_folder.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/create_pdf_file.dart';
 import 'package:vido/features/photos_translator/presentation/use_cases/pick_pdf.dart';
@@ -232,6 +233,9 @@ Future<void> init() async {
       errorHandler: sl<UseCaseErrorHandler>()
     )
   );
+  sl.registerLazySingleton<Waiter>(
+    () => WaiterImpl()
+  );
   sl.registerFactory<FilesNavigatorBloc>(
     () => FilesNavigatorBloc(
       loadFolderChildren: sl<LoadFolderChildren>(),
@@ -243,7 +247,8 @@ Future<void> init() async {
       getCurrentFile: sl<GetCurrentFile>(),
       appFilesTransmitter: sl<AppFilesTransmitter>(),
       translationsFilesTransmitter: sl<TranslationsFilesTransmitter>(),
-      searchController: TextEditingController(text: '')
+      searchController: TextEditingController(text: ''),
+      waiter: sl<Waiter>()
     )
   );
 

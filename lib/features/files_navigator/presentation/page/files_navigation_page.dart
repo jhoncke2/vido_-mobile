@@ -66,8 +66,7 @@ class FilesNavigationPage extends StatelessWidget {
                             (state is OnError)?
                               ErrorPanel(
                                 visible: true, 
-                                errorTitle: 'Ha ocurrido un error', 
-                                errorContent: state.message
+                                errorTitle: state.message
                               ): Container()
                           )
                         ],

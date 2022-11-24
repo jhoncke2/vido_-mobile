@@ -21,6 +21,7 @@ import 'package:vido/core/domain/entities/app_file.dart';
 import 'package:vido/core/domain/entities/folder.dart';
 import 'package:vido/core/domain/entities/pdf_file.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_file_pdf.dart';
+import 'package:vido/features/files_navigator/presentation/utils/waiter.dart';
 import 'files_navigator_bloc_test.mocks.dart';
 
 late FilesNavigatorBloc filesNavigatorBloc;
@@ -34,6 +35,7 @@ late MockGetCurrentFile getCurrentFile;
 late MockAppFilesTransmitter appFilesTransmitter;
 late MockTranslationsFilesTransmitter translationsFilesTransmitter;
 late MockTextEditingController searchController;
+late MockWaiter waiter;
 
 @GenerateMocks([
   LoadFolderChildren,
@@ -46,10 +48,12 @@ late MockTextEditingController searchController;
   AppFilesTransmitter,
   TranslationsFilesTransmitter,
   TextEditingController,
+  Waiter,
   File
 ])
 void main() {
   setUp(() {
+    waiter = MockWaiter();
     searchController = MockTextEditingController();
     translationsFilesTransmitter = MockTranslationsFilesTransmitter();
     appFilesTransmitter = MockAppFilesTransmitter();
@@ -73,7 +77,8 @@ void main() {
       getCurrentFile: getCurrentFile,
       appFilesTransmitter: appFilesTransmitter,
       translationsFilesTransmitter: translationsFilesTransmitter,
-      searchController: searchController 
+      searchController: searchController,
+      waiter: waiter
     );
   });
 
@@ -242,7 +247,7 @@ void _testSelectAppFileGroup(){
         });
       });
 
-      group('when the selected file has Not permissions', (){
+      group('when the selected file has Not read permissions', (){
         setUp((){
           tAppFile = const PdfFile(
             id: 0,
@@ -256,14 +261,23 @@ void _testSelectAppFileGroup(){
         });
 
         test('should call the specified methods', ()async{
-          when(loadFilePdf(any)).thenAnswer((_) async => Right(tPdf));
           filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+          await untilCalled(waiter.wait(any));
+          verify(waiter.wait(FilesNavigatorBloc.tempErrorMillisecondsWait));
           verifyNever(loadFilePdf(any));
         });
 
         test('should emit the expected ordered states when all goes good', ()async{
           when(loadFilePdf(any)).thenAnswer((_) async => Right(tPdf));
-          final expectedOrderedStates = [];
+          final expectedOrderedStates = [
+            OnAppFilesError(
+              message: FilesNavigatorBloc.noPermissionsErrorMessage, 
+              parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+            ),
+            OnAppFilesSuccess(
+              parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+            )
+          ];
           expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
           filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
         });
@@ -368,7 +382,7 @@ void _testSelectAppFileGroup(){
         });
       });
 
-      group('when selected file has Not permissions', (){
+      group('when selected file has Not read permissions', (){
         setUp((){
           tAppFile = const Folder(
             id: 0, 
@@ -385,12 +399,22 @@ void _testSelectAppFileGroup(){
 
         test('should call the specified methods', ()async{
           filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+          await untilCalled(waiter.wait(any));
+          verify(waiter.wait(FilesNavigatorBloc.tempErrorMillisecondsWait));
           verifyNever(loadFolderChildren(any));
           verifyNever(getCurrentFile());
         });
 
         test('should emit the expected ordered states', ()async{
-          final expectedOrderedStates = [];
+          final expectedOrderedStates = [
+            OnAppFilesError(
+              message: FilesNavigatorBloc.noPermissionsErrorMessage, 
+              parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+            ),
+            OnAppFilesSuccess(
+              parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+            )
+          ];
           expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
           filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
         });
@@ -406,7 +430,7 @@ void _testSelectAppFileGroup(){
     group('when the files ids list has more than 1 item', (){
       setUp((){
         tFilesIdsInit = [0, 1, 2];
-        filesNavigatorBloc.emit(OnIcrFilesSelection(
+        filesNavigatorBloc.emit(OnIcrFilesSelectionSuccess(
           filesIds: tFilesIdsInit,
           parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
         ));
@@ -423,7 +447,7 @@ void _testSelectAppFileGroup(){
           canBeDeleted: false
         );
         final expectedOrderedStates = [
-          OnIcrFilesSelection(
+          OnIcrFilesSelectionSuccess(
             filesIds: [...tFilesIdsInit, tAppFile.id],
             parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
           )
@@ -443,7 +467,7 @@ void _testSelectAppFileGroup(){
           canBeDeleted: false
         );
         final expectedOrderedStates = [
-          OnIcrFilesSelection(
+          OnIcrFilesSelectionSuccess(
             filesIds: tFilesIdsInit.sublist(1, tFilesIdsInit.length),
             parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
           )
@@ -463,7 +487,7 @@ void _testSelectAppFileGroup(){
           canBeDeleted: false
         );
         final expectedOrderedStates = [
-          OnIcrFilesSelection(
+          OnIcrFilesSelectionSuccess(
             filesIds: [tFilesIdsInit[0], ...tFilesIdsInit.sublist(2, tFilesIdsInit.length)],
             parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
           )
@@ -472,19 +496,31 @@ void _testSelectAppFileGroup(){
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
       });
 
-      test('should emit the expected ordered states when the selected is PdfFile with no read permissions', ()async{
-        tAppFile = const PdfFile(
-          id: 3, 
-          name: 'file_3', 
-          parentId: 1000, 
-          url: 'url_3',
-          canBeRead: false,
-          canBeEdited: true,
-          canBeDeleted: false
-        );
-        final expectedOrderedStates = [];
-        expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
-        filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+      group('when the selected is PdfFile with no read permissions', (){
+        setUp((){
+          tAppFile = const PdfFile(
+            id: 3, 
+            name: 'file_3', 
+            parentId: 1000, 
+            url: 'url_3',
+            canBeRead: false,
+            canBeEdited: true,
+            canBeDeleted: false
+          );
+        });
+
+        test('should call the specified methods', ()async{
+          filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+          await untilCalled(waiter.wait(any));
+          verify(waiter.wait(FilesNavigatorBloc.tempErrorMillisecondsWait));
+
+        });
+
+        test('should emit the expected ordered states', ()async{
+          final expectedOrderedStates = [];
+          expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+          filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+        });
       });
 
       test('should yield the expected ordered states when the selected file is Folder', ()async{
@@ -505,7 +541,7 @@ void _testSelectAppFileGroup(){
     group('when the files ids list has only 1 item', (){
       setUp((){
         tFilesIdsInit = [100];
-        filesNavigatorBloc.emit(OnIcrFilesSelection(
+        filesNavigatorBloc.emit(OnIcrFilesSelectionSuccess(
           filesIds: tFilesIdsInit,
           parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
         ));
@@ -540,7 +576,7 @@ void _testSelectAppFileGroup(){
           canBeDeleted: false
         );
         final expectedOrderedStates = [
-          OnIcrFilesSelection(
+          OnIcrFilesSelectionSuccess(
             filesIds: [...tFilesIdsInit, tAppFile.id],
             parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
           )
@@ -549,19 +585,40 @@ void _testSelectAppFileGroup(){
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
       });
 
-      test('should emit the expected ordered states when the selected is PdfFile with no read permissions', ()async{
-        tAppFile = const PdfFile(
-          id: 3, 
-          name: 'file_3', 
-          parentId: 1000, 
-          url: 'url_3',
-          canBeRead: false,
-          canBeEdited: true,
-          canBeDeleted: false
-        );
-        final expectedOrderedStates = [];
-        expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
-        filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+      group('when the selected is PdfFile with no read permissions', (){
+        setUp((){
+          tAppFile = const PdfFile(
+            id: 3, 
+            name: 'file_3', 
+            parentId: 1000, 
+            url: 'url_3',
+            canBeRead: false,
+            canBeEdited: true,
+            canBeDeleted: false
+          );
+        });
+
+        test('should call the specified methods', ()async{
+          filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+          await untilCalled(waiter.wait(any));
+          verify(waiter.wait(FilesNavigatorBloc.tempErrorMillisecondsWait));
+        });
+
+        test('should emit the expected ordered states', ()async{
+          final expectedOrderedStates = [
+            OnIcrFilesSelectionError(
+              message: FilesNavigatorBloc.noPermissionsErrorMessage, 
+              filesIds: tFilesIdsInit, 
+              parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+            ),
+            OnIcrFilesSelectionSuccess(
+              filesIds: tFilesIdsInit, 
+              parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+            )
+          ];
+          expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+          filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+        });
       });
 
       test('should yield the expected ordered states when the selected file is Folder', ()async{
@@ -1043,7 +1100,7 @@ void _testLongPressFileGroup(){
           canBeDeleted: false
         );
         final expectedOrderedStates = [
-          OnIcrFilesSelection(
+          OnIcrFilesSelectionSuccess(
             filesIds: [tFile.id],
             parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
           )
@@ -1063,36 +1120,53 @@ void _testLongPressFileGroup(){
           canBeDeleted: false
         );
         final expectedOrderedStates = [
-          OnIcrFilesSelection(
+          OnIcrFilesSelectionSuccess(
             filesIds: [tFile.id],
             parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
           )
         ];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
-        filesNavigatorBloc.add( LongPressFileEvent(tFile));
+        filesNavigatorBloc.add(LongPressFileEvent(tFile));
       });
     });
 
-    test('should yield the expected ordered states when the file has Not read permissions', ()async{
-      tFileHasReadPermissions = false;
-      tFile = PdfFile(
-        id: 0, 
-        name: 'file', 
-        parentId: 100, 
-        url: 'f_url',
-        canBeRead: tFileHasReadPermissions,
-        canBeEdited: true,
-        canBeDeleted: false
-      );
-      final expectedOrderedStates = [];
-      expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
-      filesNavigatorBloc.add(LongPressFileEvent(tFile));
+    group('when the file has Not read permissions', (){
+      setUp((){
+        tFileHasReadPermissions = false;
+        tFile = PdfFile(
+          id: 0, 
+          name: 'file', 
+          parentId: 100, 
+          url: 'f_url',
+          canBeRead: tFileHasReadPermissions,
+          canBeEdited: true,
+          canBeDeleted: false
+        );
+      });
+      test('should call the specified methods', ()async{
+        filesNavigatorBloc.add(LongPressFileEvent(tFile));
+        await untilCalled(waiter.wait(any));
+        verify(waiter.wait(FilesNavigatorBloc.tempErrorMillisecondsWait));
+      });
+      test('should yield the expected ordered states', ()async{
+        final expectedOrderedStates = [
+          OnAppFilesError(
+            message: FilesNavigatorBloc.noPermissionsErrorMessage, 
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          ),
+          OnAppFilesSuccess(
+            parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
+          )
+        ];
+        expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+        filesNavigatorBloc.add(LongPressFileEvent(tFile));
+      });
     });
   });
 
   test('should yield the expected ordered states when the current state is OnIcrFilesSelection', ()async{
     tCanBeCreatedOnItInitial = true;
-    filesNavigatorBloc.emit(OnIcrFilesSelection(
+    filesNavigatorBloc.emit(OnIcrFilesSelectionSuccess(
       filesIds: const [1, 3],
       parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
     ));
@@ -1106,7 +1180,7 @@ void _testGenerateIcrGroup(){
   setUp((){
     tCanBeCreatedOnItInitial = true;
     tFilesIds = [0, 1, 5, 10];
-    filesNavigatorBloc.emit(OnIcrFilesSelection(
+    filesNavigatorBloc.emit(OnIcrFilesSelectionSuccess(
       filesIds: tFilesIds,
       parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
     ));

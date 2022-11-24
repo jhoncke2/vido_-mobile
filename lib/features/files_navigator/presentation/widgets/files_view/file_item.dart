@@ -27,47 +27,55 @@ class FileItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dimens = AppDimens();
-    return InkWell(
-      child: SizedBox(
-        height: dimens.getHeightPercentage(0.2),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: isSelected? AppColors.primary : Colors.transparent,
-                  width: 2
-                )
-              ),
-              padding: EdgeInsets.all( isSelected? 10 : 0),
-              child: Icon(  
-                icon,
-                color: iconColor,
-                size: bigIcon? dimens.bigIconSize : dimens.normalIconSize,
-              ),
+    return Container(
+      margin: const EdgeInsets.all(2),
+      height: dimens.getHeightPercentage(0.2),
+      child: Center(
+        child: InkWell(
+          child: SizedBox(
+            height: dimens.getHeightPercentage(
+              text.length > 9? 0.2 : 0.16
             ),
-            SizedBox(
-               height: (isSelected)? 10
-                        : interSpace ?? dimens.littleVerticalSpace
-            ),
-            SizedBox(
-              width: dimens.getWidthPercentage(0.3),
-              child: Text(
-                text,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: bigText? dimens.titleTextSize : dimens.normalTextSize
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: isSelected? AppColors.primary : Colors.transparent,
+                      width: 2
+                    )
+                  ),
+                  padding: EdgeInsets.all( isSelected? 10 : 0),
+                  child: Icon(  
+                    icon,
+                    color: iconColor,
+                    size: bigIcon? dimens.bigIconSize : dimens.normalIconSize,
+                  ),
                 ),
-              ),
-            )
-          ],
+                SizedBox(
+                   height: (isSelected)? 10
+                            : interSpace ?? dimens.littleVerticalSpace
+                ),
+                SizedBox(
+                  width: dimens.getWidthPercentage(0.3),
+                  child: Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: bigText? dimens.titleTextSize : dimens.normalTextSize
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+          onTap: onTap,
+          onLongPress: onLongTap
         ),
       ),
-      onTap: onTap,
-      onLongPress: onLongTap
     );
   }
 }

@@ -16,6 +16,7 @@ import '../use_cases/generate_icr.dart';
 import '../use_cases/load_folder_brothers.dart';
 import '../use_cases/load_folder_children.dart';
 import '../use_cases/search.dart';
+import '../utils/waiter.dart';
 
 part 'files_navigator_event.dart';
 part 'files_navigator_state.dart';
@@ -23,6 +24,8 @@ part 'files_navigator_state.dart';
 class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> {
 
   static const generalErrorMessage = 'Ha ocurrido un error inesperado';
+  static const noPermissionsErrorMessage = 'No tienes permisos para eso';
+  static const tempErrorMillisecondsWait = 750;
   
   final LoadFolderChildren loadFolderChildren;
   final LoadFolderBrothers loadFolderBrothers;
@@ -35,6 +38,7 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
   final AppFilesTransmitter appFilesTransmitter;
   final TranslationsFilesTransmitter translationsFilesTransmitter;
   final TextEditingController searchController;
+  final Waiter waiter;
 
   FilesNavigatorBloc({
     required this.loadFolderChildren,
@@ -46,7 +50,8 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
     required this.getCurrentFile,
     required this.appFilesTransmitter,
     required this.translationsFilesTransmitter,
-    required this.searchController
+    required this.searchController,
+    required this.waiter
   }): super(OnFilesNavigatorInitial()) {
     _lastAppFiles = [];
     appFilesTransmitter.appFiles.listen((files){
@@ -68,7 +73,7 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
       }else if(event is BackToSearchAppearancesEvent){
         _backToSearchAppearances(emit);
       }else if(event is LongPressFileEvent){
-        _longPressFileEvent(emit, event);
+        await _longPressFileEvent(emit, event);
       }else if(event is GenerateIcrEvent){
         await _generateIcr(emit);
       }
@@ -124,12 +129,21 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
           parentFileCanBeCreatedOn: parentCanBeCreatedOn
         ));
       });
+    }else{
+      emit(OnAppFilesError(
+        message: noPermissionsErrorMessage, 
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
+      await waiter.wait(tempErrorMillisecondsWait);
+      emit(OnAppFilesSuccess(
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
     }
   }
 
   Future<void> _selectPdfToIcr(PdfFile appFile, Emitter<FilesNavigatorState> emit, bool parentCanBeCreatedOn)async{
+    final filesIds = (state as OnIcrFilesSelectionSuccess).filesIds;
     if(appFile.canBeRead){
-      final filesIds = (state as OnIcrFilesSelection).filesIds;
       if(filesIds.contains(appFile.id)){
         if(filesIds.length == 1){
           emit(OnAppFilesSuccess(
@@ -138,17 +152,28 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
         }else{
           final newList = List<int>.from(filesIds)
             ..remove(appFile.id);
-          emit(OnIcrFilesSelection(
+          emit(OnIcrFilesSelectionSuccess(
             filesIds: newList,
             parentFileCanBeCreatedOn: parentCanBeCreatedOn
           ));
         }
       }else{
-        emit(OnIcrFilesSelection(
+        emit(OnIcrFilesSelectionSuccess(
           filesIds: [...filesIds, appFile.id],
           parentFileCanBeCreatedOn: parentCanBeCreatedOn
         ));
       }
+    }else{
+      emit(OnIcrFilesSelectionError(
+        message: noPermissionsErrorMessage, 
+        filesIds: filesIds, 
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
+      await waiter.wait(tempErrorMillisecondsWait);
+      emit(OnIcrFilesSelectionSuccess(
+        filesIds: filesIds,
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
     }
   }
 
@@ -168,6 +193,15 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
           parentFileCanBeCreatedOn: _getCanBeCreatedOnItFromFile(currentFile)
         ));
       });
+    }else{
+      emit(OnAppFilesError(
+        message: noPermissionsErrorMessage, 
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
+      await waiter.wait(tempErrorMillisecondsWait);
+      emit(OnAppFilesSuccess(
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
     }
   }
   
@@ -248,22 +282,31 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
     ));
   }
 
-  void _longPressFileEvent(Emitter<FilesNavigatorState> emit, LongPressFileEvent event){
+  Future<void> _longPressFileEvent(Emitter<FilesNavigatorState> emit, LongPressFileEvent event)async{
     final canBeRead = event.file.canBeRead;
+    final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
     if(canBeRead){
-      final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
       if(state is OnAppFilesSuccess){
-        emit(OnIcrFilesSelection(
+        emit(OnIcrFilesSelectionSuccess(
           filesIds: [event.file.id],
           parentFileCanBeCreatedOn: parentCanBeCreatedOn
         ));
       }
+    }else{
+      emit(OnAppFilesError(
+        message: noPermissionsErrorMessage, 
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
+      await waiter.wait(tempErrorMillisecondsWait);
+      emit(OnAppFilesSuccess(
+        parentFileCanBeCreatedOn: parentCanBeCreatedOn
+      ));
     }
   }
 
   Future<void> _generateIcr(Emitter<FilesNavigatorState> emit)async{
     final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
-    final filesIds = (state as OnIcrFilesSelection).filesIds;
+    final filesIds = (state as OnIcrFilesSelectionSuccess).filesIds;
     emit(OnLoadingAppFiles());
     final icrResult = await generateIcr(filesIds);
     icrResult.fold((failure){

@@ -13,7 +13,7 @@ class AppFilesView extends StatelessWidget{
   Widget build(BuildContext context) {
     final dimens = AppDimens();
     final blocState = BlocProvider.of<FilesNavigatorBloc>(context).state;
-    final selectedFilesIds = (blocState is OnIcrFilesSelection) ? 
+    final selectedFilesIds = (blocState is OnIcrFilesSelectionSuccess) ? 
                               blocState.filesIds : 
                               [];
     return Expanded(
@@ -67,7 +67,7 @@ class AppFilesView extends StatelessWidget{
             ),
           ),
           Visibility(
-            visible: blocState is OnIcrFilesSelection,
+            visible: blocState is OnIcrFilesSelectionSuccess,
             child: Container(
               width: dimens.getWidthPercentage(1),
               color: AppColors.backgroundSecondary,

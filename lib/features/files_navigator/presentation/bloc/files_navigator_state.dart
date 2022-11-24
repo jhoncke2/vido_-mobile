@@ -200,7 +200,7 @@ class OnSearchAppearancesPdfError extends OnSearchAppearancesPdf implements OnPd
   List<Object> get props => [...super.props, message];
 }
 
-class OnIcrFilesSelection extends OnShowingAppFiles{
+abstract class OnIcrFilesSelection extends OnShowingAppFiles{
   final List<int> filesIds;
   const OnIcrFilesSelection({
     required this.filesIds,
@@ -208,6 +208,16 @@ class OnIcrFilesSelection extends OnShowingAppFiles{
   }) : super(parentFileCanBeCreatedOn: parentFileCanBeCreatedOn);
   @override
   List<Object> get props => [...super.props, filesIds];
+}
+
+class OnIcrFilesSelectionSuccess extends OnIcrFilesSelection{
+  const OnIcrFilesSelectionSuccess({
+    required List<int> filesIds,
+    required bool parentFileCanBeCreatedOn
+  }) : super(
+    filesIds: filesIds,
+    parentFileCanBeCreatedOn: parentFileCanBeCreatedOn
+  );
 }
 
 class OnIcrFilesSelectionError extends OnIcrFilesSelection implements OnError{
