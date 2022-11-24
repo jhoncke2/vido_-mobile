@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:vido/core/domain/entities/folder.dart';
 import 'package:vido/core/domain/translations_transmitter.dart';
 import 'package:vido/features/files_navigator/domain/entities/search_appearance.dart';
+import 'package:vido/features/files_navigator/domain/failures/files_navigator_failure.dart';
 import 'package:vido/features/files_navigator/presentation/files_transmitter/files_transmitter.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/get_current_file.dart';
 import 'package:vido/features/files_navigator/presentation/use_cases/load_appearance_pdf.dart';
@@ -96,63 +97,77 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
     final appFile = event.appFile;
     final parentCanBeCreatedOn = (state as OnAppFiles).parentFileCanBeCreatedOn;
     if(appFile is PdfFile){
-      if(state is OnAppFilesSuccess){
-        if(appFile.canBeRead){
-          emit(OnLoadingAppFiles());
-          final pdfResult = await loadFilePdf(appFile);
-          pdfResult.fold((error){
-            emit(OnPdfFileError(
-              message: error.message.isNotEmpty? error.message : generalErrorMessage,
-              file: appFile,
-              parentFileCanBeCreatedOn: parentCanBeCreatedOn
-            ));
-          }, (pdf){
-            emit(OnPdfFileLoaded(
-              file: appFile, 
-              pdf: pdf,
-              parentFileCanBeCreatedOn: parentCanBeCreatedOn
-            ));
-          });
+      if(state is OnShowingUnselectedAppFiles){
+        await _trySelectPdfToRead(appFile, emit, parentCanBeCreatedOn);
+      }else{
+        await _selectPdfToIcr(appFile, emit, parentCanBeCreatedOn);
+      }
+    }else if(state is OnShowingUnselectedAppFiles){//Si es Folder y no está en Icr, puede seleccionarlo
+      await _trySelectFolderToRead(appFile as Folder, emit, parentCanBeCreatedOn);
+    }
+  }
+
+  Future<void> _trySelectPdfToRead(PdfFile appFile, Emitter<FilesNavigatorState> emit, bool parentCanBeCreatedOn)async{
+    if(appFile.canBeRead){
+      emit(OnLoadingAppFiles());
+      final pdfResult = await loadFilePdf(appFile);
+      pdfResult.fold((error){
+        emit(OnPdfFileError(
+          message: error.message.isNotEmpty? error.message : generalErrorMessage,
+          file: appFile,
+          parentFileCanBeCreatedOn: parentCanBeCreatedOn
+        ));
+      }, (pdf){
+        emit(OnPdfFileLoaded(
+          file: appFile, 
+          pdf: pdf,
+          parentFileCanBeCreatedOn: parentCanBeCreatedOn
+        ));
+      });
+    }
+  }
+
+  Future<void> _selectPdfToIcr(PdfFile appFile, Emitter<FilesNavigatorState> emit, bool parentCanBeCreatedOn)async{
+    if(appFile.canBeRead){
+      final filesIds = (state as OnIcrFilesSelection).filesIds;
+      if(filesIds.contains(appFile.id)){
+        if(filesIds.length == 1){
+          emit(OnAppFilesSuccess(
+            parentFileCanBeCreatedOn: parentCanBeCreatedOn
+          ));
+        }else{
+          final newList = List<int>.from(filesIds)
+            ..remove(appFile.id);
+          emit(OnIcrFilesSelection(
+            filesIds: newList,
+            parentFileCanBeCreatedOn: parentCanBeCreatedOn
+          ));
         }
       }else{
-        final filesIds = (state as OnIcrFilesSelection).filesIds;
-        if(filesIds.contains(appFile.id)){
-          if(filesIds.length == 1){
-            emit(OnAppFilesSuccess(
-              parentFileCanBeCreatedOn: parentCanBeCreatedOn
-            ));
-          }else{
-            final newList = List<int>.from(filesIds)
-              ..remove(appFile.id);
-            emit(OnIcrFilesSelection(
-              filesIds: newList,
-              parentFileCanBeCreatedOn: parentCanBeCreatedOn
-            ));
-          }
-        }else{
-          emit(OnIcrFilesSelection(
-            filesIds: [...filesIds, event.appFile.id],
-            parentFileCanBeCreatedOn: parentCanBeCreatedOn
-          ));
-        }
+        emit(OnIcrFilesSelection(
+          filesIds: [...filesIds, appFile.id],
+          parentFileCanBeCreatedOn: parentCanBeCreatedOn
+        ));
       }
-    }else if(state is OnAppFilesSuccess){
-      if(event.appFile.canBeRead){
-        emit(OnLoadingAppFiles());
-        await loadFolderChildren(event.appFile.id);
-        final currentFileResult = await getCurrentFile();
-        currentFileResult.fold((failure){
-          final errorMessage = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
-          emit(OnAppFilesError(
-            message: errorMessage,
-            parentFileCanBeCreatedOn: parentCanBeCreatedOn
-          ));
-        }, (currentFile){
-          emit(OnAppFilesSuccess(
-            parentFileCanBeCreatedOn: _getCanBeCreatedOnItFromFile(currentFile)
-          ));
-        });
-      }
+    }
+  }
+
+  Future<void> _trySelectFolderToRead(Folder appFile, Emitter<FilesNavigatorState> emit, bool parentCanBeCreatedOn)async{
+    if(appFile.canBeRead){
+      emit(OnLoadingAppFiles());
+      await loadFolderChildren(appFile.id);
+      final currentFileResult = await getCurrentFile();
+      currentFileResult.fold((failure){
+        final errorMessage = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
+        emit(OnAppFilesError(
+          message: errorMessage,
+          parentFileCanBeCreatedOn: parentCanBeCreatedOn
+        ));
+      }, (currentFile){
+        emit(OnAppFilesSuccess(
+          parentFileCanBeCreatedOn: _getCanBeCreatedOnItFromFile(currentFile)
+        ));
+      });
     }
   }
   
@@ -252,27 +267,35 @@ class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> 
     emit(OnLoadingAppFiles());
     final icrResult = await generateIcr(filesIds);
     icrResult.fold((failure){
-      final message = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
-      emit(OnIcrFilesSelectionError(
-        filesIds: filesIds, 
-        message: message,
-        parentFileCanBeCreatedOn: parentCanBeCreatedOn
-      ));
+      _emitOnFailedIcr(failure, emit, filesIds, parentCanBeCreatedOn);
     }, (tableItems){
-      final columnsHeads = tableItems.first.keys.toList();
-      final List<List<String>> rows = [];
-      for(final item in tableItems){
-        final row = item.values.map<String>(
-          (v) => v.toString()
-        ).toList();
-        rows.add(row);
-      }
-      emit(OnIcrTable(
-        colsHeads: columnsHeads, 
-        rows: rows,
-        parentFileCanBeCreatedOn: parentCanBeCreatedOn
-      ));
+      _manageSuccessIcr(tableItems, emit, parentCanBeCreatedOn);
     });
+  }
+
+  void _emitOnFailedIcr(FilesNavigatorFailure failure, Emitter<FilesNavigatorState> emit, List<int> filesIds, bool parentCanBeCreatedOn){
+    final message = (failure.message.isNotEmpty)? failure.message : generalErrorMessage;
+    emit(OnIcrFilesSelectionError(
+      filesIds: filesIds, 
+      message: message,
+      parentFileCanBeCreatedOn: parentCanBeCreatedOn
+    ));
+  }
+
+  void _manageSuccessIcr(List<Map<String, dynamic>> tableItems, Emitter<FilesNavigatorState> emit, bool parentCanBeCreatedOn){
+    final columnsHeads = tableItems.first.keys.toList();
+    final List<List<String>> rows = [];
+    for(final item in tableItems){
+      final row = item.values.map<String>(
+        (v) => v.toString()
+      ).toList();
+      rows.add(row);
+    }
+    emit(OnIcrTable(
+      colsHeads: columnsHeads, 
+      rows: rows,
+      parentFileCanBeCreatedOn: parentCanBeCreatedOn
+    ));
   }
 
   List<AppFile> get lastAppFiles => _lastAppFiles;

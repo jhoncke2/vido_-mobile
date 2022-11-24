@@ -32,7 +32,7 @@ class FilesNavigationPage extends StatelessWidget {
                   return Expanded(
                     child: WillPopScope(
                       onWillPop: ()async{
-                        if(state is OnShowingAppFiles || state is OnPdfFile || state is SearchAppearancesView){
+                        if(state is OnShowingUnselectedAppFiles || state is OnPdfFile || state is SearchAppearancesView){
                           BlocProvider.of<FilesNavigatorBloc>(blocContext).add(SelectFilesParentEvent());
                         }else if(state is OnSearchAppearancesPdf){
                           BlocProvider.of<FilesNavigatorBloc>(blocContext).add(BackToSearchAppearancesEvent());

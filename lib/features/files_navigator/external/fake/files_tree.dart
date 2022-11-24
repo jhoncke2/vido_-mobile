@@ -1,5 +1,4 @@
-// ignore_for_file: prefer_const_constructors
-
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 import 'package:vido/features/files_navigator/external/fake/tree.dart';
 import 'package:vido/features/files_navigator/external/fake/tree_node.dart';
 import '../../../../core/domain/entities/app_file.dart';
@@ -21,11 +20,11 @@ final appFiles = Tree<int, AppFile>(
     ), 
     children: [
       TreeNode(
-        key: 1, 
+        key: 10,
         value: Folder(
-          id: 1, 
+          id: 10,
           name: 'facturas', 
-          parentId: 0, 
+          parentId: 0,
           children: [],
           canBeRead: true,
           canBeEdited: true,
@@ -34,11 +33,11 @@ final appFiles = Tree<int, AppFile>(
         ), 
         children: [
           TreeNode(
-            key: 2,
+            key: 100,
             value: const PdfFile(
-              id: 2, 
+              id: 100, 
               name: 'Factura 1', 
-              parentId: 0, 
+              parentId: 10, 
               url: 'http://www.africau.edu/images/default/sample.pdf',
               canBeRead: true,
               canBeEdited: true,
@@ -49,11 +48,11 @@ final appFiles = Tree<int, AppFile>(
             ]
           ),
           TreeNode(
-            key: 3,
+            key: 101,
             value: const PdfFile(
-              id: 3, 
+              id: 101, 
               name: 'Factura 2', 
-              parentId: 0, 
+              parentId: 10, 
               url: 'http://www.africau.edu/images/default/sample.pdf',
               canBeRead: true,
               canBeEdited: true,
@@ -64,11 +63,11 @@ final appFiles = Tree<int, AppFile>(
             ]
           ),
           TreeNode(
-            key: 4, 
+            key: 102, 
             value: const PdfFile(
-              id: 4, 
+              id: 102, 
               name: 'Factura 3', 
-              parentId: 0, 
+              parentId: 10, 
               url: 'http://www.africau.edu/images/default/sample.pdf',
               canBeRead: true,
               canBeEdited: true,
@@ -77,13 +76,42 @@ final appFiles = Tree<int, AppFile>(
             children: [
 
             ]
+          ),
+          TreeNode(
+            key: 103, 
+            value: const PdfFile(
+              id: 103, 
+              name: 'Factura 4', 
+              parentId: 10, 
+              url: 'http://www.africau.edu/images/default/sample.pdf',
+              canBeRead: false,
+              canBeEdited: true,
+              canBeDeleted: false
+            ), 
+            children: [
+
+            ]
+          ),
+          TreeNode(
+            key: 104,
+            value: Folder(
+              id: 104,
+              name: 'facturas específicas', 
+              parentId: 0,
+              children: [],
+              canBeRead: false,
+              canBeEdited: true,
+              canBeDeleted: false,
+              canBeCreatedOnIt: true
+            ),
+            children: []
           )
         ]
       ),
       TreeNode(
-        key: 5, 
+        key: 11, 
         value: const PdfFile(
-          id: 5, 
+          id: 11, 
           name: 'file 1', 
           parentId: 0, 
           url: 'http://www.africau.edu/images/default/sample.pdf',
@@ -96,9 +124,9 @@ final appFiles = Tree<int, AppFile>(
         ]
       ),
       TreeNode(
-        key: 6, 
+        key: 12, 
         value: Folder(
-          id: 6, 
+          id: 12, 
           name: 'viajes', 
           parentId: 0, 
           children: [],
@@ -109,11 +137,11 @@ final appFiles = Tree<int, AppFile>(
         ), 
         children: [
           TreeNode(
-            key: 7, 
+            key: 120, 
             value: Folder(
-              id: 7, 
+              id: 120, 
               name: 'viajes antiguos', 
-              parentId: 0, 
+              parentId: 12, 
               children: [],
               canBeRead: true,
               canBeEdited: true,
@@ -122,11 +150,11 @@ final appFiles = Tree<int, AppFile>(
             ), 
             children: [
               TreeNode(
-                key: 8,
+                key: 1200,
                 value: const PdfFile(
-                  id: 8, 
+                  id: 1200, 
                   name: 'viaje viejo 1', 
-                  parentId: 0, 
+                  parentId: 120, 
                   url: 'http://www.africau.edu/images/default/sample.pdf',
                   canBeRead: true,
                   canBeEdited: true,
@@ -139,11 +167,11 @@ final appFiles = Tree<int, AppFile>(
             ]
           ),
           TreeNode(
-            key: 9, 
+            key: 1201, 
             value: const PdfFile(
-              id: 9, 
+              id: 1201, 
               name: 'viaje 1', 
-              parentId: 0, 
+              parentId: 120, 
               url: 'http://www.africau.edu/images/default/sample.pdf',
               canBeRead: true,
               canBeEdited: true,
@@ -154,11 +182,11 @@ final appFiles = Tree<int, AppFile>(
             ]
           ),
           TreeNode(
-            key: 10, 
+            key: 1202, 
             value: const PdfFile(
-              id: 10, 
-              name: 'viaje 1', 
-              parentId: 0, 
+              id: 1202, 
+              name: 'viaje 2', 
+              parentId: 120, 
               url: 'http://www.africau.edu/images/default/sample.pdf',
               canBeRead: true,
               canBeEdited: true,
@@ -171,9 +199,9 @@ final appFiles = Tree<int, AppFile>(
         ]
       ),
       TreeNode(
-        key: 11, 
+        key: 13, 
         value: Folder(
-          id: 11, 
+          id: 13, 
           name: 'reuniones', 
           parentId: 0, 
           children: [],
@@ -187,9 +215,9 @@ final appFiles = Tree<int, AppFile>(
         ]
       ),
       TreeNode(
-        key: 12, 
+        key: 14, 
         value: Folder(
-          id: 12, 
+          id: 14, 
           name: 'salidas', 
           parentId: 0, 
           children: [],

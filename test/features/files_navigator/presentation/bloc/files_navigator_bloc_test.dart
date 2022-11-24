@@ -175,7 +175,7 @@ void _testSelectAppFileGroup(){
   late AppFile tAppFile;
   late bool tCanBeCreatedOnItInitial;
 
-  group('when the current state is OnAppFiles success', (){
+  group('when the current state is OnShowingUnselectedAppFiles', (){
     setUp((){
       tCanBeCreatedOnItInitial = false;
       filesNavigatorBloc.emit(OnAppFilesSuccess(
@@ -472,6 +472,21 @@ void _testSelectAppFileGroup(){
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
       });
 
+      test('should emit the expected ordered states when the selected is PdfFile with no read permissions', ()async{
+        tAppFile = const PdfFile(
+          id: 3, 
+          name: 'file_3', 
+          parentId: 1000, 
+          url: 'url_3',
+          canBeRead: false,
+          canBeEdited: true,
+          canBeDeleted: false
+        );
+        final expectedOrderedStates = [];
+        expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+        filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+      });
+
       test('should yield the expected ordered states when the selected file is Folder', ()async{
         tAppFile = const Folder(
           id: 100, 
@@ -530,6 +545,21 @@ void _testSelectAppFileGroup(){
             parentFileCanBeCreatedOn: tCanBeCreatedOnItInitial
           )
         ];
+        expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
+        filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
+      });
+
+      test('should emit the expected ordered states when the selected is PdfFile with no read permissions', ()async{
+        tAppFile = const PdfFile(
+          id: 3, 
+          name: 'file_3', 
+          parentId: 1000, 
+          url: 'url_3',
+          canBeRead: false,
+          canBeEdited: true,
+          canBeDeleted: false
+        );
+        final expectedOrderedStates = [];
         expectLater(filesNavigatorBloc.stream, emitsInOrder(expectedOrderedStates));
         filesNavigatorBloc.add(SelectAppFileEvent(tAppFile));
       });

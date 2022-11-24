@@ -43,13 +43,19 @@ abstract class OnShowingAppFiles extends OnAppFiles{
   }) : super( parentFileCanBeCreatedOn: parentFileCanBeCreatedOn );
 }
 
-class OnAppFilesSuccess extends OnShowingAppFiles{
+abstract class OnShowingUnselectedAppFiles extends OnShowingAppFiles{
+  const OnShowingUnselectedAppFiles({
+    required bool parentFileCanBeCreatedOn
+  }) : super( parentFileCanBeCreatedOn: parentFileCanBeCreatedOn );
+}
+
+class OnAppFilesSuccess extends OnShowingUnselectedAppFiles{
   const OnAppFilesSuccess({
     required bool parentFileCanBeCreatedOn
   }) : super(parentFileCanBeCreatedOn: parentFileCanBeCreatedOn);
 }
 
-class OnAppFilesError extends OnShowingAppFiles implements OnError{
+class OnAppFilesError extends OnShowingUnselectedAppFiles implements OnError{
   @override
   final String message;
   const OnAppFilesError({
