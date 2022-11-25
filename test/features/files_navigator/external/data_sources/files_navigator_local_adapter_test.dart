@@ -154,4 +154,29 @@ void _testGetFileFromJsonStringGroup(){
     final result = localAdapter.getFileFromJsonString(tJsonString);
     expect(result, tFile);
   });
+
+  test('should return the expected result when the file is pdf', ()async{
+    tJson = {
+      FilesNavigatorLocalAdapterImpl.idKey: 100,
+      FilesNavigatorLocalAdapterImpl.nameKey: 'f_100',
+      FilesNavigatorLocalAdapterImpl.parentIdKey: 99,
+      FilesNavigatorLocalAdapterImpl.canBeReadKey: true,
+      FilesNavigatorLocalAdapterImpl.canBeEdittedKey: false,
+      FilesNavigatorLocalAdapterImpl.canBeDeletedKey: false,
+      FilesNavigatorLocalAdapterImpl.fileTypeKey: FilesNavigatorLocalAdapterImpl.pdfTypeOption,
+      FilesNavigatorLocalAdapterImpl.urlKey: 'file_url'
+    };
+    tFile =  const PdfFile(
+      id: 100,
+      name: 'f_100',
+      url: 'file_url',
+      parentId: 99,
+      canBeRead: true,
+      canBeEdited: false,
+      canBeDeleted: false
+    );
+    tJsonString = jsonEncode(tJson);
+    final result = localAdapter.getFileFromJsonString(tJsonString);
+    expect(result, tFile);
+  });
 }

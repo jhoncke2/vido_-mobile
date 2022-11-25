@@ -297,6 +297,7 @@ void _testLoadFolderChildrenGroup(){
           verify(localDataSource.getParentId());
           verify(remoteDataSource.getFolder(tParentId, FileParentType.folder, tAccessToken));
           verify(localDataSource.setCurrentFile(tFolder));
+          verify(localDataSource.setCurrentFileId(tFolder.id));
           verify(localDataSource.setFilesTreeLvl(tTreeLvl! - 1));
           verify(appFilesReceiver.setAppFiles(tFolder.children));
           verify(localDataSource.setParentId(tFolder.parentId));

@@ -47,15 +47,27 @@ class FilesNavigatorLocalAdapterImpl implements FilesNavigatorLocalAdapter{
   @override
   AppFile getFileFromJsonString(String jsonString){
     final json = jsonDecode(jsonString);
-    return Folder(
-      id: json[idKey],
-      name: json[nameKey],
-      parentId: json[parentIdKey],
-      children: const [],
-      canBeRead: json[canBeReadKey],
-      canBeEdited: json[canBeEdittedKey],
-      canBeDeleted: json[canBeDeletedKey],
-      canBeCreatedOnIt: json[canBeCreatedOnItKey]
-    );
+    if(json[fileTypeKey] == folderTypeOption){
+      return Folder(
+        id: json[idKey],
+        name: json[nameKey],
+        parentId: json[parentIdKey],
+        children: const [],
+        canBeRead: json[canBeReadKey],
+        canBeEdited: json[canBeEdittedKey],
+        canBeDeleted: json[canBeDeletedKey],
+        canBeCreatedOnIt: json[canBeCreatedOnItKey]
+      );
+    }else{
+      return PdfFile(
+        id: json[idKey],
+        name: json[nameKey],
+        parentId: json[parentIdKey],
+        url: json[urlKey],
+        canBeRead: json[canBeReadKey],
+        canBeEdited: json[canBeEdittedKey],
+        canBeDeleted: json[canBeDeletedKey]
+      );
+    }
   }
 }

@@ -66,6 +66,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
       final folderId = await localDataSource.getParentId();
       folder = await remoteDataSource.getFolder(folderId, FileParentType.folder, accessToken);
       await localDataSource.setCurrentFile(folder);
+      await localDataSource.setCurrentFileId(folder.id);
       await localDataSource.setFilesTreeLvl(treeLvl - 1);
     }
     await localDataSource.setParentId(folder.parentId!);
