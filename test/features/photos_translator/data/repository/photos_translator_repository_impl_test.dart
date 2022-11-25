@@ -31,7 +31,7 @@ late MockUserExtraInfoGetter userExtraInfoGetter;
   File
 ])
 void main() {
-  setUp(() {
+  setUp((){
     userExtraInfoGetter = MockUserExtraInfoGetter();
     translFileParentFolderGetter = MockTranslationsFileParentFolderGetter();
     translationsFilesReceiver = MockTranslationsFilesReceiver();

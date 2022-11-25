@@ -97,6 +97,7 @@ void _testLoadInitialAppFilesGroup(){
   setUp((){
     when(loadFolderChildren(any)).thenAnswer((_) async => const Right(null));
   });
+  
   group('when all goes good', (){
     late AppFile tCurrentFile;
     setUp((){

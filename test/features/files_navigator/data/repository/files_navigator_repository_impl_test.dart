@@ -210,6 +210,7 @@ void _testLoadFolderChildrenGroup(){
     });
     
     group('when the tree level is 1', (){
+      late AppFile tCurrentFile;
       late int tFileId;
       setUp((){
         tTreeLvl = 1;
@@ -220,36 +221,86 @@ void _testLoadFolderChildrenGroup(){
             .thenAnswer((_) async => tFileId);
       });
 
-      test('should call the specified methods', ()async{
-        when(remoteDataSource.getFolder(any, any, any))
-            .thenAnswer((_) async => tFolder);
-        await filesNavigatorRepository.loadFolderChildren(null);
-        verify(userExtraInfoGetter.getAccessToken());
-        verify(localDataSource.getFilesTreeLevel());
-        verify(localDataSource.getCurrentFileId());
-        verify(remoteDataSource.getFolder(tFileId, FileParentType.folder, tAccessToken));
-        verify(appFilesReceiver.setAppFiles(tFolder.children));
-        verify(localDataSource.setParentId(tFolder.parentId));
-        verifyNever(localDataSource.setFilesTreeLvl(any));
-      });
+      group('when the current file is Folder', (){
+        setUp((){
+          tCurrentFile = const Folder(
+            id: 100,
+            name: 'f_100',
+            parentId: 99,
+            children: [],
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: true,
+            canBeCreatedOnIt: true
+          );
+          when(localDataSource.getCurrentFile())
+              .thenAnswer((_) async => tCurrentFile);
+        });
 
-      test('should return the expected result when all goes good', ()async{
-        when(remoteDataSource.getFolder(any, any, any))
-            .thenAnswer((_) async => tFolder);
-        final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Right(null));
-      });
+        test('should call the specified methods', ()async{
+          when(remoteDataSource.getFolder(any, any, any))
+              .thenAnswer((_) async => tFolder);
+          await filesNavigatorRepository.loadFolderChildren(null);
+          verify(userExtraInfoGetter.getAccessToken());
+          verify(localDataSource.getFilesTreeLevel());
+          verify(localDataSource.getCurrentFile());
+          verify(remoteDataSource.getFolder(tCurrentFile.id, FileParentType.folder, tAccessToken));
+          verify(appFilesReceiver.setAppFiles(tFolder.children));
+          verify(localDataSource.setParentId(tFolder.parentId));
+          verifyNever(localDataSource.setFilesTreeLvl(any));
+        });
 
-      test('should return the expected result when there is an AppException', ()async{
-        when(remoteDataSource.getFolder(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
-        final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
-      });
+        test('should return the expected result when all goes good', ()async{
+          when(remoteDataSource.getFolder(any, any, any))
+              .thenAnswer((_) async => tFolder);
+          final result = await filesNavigatorRepository.loadFolderChildren(null);
+          expect(result, const Right(null));
+        });
 
-      test('should return the expected result when there is another Exception', ()async{
-        when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
-        final result = await filesNavigatorRepository.loadFolderChildren(null);
-        expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
+        test('should return the expected result when there is an AppException', ()async{
+          when(remoteDataSource.getFolder(any, any, any)).thenThrow(const ServerException(type: ServerExceptionType.UNHAUTORAIZED));
+          final result = await filesNavigatorRepository.loadFolderChildren(null);
+          expect(result, const Left(FilesNavigatorFailure(exception: ServerException(type: ServerExceptionType.UNHAUTORAIZED), message: '')));
+        });
+
+        test('should return the expected result when there is another Exception', ()async{
+          when(remoteDataSource.getFolder(any, any, any)).thenThrow(Exception());
+          final result = await filesNavigatorRepository.loadFolderChildren(null);
+          expect(result, const Left(FilesNavigatorFailure(exception: AppException(''), message: '')));
+        });
+      });
+      group('when the current file is pdf', (){
+        late int tParentId;
+        setUp((){
+          tParentId = 99;
+          tCurrentFile = PdfFile(
+            id: 100,
+            name: 'file_100',
+            parentId: tParentId,
+            url: 'url_100',
+            canBeRead: true,
+            canBeEdited: true,
+            canBeDeleted: true
+          );
+          when(localDataSource.getParentId())
+              .thenAnswer((_) async => tParentId);
+          when(localDataSource.getCurrentFile())
+                .thenAnswer((_) async => tCurrentFile);
+        });
+        test('should call the specified methods', ()async{
+          when(remoteDataSource.getFolder(any, any, any))
+              .thenAnswer((_) async => tFolder);
+          await filesNavigatorRepository.loadFolderChildren(null);
+          verify(userExtraInfoGetter.getAccessToken());
+          verify(localDataSource.getFilesTreeLevel());
+          verify(localDataSource.getCurrentFile());
+          verify(localDataSource.getParentId());
+          verify(remoteDataSource.getFolder(tParentId, FileParentType.folder, tAccessToken));
+          verify(localDataSource.setCurrentFile(tFolder));
+          verify(localDataSource.setFilesTreeLvl(tTreeLvl! - 1));
+          verify(appFilesReceiver.setAppFiles(tFolder.children));
+          verify(localDataSource.setParentId(tFolder.parentId));
+        });
       });
     });
   });

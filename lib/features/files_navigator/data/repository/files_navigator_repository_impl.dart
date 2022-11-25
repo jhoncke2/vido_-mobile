@@ -36,7 +36,7 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
         if(treeLvl == null || treeLvl == 0){
           folder = await _saveUserRootFolder(accessToken);
         }else{
-          folder = await _saveNullIdFolder(accessToken);
+          folder = await _saveNullIdFolder(accessToken, treeLvl);
         }
         if(treeLvl == null){
           await localDataSource.setFilesTreeLvl(0);
@@ -57,9 +57,17 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
     return folder;
   }
 
-  Future<Folder> _saveNullIdFolder(String accessToken)async{
-    final folderId = await localDataSource.getCurrentFileId();
-    final folder = await remoteDataSource.getFolder(folderId, FileParentType.folder, accessToken);
+  Future<Folder> _saveNullIdFolder(String accessToken, int treeLvl)async{
+    final currentFile = await localDataSource.getCurrentFile();
+    late Folder folder;
+    if(currentFile is Folder){
+      folder = await remoteDataSource.getFolder(currentFile.id, FileParentType.folder, accessToken);
+    }else{
+      final folderId = await localDataSource.getParentId();
+      folder = await remoteDataSource.getFolder(folderId, FileParentType.folder, accessToken);
+      await localDataSource.setCurrentFile(folder);
+      await localDataSource.setFilesTreeLvl(treeLvl - 1);
+    }
     await localDataSource.setParentId(folder.parentId!);
     return folder;
   }
@@ -84,7 +92,8 @@ class FilesNavigatorRepositoryImpl implements FilesNavigatorRepository{
         message: exception.message??'',
         exception: exception
       ));
-    }catch(exception){
+    }catch(exception, stackTrace){
+      print(stackTrace);
       return const Left(FilesNavigatorFailure(
         message: '',
         exception: AppException('')

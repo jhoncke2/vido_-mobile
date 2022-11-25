@@ -24,7 +24,7 @@ part 'files_navigator_state.dart';
 class FilesNavigatorBloc extends Bloc<FilesNavigatorEvent, FilesNavigatorState> {
 
   static const generalErrorMessage = 'Ha ocurrido un error inesperado';
-  static const noPermissionsErrorMessage = 'No tienes permisos para eso';
+  static const noPermissionsErrorMessage = 'No tienes permiso para eso';
   static const tempErrorMillisecondsWait = 750;
   
   final LoadFolderChildren loadFolderChildren;
